@@ -35,6 +35,9 @@
 
 int main (void)
 {
+  char opt, answer[BUFSIZ];
+  Logic the_logic;
+  
   the_logic = (Logic) malloc (sizeof (logicType));
   
   menu_init();
@@ -54,7 +57,7 @@ int main (void)
   /* Manage options */
   for (;;)
     {
-      menu_index ();
+      menu_index (the_logic);
       opt = readin (answer, "vrwadfehq\n");
       
       switch (opt)
@@ -62,7 +65,7 @@ int main (void)
           case 'v':
             clear_scr ();
             menu_header ();
-            menu_info ();
+            menu_info (the_logic);
             do
               {
                 printf ("Nuevo minimo valor designado: ");
@@ -83,13 +86,13 @@ int main (void)
               {
                 printf ("Write a formula in polk notation: ");
                 fgets (answer, BUFSIZ, stdin);
-                sscanf (answer, "%s", formula);
+                sscanf (answer, "%s", the_logic -> formula);
               }
-            while (!is_wff_pk (formula));
+            while (!is_wff_pk (the_logic -> formula, the_logic));
             break;
           
           case 'e':
-            if (formula[0] == 0)
+            if (the_logic -> formula[0] == 0)
               printf ("\nPrimero debe introducir una formula!\n");
             /*
             else

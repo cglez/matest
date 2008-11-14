@@ -52,24 +52,18 @@
 ***  Data definition
 */
 
-char answer[BUFSIZ];                    /* keyword entry                           */
-/* int dim, mdv; */                     /* dimmension and minimun designated value */
-/* char opt; */                         /* selected option                         */
-char the_formula[MAX_FORMULA_LENGHT];   /* character string for the formula        */
-
-
 /* Symbol types enumeration */
 typedef enum
   {
     VAR,
     UCON,
-    DCON,
+    BCON,
     NONE
   }
   SymbolType;
 
 
-/* Evaluation types enumeration */
+/* Evaluation show types enumeration */
 typedef enum
   {
     ALL,
@@ -85,7 +79,7 @@ typedef struct
     int position;
     int *vector;
   }
-  FIFO;
+  LIFO;
 */
 
 /* Variable node */
@@ -95,10 +89,10 @@ typedef struct _node_var
     int value;
     struct _node_var *next;
   }
-  typeVar;
+  varType;
 
-typedef typeVar *variable;
-typedef typeVar *varList;
+typedef varType *Var;
+typedef varType *VarList;
 
 
 /* Unary connective node */
@@ -115,16 +109,16 @@ typedef unyConType *unyConList;
 
 
 /* Dyadic connective node */
-typedef struct _node_dya_con
+typedef struct _node_bin_con
   {
     char name;
     int **matrix;
-    struct _node_dya_con *next;
+    struct _node_bin_con *next;
   }
-  dyaConType;
+  binConType;
 
-typedef dyaConType *dyaCon;
-typedef dyaConType *dyaConList;
+typedef binConType *binCon;
+typedef binConType *binConList;
 
 
 /* Global struct */
@@ -132,14 +126,13 @@ typedef struct _logic
   {
     int dimmension, mdv;
     char formula[MAX_FORMULA_LENGHT];
-    varList vars;
-    unyConList unyconns;
-    dyaConList dyaconns;
+    VarList vars;
+    unyConList unyConns;
+    binConList binConns;
   }
   logicType;
   
 typedef logicType *Logic;
-Logic the_logic;
 
 
 /*
@@ -147,41 +140,39 @@ Logic the_logic;
 */
 
 /* Connective related functions prototypes */
-bool is_unary_connective (char ch, unyConList *list);
-bool is_dyadic_connective (char ch, dyaConList *list);
-int add_unary_connective (char ch, unyConList *list, int *mtx);
-int add_dyadic_connective (char ch, dyaConList *list, int **mtx);
-void set_default_unycons (Logic logic);
-void set_default_dyacons (Logic logic);
-void print_uny_matrix (unyCon connective);
-void print_dya_matrix (dyaCon connective);
-int write_uny_matrix (unyCon connective, char filename[]);
-int write_dya_matrix (dyaCon connective, char filename[]);
+bool is_unary_connective (char con_name, unyConList *list);
+bool is_binary_connective (char con_name, binConList *list);
+int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimmension);
+int add_binary_connective (char con_name, int **mtx, binConList *list, int dimmension);
+void set_default_uny_conns (Logic logic);
+void set_default_bin_conns (Logic logic);
+void print_uny_matrix (unyCon connective, int dimmension, int mdv);
+void print_bin_matrix (binCon connective, int dimmension, int mdv);
+int write_uny_matrix (unyCon connective, char filename[], int dimmension);
+int write_bin_matrix (binCon connective, char filename[], int dimmension);
+
 
 /* Variable related functions prototypes */
-void add_var (varList *ls, char var);
-void Borrar (varList *ls, char var);
-
-int is_empty_list (varList ls);
-
-void del_list (varList *);
-void print_list (varList ls);
-bool is_in_list (varList *ls, char var);
+void add_var (char var_name, VarList *list);
+bool is_empty_list (VarList list);
+void del_list (VarList *list);
+void print_list (VarList ls);
+bool is_in_list (char var_name, VarList *list);
 
 
 /* Polk well formed formula related functions prototypes */
 bool check_string (char formul[]);
-bool is_wff_pk (char formul[]);
+bool is_wff_pk (char formula[], Logic logic);
 
 
 /* User related functions prototypes */
 char readin (char *str, char *pattern);
 void clear_scr (void);
 void menu_header (void);
-void menu_info (void);
+void menu_info (Logic logic);
 void menu_options (void);
 void menu_dimmension (void);
-void menu_index (void);
+void menu_index (Logic logic);
 
 
 #endif

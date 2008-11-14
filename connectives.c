@@ -41,13 +41,13 @@
    Returns true if the name of the connective in the list of unary
    connectives, otherwise returns false.
 ***/
-bool is_unary_connective (char ch, unyConList *list)
+bool is_unary_connective (char con_name, unyConList *list)
 {
   unyCon aux = *list;
   
   while (aux)
     {
-      if (aux -> name == ch)
+      if (aux -> name == con_name)
         return true;
       else
         aux = aux -> next;
@@ -58,17 +58,17 @@ bool is_unary_connective (char ch, unyConList *list)
 
 
 /***
-  Function is_dyadic_connective:
+  Function is_binary_connective:
    Returns true if the name of the connective in the list of dyadic
    connectives, otherwise returns false.
 ***/
-bool is_dyadic_connective (char ch, dyaConList *list)
+bool is_binary_connective (char con_name, binConList *list)
 {
-  dyaCon aux = *list;
+  binCon aux = *list;
   
   while (aux)
     {
-      if (aux -> name == ch)
+      if (aux -> name == con_name)
         return true;
       else
         aux = aux -> next;
@@ -79,18 +79,18 @@ bool is_dyadic_connective (char ch, dyaConList *list)
 
 
 /***
-  Function search_unycon:
+  Function search_uny_con:
    Searchs an unary connective in the list of unary connectives. Returns a
    pointer to it if exists, or a null pointer if don't.
 ***/
-unyCon search_unycon (unyConList unylist, char con)
+unyCon search_uny_con (char con_name, unyConList list)
 {
   unyCon aux;
-  aux = unylist;
+  aux = list;
   
   while (aux)
     {
-      if (aux -> name == con)
+      if (aux -> name == con_name)
         return aux;
       else
         aux = aux -> next;
@@ -101,18 +101,18 @@ unyCon search_unycon (unyConList unylist, char con)
 
 
 /***
-  Function search_dyacon:
+  Function search_bin_con:
    Searchs a binary connective in the list of binary connectives. Returns a
    pointer to it if exists, or a null pointer if don't.
 ***/
-dyaCon search_dyacon (dyaConList dyalist, char con)
+binCon search_bin_con (char con_name, binConList list)
 {
-  dyaCon aux;
-  aux = dyalist;
+  binCon aux;
+  aux = list;
   
   while (aux)
     {
-      if (aux -> name == con)
+      if (aux -> name == con_name)
         return aux;
       else
         aux = aux -> next;
@@ -129,10 +129,10 @@ dyaCon search_dyacon (dyaConList dyalist, char con)
      Returns 0: succesfull.
      Returns 2: error, connective is in the list.
 ***/
-int add_unary_connective (char ch, unyConList *list, int *mtx)
+int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimmension)
 {
-  unyCon new, prev;
   int i;
+  unyCon new, aux;
   
   new = (unyCon) malloc (sizeof (unyConType));
   
@@ -144,22 +144,22 @@ int add_unary_connective (char ch, unyConList *list, int *mtx)
     }
   else
     {
-      prev = *list;
+      aux = *list;
       /* We search the last element */
-      while (prev -> next)
+      while (aux -> next)
         {
           /* We dischard the elements already in the list */
-          if (prev -> name == ch || prev -> next -> name == ch)
+          if (aux -> name == con_name || aux -> next -> name == con_name)
             return 2;
           else
-            prev = prev -> next;
+            aux = aux -> next;
         }
-        new -> next = prev -> next;
-        prev -> next = new;
+        new -> next = aux -> next;
+        aux -> next = new;
     }
-  new -> name = ch;
-  new -> matrix = (int*) calloc (the_logic -> dimmension, sizeof (int));
-  for (i = 0; i < the_logic -> dimmension; i++)
+  new -> name = con_name;
+  new -> matrix = (int*) calloc (dimmension, sizeof (int));
+  for (i = 0; i < dimmension; i++)
     {
       new -> matrix[i] = mtx[i];
     }
@@ -169,18 +169,18 @@ int add_unary_connective (char ch, unyConList *list, int *mtx)
 
 
 /***
-  Function add_dyadic_connective:
-   Generic function for adding a dyadic connective with an especific name and
-   matrix into a list of dyadic connectives.
+  Function add_binary_connective:
+   Generic function for adding a binary connective with an especific name and
+   matrix into a list of binary connectives.
      Returns 0: succesfull.
      Returns 2: error, connective is in the list.
 ***/
-int add_dyadic_connective (char ch, dyaConList *list, int **mtx)
+int add_binary_connective (char con_name, int **mtx, binConList *list, int dimmension)
 {
-  dyaCon new, prev;
   int i, j;
+  binCon new, aux;
   
-  new = (dyaCon) malloc (sizeof (dyaConType));
+  new = (binCon) malloc (sizeof (binConType));
   
   if (*list == NULL)
     {
@@ -189,29 +189,29 @@ int add_dyadic_connective (char ch, dyaConList *list, int **mtx)
     }
   else
     {
-      prev = *list;
+      aux = *list;
       /* We search the last element */
-      while (prev -> next)
+      while (aux -> next)
         {
           /* We dischard the elements already in the list */
-          if (prev -> name == ch || prev -> next -> name == ch)
+          if (aux -> name == con_name || aux -> next -> name == con_name)
             return 2;
           else
-            prev = prev -> next;
+            aux = aux -> next;
         }
-        new -> next = prev -> next;
-        prev -> next = new;
+        new -> next = aux -> next;
+        aux -> next = new;
     }
   
-  new -> name = ch;
-  new -> matrix = (int**) calloc (the_logic -> dimmension, sizeof (int*));
-  for (i = 0; i < the_logic -> dimmension; i++)
+  new -> name = con_name;
+  new -> matrix = (int**) calloc (dimmension, sizeof (int*));
+  for (i = 0; i < dimmension; i++)
     {
-      new -> matrix[i] = (int*) calloc (the_logic -> dimmension, sizeof (int));
+      new -> matrix[i] = (int*) calloc (dimmension, sizeof (int));
     }
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     {
-      for (j = 0; j < the_logic -> dimmension; j++)
+      for (j = 0; j < dimmension; j++)
         {
           new -> matrix[i][j] = mtx[i][j];
         }
@@ -221,34 +221,34 @@ int add_dyadic_connective (char ch, dyaConList *list, int **mtx)
 
 
 /***
-  Procedure set_default_unycons:
+  Procedure set_default_uny_conns:
    Sets the unary connectives at default; default is as in Łuckassiewicz
    multivaluate logics definition. There is only a default unary connective,
    the negation connective (N).
 ***/
-void set_default_unycons (Logic logic)
+void set_default_uny_conns (Logic logic)
 {
   int i;
   int *mtx;
   
-  mtx = (int*) calloc (the_logic -> dimmension, sizeof (int));
+  mtx = (int*) calloc (logic -> dimmension, sizeof (int));
   
   /* Setting the negation connective (N):
        Nx [¬x]  =df  (1 - x) */
-  for (i = 0; i < the_logic -> dimmension; i++)
-    mtx[i] = the_logic -> dimmension - 1 - i;
-  add_unary_connective ('N', &the_logic -> unyconns, mtx);
+  for (i = 0; i < logic -> dimmension; i++)
+    mtx[i] = logic -> dimmension - 1 - i;
+  add_unary_connective ('N', mtx, &logic -> unyConns, logic -> dimmension);
 }
 
 
 /***
-  Procedure set_default_dyacons:
-   Sets the dyadic connectives at default. Default is as in Łuckassiewicz
+  Procedure set_default_bin_conns:
+   Sets the binary connectives at default. Default is as in Łuckassiewicz
    multivaluate logics definition. The default binary connectives are the
    implication connective (C), the conjunction connective (K) and the
    disyunction connective (A).
 ***/
-void set_default_dyacons (Logic logic)
+void set_default_bin_conns (Logic logic)
 {
   int i, j;
   int **mtx;
@@ -269,7 +269,7 @@ void set_default_dyacons (Logic logic)
             mtx[i][j] = ((logic -> dimmension - 1) - i + j);
         }
     }
-  add_dyadic_connective ('C', &logic -> dyaconns, mtx);
+  add_binary_connective ('C', mtx, &logic -> binConns, logic -> dimmension);
   
   /* Setting the conjunction connective (K):
        Kxy [x & y]  =df  min {x, y} */
@@ -283,7 +283,7 @@ void set_default_dyacons (Logic logic)
             mtx[i][j] = j;
         }
     }
-  add_dyadic_connective ('K', &logic -> dyaconns, mtx);
+  add_binary_connective ('K', mtx, &logic -> binConns, logic -> dimmension);
   
   /* Setting the disyunction connective (A):
        Axy [x v y]  =df  Max {x, y} */
@@ -297,7 +297,7 @@ void set_default_dyacons (Logic logic)
             mtx[i][j] = j;
         }
     }
-  add_dyadic_connective ('A', &logic -> dyaconns, mtx);
+  add_binary_connective ('A', mtx, &logic -> binConns, logic -> dimmension);
 }
 
 
@@ -319,25 +319,25 @@ int list_length (struct list)
    Prints the matrix values of a given unary connective in so pretty
    table like format.
 ***/
-void print_uny_matrix (unyCon connective)
+void print_uny_matrix (unyCon connective, int dimmension, int mdv)
 {
   int i;
   
   printf ("\n");
   
   printf ("  %c |", connective -> name);
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     printf ("  %i", i);
   
   printf ("\n----+");
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     printf ("---");
   
   printf ("-\n"
           "    |");
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     {
-      if (connective -> matrix[i] >= the_logic -> mdv)
+      if (connective -> matrix[i] >= mdv)
         printf (" *%i", connective -> matrix[i]);
       else
         printf ("  %i", connective -> matrix[i]);
@@ -347,35 +347,35 @@ void print_uny_matrix (unyCon connective)
 
 
 /***
-  Procedure print_dya_matrix:
-   Prints the matrix values of a given dyadic connective in so pretty
+  Procedure print_bin_matrix:
+   Prints the matrix values of a given binary connective in so pretty
    table like format.
 ***/
-void print_dya_matrix (dyaCon connective)
+void print_bin_matrix (binCon connective, int dimmension, int mdv)
 {
   int i,j;
   
   printf ("\n");
   
   printf ("  %c |", connective -> name);
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     printf ("  %i", i);
   
   printf ("\n----+");
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     printf ("---");
   
   printf ("-\n");
-  for (i = 0; i < the_logic -> dimmension; i++)
+  for (i = 0; i < dimmension; i++)
     {
-      if (i >= the_logic -> mdv)
+      if (i >= mdv)
         printf (" *%i |", i);
       else
         printf ("  %i |", i);
       
-      for (j = 0; j < the_logic -> dimmension; j++)
+      for (j = 0; j < dimmension; j++)
         {
-          if (connective -> matrix[i][j] >= the_logic -> mdv)
+          if (connective -> matrix[i][j] >= mdv)
             printf (" *%i", connective -> matrix[i][j]);
           else
             printf ("  %i", connective -> matrix[i][j]);
@@ -388,7 +388,7 @@ void print_dya_matrix (dyaCon connective)
 /***
    Function write_uny_matrix:
 ***/
-int write_uny_matrix (unyCon connective, char filename[])
+int write_uny_matrix (unyCon connective, char filename[], int dimmension)
 {
   int i;
   
@@ -398,7 +398,7 @@ int write_uny_matrix (unyCon connective, char filename[])
   if (outfile)
     {
       fprintf (outfile, "%c\n", connective -> name);
-      for (i = 0; i < the_logic -> dimmension; i++)
+      for (i = 0; i < dimmension; i++)
         fprintf (outfile, "%i ", connective -> matrix[i]);
       fprintf (outfile, "\n\n");
       
@@ -411,10 +411,9 @@ int write_uny_matrix (unyCon connective, char filename[])
 
 
 /***
-   Function write_dya_matrix:
-   
+   Function write_bin_matrix:
 ***/
-int write_dya_matrix (dyaCon connective, char filename[])
+int write_bin_matrix (binCon connective, char filename[], int dimmension)
 {
   int i, j;
   
@@ -424,9 +423,9 @@ int write_dya_matrix (dyaCon connective, char filename[])
   if (outfile)
     {
       fprintf (outfile, "%c\n", connective -> name);
-      for (i = 0; i < the_logic -> dimmension; i++)
+      for (i = 0; i < dimmension; i++)
         {
-          for (j = 0; j < the_logic -> dimmension; j++)
+          for (j = 0; j < dimmension; j++)
             fprintf (outfile, "%i ", connective -> matrix[i][j]);
           fprintf (outfile, "\n");
         }
@@ -445,18 +444,19 @@ int write_dya_matrix (dyaCon connective, char filename[])
     Returns 3: error, wrong format file.
     Returns 4: error, dimmension is set and isn't the same as in the file.
 ***/
+/*
 int read_matrix (FILE *file)
 {
   char string[BUFSIZ];
-  char conn;
+  char con;
   int vector[256];
   int i, j, val, dim;
   
   if (file)
     {
       fgets (string, BUFSIZ, file);
-      sscanf (string, "%c", &conn);
-      if (conn > 'A' || conn < 'Z')
+      sscanf (string, "%c", &con);
+      if (con > 'A' || con < 'Z')
         {
           do
             fgets (string, BUFSIZ, file);
@@ -478,30 +478,6 @@ int read_matrix (FILE *file)
           while (string[0] == '\n');
         }
     }
-}
-
-/*
-int main (void)
-{
-  char conn;
-  the_logic = (Logic) malloc (sizeof (logicType));
-  
-  the_logic -> dimmension = 5;
-  the_logic -> mdv = the_logic -> dimmension - 1;
-  
-  set_default_unycons (the_logic);
-  set_default_diacons (the_logic);
-  
-  printf ("Qué conectiva muestro: ");
-  scanf ("%c", &conn);
-  conn = toupper (conn);
-  if (search_unycon (the_logic -> unyconnectives, conn))
-    print_uny_matrix (search_unycon (the_logic -> unyconnectives, conn));
-  else if (search_diacon (the_logic -> diaconnectives, conn))
-    print_dia_matrix (search_diacon (the_logic -> diaconnectives, conn));
-  else
-    printf ("La conectiva no existe.\n");
-  return 0;
 }
 */
 

@@ -51,7 +51,7 @@ char readin (char *str, char *pattern)
       for (i = 0; str[i]; i++)
         {
           if (isupper (ch = str[i]))
-            ch = tolower(ch);
+            ch = tolower (ch);
           if (strchr (pattern, ch))
             return ch;
         }
@@ -98,41 +98,40 @@ void menu_header (void)
   Procedure menu_info:
    Prints information about the state of the configurable elements.
 ***/
-void menu_info (void)
+void menu_info (Logic logic)
 {
   unyCon unyaux;
-  diaCon diaaux;
+  binCon binaux;
   
-  printf ("Info:");
   printf ("\n   Matrices dimmension:      ");
-  if (the_logic -> dimmension)
-    printf ("%ix%i", the_logic -> dimmension, the_logic -> dimmension);
+  if (logic -> dimmension)
+    printf ("%ix%i", logic -> dimmension, logic -> dimmension);
   else
     printf ("Not defined!");
   printf ("\n   Minimun Designated Value: ");
-  if (the_logic -> mdv)
-    printf ("%i", the_logic -> mdv);
+  if (logic -> mdv)
+    printf ("%i", logic -> mdv);
   else
     printf ("Not defined!");
   
   printf ("\n   Unary  connectives:       ");
-  unyaux = the_logic -> unyconnectives;
+  unyaux = logic -> unyConns;
   while (unyaux)
     {
       printf ("%c ", unyaux -> name);
       unyaux = unyaux -> next;
     }
   printf ("\n   Binary connectives:       ");
-  diaaux = the_logic -> diaconnectives;
-  while (diaaux)
+  binaux = logic -> binConns;
+  while (binaux)
     {
-      printf ("%c ", diaaux -> name);
-      diaaux = diaaux -> next;
+      printf ("%c ", binaux -> name);
+      binaux = binaux -> next;
     }
-  if (formula[0])
-    printf ("\n   Formula:                  %s", formula);
+  if (logic -> formula[0])
+    printf ("\n   Formula:                  %s", logic -> formula);
   else
-    printf ("\n   Formula:                  Not defined!", formula);
+    printf ("\n   Formula:                  Not defined!", logic -> formula);
   printf ("\n\n\n");
 }
 
@@ -181,10 +180,10 @@ void menu_init (void)
   Procedure menu_index:
    Prints the global menu.
 ***/
-void menu_index (void)
+void menu_index (Logic logic)
 {
   menu_header();
-  menu_info();
+  menu_info (logic);
   menu_options();
 }
 

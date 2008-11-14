@@ -37,14 +37,14 @@
 /***
   Function symbol_type:
 ***/
-SymbolType symbol_type (char symbol)
+SymbolType symbol_type (char symbol, Logic logic)
 {
   if (islower (symbol))
     return VAR;
-  else if (is_unary_connective (symbol, &the_logic -> unyconns))
+  else if (is_unary_connective (symbol, &logic -> unyConns))
     return UCON;
-  else if (is_dyadic_connective (symbol, &the_logic -> dyaconns))
-    return DCON;
+  else if (is_binary_connective (symbol, &logic -> binConns))
+    return BCON;
   else
     return NONE;
 }
@@ -55,15 +55,15 @@ SymbolType symbol_type (char symbol)
    Checks the string and asures that only contains alpha characters and then
    returns true, otherwise returns false.
 ***/
-bool check_string (char formul[])
+bool check_string (char formula[])
 {
   int i;
   
-  for (i = 0; i < strlen (formul); i++)
+  for (i = 0; i < strlen (formula); i++)
     {
-      if (!isalpha (formul[i]))
+      if (!isalpha (formula[i]))
         {
-          printf ("Given formula have not-implemented characters.\n");
+          printf ("Given formula has not-implemented characters.\n");
           return false;
         }
     }
@@ -76,39 +76,39 @@ bool check_string (char formul[])
    Checks if the given formula is a well formed formula in polk notation. If
    it's a WFF returns true, otherwise returns false.
 ***/
-bool is_wff_pk (char formul[])
+bool is_wff_pk (char formula[], Logic logic)
 {
   int i, crtl = 1;
   
-  if (check_string (formul))
+  if (check_string (formula))
     {
-      for (i = 0; i < strlen (formul); i++)
+      for (i = 0; i < strlen (formula); i++)
         {
-          if (islower (formul[i]))
+          if (islower (formula[i]))
             crtl--;
           
-          else if (isupper (formul[i]))
+          else if (isupper (formula[i]))
             {
-              if (is_unary_connective (formul[i], &the_logic -> unyconns))
+              if (is_unary_connective (formula[i], &logic -> unyConns))
                 crtl = crtl;
-              else if (is_dyadic_connective (formul[i], &the_logic -> dyaconns))
+              else if (is_binary_connective (formula[i], &logic -> binConns))
                 crtl++;
               else
                 {
-                  printf ("The connective %c is not defined.\n", formul[i]);
+                  printf ("The connective %c is not defined.\n", formula[i]);
                   return false;
                 }
             }
           
-          if (crtl == 0 && formul[i + 1] != 0)
+          if (crtl == 0 && formula[i + 1] != 0)
             {
-              printf ("Formula \"%s\" isn't a WFF!\n", formul);
+              printf ("Formula \"%s\" isn't a WFF!\n", formula);
               return false;
             }
         }
       if (crtl != 0)
         {
-          printf ("Formula \"%s\" isn't a WFF!\n", formul);
+          printf ("Formula \"%s\" isn't a WFF!\n", formula);
           return false;
         }
       else
@@ -117,33 +117,4 @@ bool is_wff_pk (char formul[])
   else
     return false;
 }
-
-
-/*
-int main (void)
-{
-  the_logic = (Logic) malloc (sizeof (logicType));
-  
-  the_logic -> dimmension = 5;
-  the_logic -> mdv = the_logic -> dimmension - 1;
-  
-  set_default_unycons (the_logic);
-  set_default_diacons (the_logic);
-  
-  printf ("Givme a formula: ");
-  fgets (answer, BUFSIZ, stdin);
-  sscanf (answer, "%s", formula);
-  
-  if (check_string (formula))
-    {
-      if (is_wff_pk (formula))
-        {
-          printf ("OK.\n", formula);
-          return 0;
-        }
-    }
-  else
-    return 1;
-}
-*/
 

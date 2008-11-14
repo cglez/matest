@@ -26,16 +26,14 @@
 #include "MaTest.h"
 
 
-int polk_eval (char formula[])
+int polk_eval (char formula[], Logic logic)
 { 
   int i, pos = 0, val1, val2;
   int *lifo;
   unyCon ucon;
-  dyaCon bcon;
-  printf ("Declaradas las variables.\n");
+  binCon bcon;
   
   lifo = calloc (strlen (formula), sizeof (int));
-  printf ("Asignada memoria para la pila.\n");
   
   for (i = strlen (formula) - 1; i >= 0; i--)
     {
@@ -49,12 +47,12 @@ int polk_eval (char formula[])
             break;
           case UCON:
             val1 = lifo[--pos];
-            ucon = (unyCon) search_unycon (the_logic -> unyconns, formula[i]);
+            ucon = (unyCon) search_unycon (logic -> unyConns, formula[i]);
             lifo[pos++] = ucon -> matrix [val1];
-          case DCON:
+          case BCON:
             val1 = lifo[--pos];
             val2 = lifo[--pos];
-            bcon = (dyaCon) search_dyacon (the_logic -> dyaconns, formula[i]);
+            bcon = (binCon) search_dyacon (logic -> binConns, formula[i]);
             lifo[pos++] = bcon -> matrix [val1][val2];
         }
     }
@@ -130,16 +128,19 @@ void evaluate (int base, int orden, char formula[])
 }
 */
 
+/*
 int main (void)
 {
   int val;
   char the_formula[100];
+  Logic the_logic;
   
   the_logic = (Logic) malloc (sizeof (logicType));
   
   the_logic -> dimmension = 5;
   the_logic -> mdv = the_logic -> dimmension - 1;
-  the_logic -> vars = NULL;
+  the_logic -> vars = (VarList) malloc (sizeof (varType));
+  // the_logic -> vars = NULL;
   
   set_default_unycons (the_logic);
   set_default_dyacons (the_logic);
@@ -153,8 +154,10 @@ int main (void)
   printf ("OK. %i elements.\n", strlen (the_formula));
   
   register_vars (the_logic -> vars, the_formula);
+  print_var_list (the_logic -> vars);
   
   val = polk_eval (the_formula);
   printf ("%i\n", val);
 }
+*/
 

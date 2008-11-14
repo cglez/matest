@@ -36,9 +36,9 @@
 /***
   Function is_empty_list:
 ***/
-int is_empty_list (varList ls)
+bool is_empty_list (VarList list)
 {
-  return (ls == NULL);
+  return (list == NULL);
 }
 
 
@@ -46,14 +46,14 @@ int is_empty_list (varList ls)
   Procedure del_list:
    Frees the memory of the whole list.
 ***/
-void del_list (varList *ls)
+void del_list (VarList *list)
 {
-  variable aux;
+  Var aux;
   
-  while (*ls)
+  while (*list)
     {
-      aux = *ls;
-      *ls = aux -> next;
+      aux = *list;
+      *list = aux -> next;
       free (aux);
     }
 }
@@ -63,77 +63,57 @@ void del_list (varList *ls)
   Function is_in_list:
    True if the variable is in the list, false otherwise.
 ***/
-bool is_in_list (varList *ls, char ch)
+bool is_in_list (char var_name, VarList *list)
 {
-  variable aux = *ls;
-  
-  /* If the list is empty obviously the variable isn't in the list */
-  /*
-  if (is_empty_list (*ls))
-    return 0;
-  */
-  
-  /* Else we cross the whole list */
-  /*
-  else
-    {
-      while (aux)
-      {
-        if (aux -> name == var)
-          return 1;
-        else
-          aux = aux -> next;
-      }
-    }
-  */
+  Var aux = *list;
   
   while (aux)
     {
-      if (aux -> name == ch)
+      if (aux -> name == var_name)
         return true;
       else
         aux = aux -> next;
     }
+  
   return false;
 }
 
 
 /***
   Procedure add_var:
-   Adds a variable, if it doesn't exist, in the variable list in alphabetical
+   Adds a variable if it doesn't exist, in the variable list in alphabetical
    order.
 ***/
-void add_var (varList *ls, char var)
+void add_var (char var_name, VarList *list)
 {
-  variable new, aux;
+  Var new, aux;
   
   /* We dischard the elements already in the list */
-  printf ("Comprobamos que no esta en la lista.\n");
-  if (!is_in_list (ls, var)) {
-    printf ("No esta.\n");
-    return;
-  }
+  if (!is_in_list (var_name, list))
+    {
+      return;
+    }
   else
     {
       /* Create a new node */
-      printf ("Ahora la añadimos.\n");
-      new = (variable) malloc (sizeof (typeVar));
-      new -> name = var;
-  
+      new = (Var) malloc (sizeof (varType));
+      new -> name = var_name;
+      new -> value = 0;
+      
       /* If the list is empty or the given character is previous than the
          first element, now this is the first */
-      if ((is_empty_list (*ls)) || (var < (*ls) -> name))
+      if ((*list == NULL) || (var_name < (*list) -> name))
         {
           /* We add the list after the new node */
-          new -> next = *ls;
+          new -> next = *list;
           /* Now, list begins at the new node */
-          *ls = new;
+          *list = new;
         }
       /* Else we search the last element or the node with a previous character */
       else
         {
-          aux = *ls;
-          while ((aux -> next) && (aux -> next -> name < var))
+          aux = *list;
+          while (aux -> next && aux -> name < var_name)
             aux = aux -> next;
           
           new -> next = aux -> next;
@@ -147,7 +127,7 @@ void add_var (varList *ls, char var)
   Procedure register_vars:
    Adds all the variables present in a formula into a variable list.
 ***/
-void register_vars (varList *list, char formula[])
+void register_vars (char formula[], VarList *list)
 {
   int i;
   
@@ -157,7 +137,7 @@ void register_vars (varList *list, char formula[])
       if (symbol_type (formula[i]) == VAR)
         {
           printf ("Añadiendo variable %c.\n", formula[i]);
-          add_var (list, formula[i]);
+          add_var (formula[i], list);
         }
       else
         printf ("%c no es una variable.\n", formula[i]);
@@ -169,12 +149,12 @@ void register_vars (varList *list, char formula[])
   Function num_elements:
    Returns the number of elements.
 ***/
-int num_elements (varList ls)
+int num_elements (VarList list)
 {
   int count = 0;
-  varList aux = ls;
+  VarList aux = list;
   
-  if (is_empty_list (ls))
+  if (is_empty_list (list))
     return count;
   else
     {
@@ -191,25 +171,23 @@ int num_elements (varList ls)
 /***
   Function var_value:
 ***/
-int var_value (char var, varList list)
+int var_value (char var_name, VarList list)
 {
-  variable aux = list;
-  
-  if (aux) {
+  Var aux = list;
   
   while (aux)
     {
-      if (aux -> name == var)
+      if (aux -> name == var_name)
         return aux -> value;
       else
         aux = aux -> next;
     }
-  }
-  else
-    return -1;
+  
+  return -1;
 }
 
 
+/*
 void del_var (varList *ls, char var)
 {
   variable aux, node;
@@ -224,63 +202,31 @@ void del_var (varList *ls, char var)
     if (!node || node -> name != var)
       return;
     else
-      { /* Borrar el node */
-        if (!aux) /* Primer elemento */
+      {
+        if (!aux)
           *ls = node -> next;
-        else  /* un elemento cualquiera */
+        else
           aux -> next = node -> next;
         free (node);
       }
 }
+*/
 
 
-void print_list (varList ls)
+void print_var_list (VarList list)
 {
-  variable aux = ls;
+  Var aux = list;
 
-  if (is_empty_list (ls))
-    printf ("List vacía.\n");
+  if (is_empty_list (list))
+    printf ("Empty list.\n");
   else
     {
       while (aux)
         {
-          printf("%c -> ", aux -> name);
+          printf("%c, ", aux -> name);
           aux = aux -> next;
         }
-      printf("||\n");
+      printf(".\n");
     }
 }
-
-/*
-int main()
-{
-   varList list = NULL;
-   char input[BUFSIZ];
-   char ch;
-   int counter;
-  
-   do
-     {
-       printf ("Dame variables, hasta darme un 0: ");
-       fgets (input, BUFSIZ, stdin);
-       sscanf (input, "%c", &ch);
-       add_var (&list, ch);
-     }
-   while (ch != '0');
-   
-   print_list (list);
-   
-   counter = num_elements (list);
-   printf ("There is %i elements in the list.\n", counter);
-   
-   if (is_in_list (&list, 'p'))
-     printf ("p is in list.\n");
-   else
-     printf ("p isn't in the list!\n");
-   
-   del_list (&list);
-
-   return 0;
-}
-*/
 
