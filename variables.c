@@ -25,8 +25,8 @@
 
 /*                               variables.c
 *
-*    This file contains the code of functions that deals with the lists of
-*    variables and its elements.
+*    This file contains the code of functions that deals with lists of
+*    variables and variables itself.
 */
 
 
@@ -89,7 +89,7 @@ void add_var (char var_name, VarList *list)
   Var new, aux;
   
   /* We dischard the elements already in the list */
-  if (!is_in_list (var_name, list))
+  if (is_in_list (var_name, list))
     {
       return;
     }
@@ -127,20 +127,14 @@ void add_var (char var_name, VarList *list)
   Procedure register_vars:
    Adds all the variables present in a formula into a variable list.
 ***/
-void register_vars (char formula[], VarList *list)
+void register_vars (Logic logic)
 {
   int i;
   
-  for (i = 0; i < strlen (formula); i++)
+  for (i = 0; i < strlen (logic -> formula); i++)
     {
-      printf ("Vamos a comprobar el símbolo %c.\n", formula[i]);
-      if (symbol_type (formula[i]) == VAR)
-        {
-          printf ("Añadiendo variable %c.\n", formula[i]);
-          add_var (formula[i], list);
-        }
-      else
-        printf ("%c no es una variable.\n", formula[i]);
+      if (symbol_type (logic -> formula[i], logic) == VAR)
+        add_var (logic -> formula[i], &logic -> Vars);
     }
 }
 
@@ -169,9 +163,33 @@ int num_elements (VarList list)
 
 
 /***
-  Function var_value:
+  Procedure set_var_value:
+   Sets a value for a variable in the given list of variables.
 ***/
-int var_value (char var_name, VarList list)
+void set_var_value (char var_name, int n, VarList list)
+{
+  Var aux = list;
+  
+  while (aux)
+    {
+      if (aux -> name == var_name)
+        {
+          aux -> value = n;
+          return;
+        }
+      else
+        aux = aux -> next;
+    }
+  
+  printf ("Variable %c is not in the list.\n", var_name);
+}
+
+
+/***
+  Function get_var_value:
+   Returns the value of a variable in the given list of variables.
+***/
+int get_var_value (char var_name, VarList list)
 {
   Var aux = list;
   
@@ -223,7 +241,7 @@ void print_var_list (VarList list)
     {
       while (aux)
         {
-          printf("%c, ", aux -> name);
+          printf(", %c", aux -> name);
           aux = aux -> next;
         }
       printf(".\n");

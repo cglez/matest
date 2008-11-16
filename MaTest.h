@@ -82,6 +82,7 @@ typedef struct
   LIFO;
 */
 
+
 /* Variable node */
 typedef struct _node_var
   {
@@ -126,7 +127,7 @@ typedef struct _logic
   {
     int dimmension, mdv;
     char formula[MAX_FORMULA_LENGHT];
-    VarList vars;
+    VarList Vars;
     unyConList unyConns;
     binConList binConns;
   }
