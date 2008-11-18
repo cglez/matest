@@ -31,8 +31,8 @@
 */
 
 
-#ifndef MATEST_H
-  #define MATEST_H
+#ifndef _MATEST_H_
+#define _MATEST_H_
 
 
 /*
@@ -149,8 +149,8 @@ void set_default_uny_conns (Logic logic);
 void set_default_bin_conns (Logic logic);
 void print_uny_matrix (unyCon connective, int dimmension, int mdv);
 void print_bin_matrix (binCon connective, int dimmension, int mdv);
-int write_uny_matrix (unyCon connective, char filename[], int dimmension);
-int write_bin_matrix (binCon connective, char filename[], int dimmension);
+int write_uny_matrix (unyCon connective, FILE *file, int dimmension);
+int write_bin_matrix (binCon connective, FILE *file, int dimmension);
 
 
 /* Variable related functions prototypes */

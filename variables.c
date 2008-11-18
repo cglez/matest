@@ -53,7 +53,7 @@ void del_list (VarList *list)
   while (*list)
     {
       aux = *list;
-      *list = aux -> next;
+      *list = aux->next;
       free (aux);
     }
 }
@@ -69,10 +69,10 @@ bool is_in_list (char var_name, VarList *list)
   
   while (aux)
     {
-      if (aux -> name == var_name)
+      if (aux->name == var_name)
         return true;
       else
-        aux = aux -> next;
+        aux = aux->next;
     }
   
   return false;
@@ -90,22 +90,20 @@ void add_var (char var_name, VarList *list)
   
   /* We dischard the elements already in the list */
   if (is_in_list (var_name, list))
-    {
-      return;
-    }
+    return;
   else
     {
       /* Create a new node */
       new = (Var) malloc (sizeof (varType));
-      new -> name = var_name;
-      new -> value = 0;
+      new->name = var_name;
+      new->value = 0;
       
       /* If the list is empty or the given character is previous than the
-         first element, now this is the first */
-      if ((*list == NULL) || (var_name < (*list) -> name))
+         first element, now it is the first */
+      if ((*list == NULL) || (var_name < (*list)->name))
         {
           /* We add the list after the new node */
-          new -> next = *list;
+          new->next = *list;
           /* Now, list begins at the new node */
           *list = new;
         }
@@ -113,11 +111,11 @@ void add_var (char var_name, VarList *list)
       else
         {
           aux = *list;
-          while (aux -> next && aux -> name < var_name)
-            aux = aux -> next;
+          while (aux->next && aux->name < var_name)
+            aux = aux->next;
           
-          new -> next = aux -> next;
-          aux -> next = new;
+          new->next = aux->next;
+          aux->next = new;
         }
     }
 }
@@ -131,10 +129,10 @@ void register_vars (Logic logic)
 {
   int i;
   
-  for (i = 0; i < strlen (logic -> formula); i++)
+  for (i = 0; i < strlen (logic->formula); i++)
     {
-      if (symbol_type (logic -> formula[i], logic) == VAR)
-        add_var (logic -> formula[i], &logic -> Vars);
+      if (symbol_type (logic->formula[i], logic) == VAR)
+        add_var (logic->formula[i], &logic->Vars);
     }
 }
 
@@ -155,7 +153,7 @@ int num_elements (VarList list)
       while (aux)
         {
           count++;
-          aux = aux -> next;
+          aux = aux->next;
         }
     }
   return count;
@@ -172,13 +170,13 @@ void set_var_value (char var_name, int n, VarList list)
   
   while (aux)
     {
-      if (aux -> name == var_name)
+      if (aux->name == var_name)
         {
-          aux -> value = n;
+          aux->value = n;
           return;
         }
       else
-        aux = aux -> next;
+        aux = aux->next;
     }
   
   printf ("Variable %c is not in the list.\n", var_name);
@@ -195,10 +193,10 @@ int get_var_value (char var_name, VarList list)
   
   while (aux)
     {
-      if (aux -> name == var_name)
-        return aux -> value;
+      if (aux->name == var_name)
+        return aux->value;
       else
-        aux = aux -> next;
+        aux = aux->next;
     }
   
   return -1;
@@ -212,19 +210,19 @@ void del_var (varList *ls, char var)
   
   node = *ls;
   aux = NULL;
-  while (node && node -> name < var)
+  while (node && node->name < var)
     {
       aux = node; 
-      node = node -> next;
+      node = node->next;
     }
-    if (!node || node -> name != var)
+    if (!node || node->name != var)
       return;
     else
       {
         if (!aux)
-          *ls = node -> next;
+          *ls = node->next;
         else
-          aux -> next = node -> next;
+          aux->next = node->next;
         free (node);
       }
 }
@@ -241,8 +239,8 @@ void print_var_list (VarList list)
     {
       while (aux)
         {
-          printf(", %c", aux -> name);
-          aux = aux -> next;
+          printf(", %c", aux->name);
+          aux = aux->next;
         }
       printf(".\n");
     }

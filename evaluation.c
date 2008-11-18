@@ -47,13 +47,13 @@ int polk_eval (char formula[], Logic logic)
             break;
           case UCON:
             val1 = lifo[--pos];
-            ucon = (unyCon) search_unycon (logic -> unyConns, formula[i]);
-            lifo[pos++] = ucon -> matrix [val1];
+            ucon = (unyCon) search_unycon (logic->unyConns, formula[i]);
+            lifo[pos++] = ucon->matrix [val1];
           case BCON:
             val1 = lifo[--pos];
             val2 = lifo[--pos];
-            bcon = (binCon) search_dyacon (logic -> binConns, formula[i]);
-            lifo[pos++] = bcon -> matrix [val1][val2];
+            bcon = (binCon) search_dyacon (logic->binConns, formula[i]);
+            lifo[pos++] = bcon->matrix [val1][val2];
         }
     }
   
@@ -65,8 +65,8 @@ FIFO create_fifo (int size)
 {
   FIFO *fifo;
   fifo = (FIFO) malloc (sizeof (FIFO);
-  fifo -> position = -1;
-  fifo -> vector = calloc (size, sizeof (int));
+  fifo->position = -1;
+  fifo->vector = calloc (size, sizeof (int));
   return fifo;
 }
 */
@@ -74,7 +74,7 @@ FIFO create_fifo (int size)
 /*
 void del_fifo (FIFO fifo)
 {
-  free (fifo -> vector);
+  free (fifo->vector);
   free (fifo);
   return;
 }
@@ -103,11 +103,11 @@ void evaluate (int base, int orden, char formula[])
   for (i = 0; i <= orden; i++)
     auxvec[i] = 0;
   
-  while (varnode -> next != NULL && node -> value <= base)
+  while (varnode->next != NULL && node->value <= base)
     {
       for (i = 0; i < base; i++)
         {
-          varnode -> value = i;
+          varnode->value = i;
           
           for (j = orden - 1; j >= 0; j--)
             printf ("%i", auxvec[j]);
@@ -137,10 +137,10 @@ int main (void)
   
   the_logic = (Logic) malloc (sizeof (logicType));
   
-  the_logic -> dimmension = 5;
-  the_logic -> mdv = the_logic -> dimmension - 1;
-  the_logic -> vars = (VarList) malloc (sizeof (varType));
-  // the_logic -> vars = NULL;
+  the_logic->dimmension = 5;
+  the_logic->mdv = the_logic->dimmension - 1;
+  the_logic->vars = (VarList) malloc (sizeof (varType));
+  // the_logic->vars = NULL;
   
   set_default_unycons (the_logic);
   set_default_dyacons (the_logic);
@@ -153,8 +153,8 @@ int main (void)
   while (!is_wff_pk (the_formula));
   printf ("OK. %i elements.\n", strlen (the_formula));
   
-  register_vars (the_logic -> vars, the_formula);
-  print_var_list (the_logic -> vars);
+  register_vars (the_logic->vars, the_formula);
+  print_var_list (the_logic->vars);
   
   val = polk_eval (the_formula);
   printf ("%i\n", val);

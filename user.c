@@ -61,21 +61,32 @@ char readin (char *str, char *pattern)
 
 /***
   Procedure clear_scr():
-   Cleans the screan, pretends to be multisystem compatible.
+   Cleans the screen depending on the system defined by the preprocessor.
 ***/
 void clear_scr (void)
 {
   int i;
   
-  if (system ("clear"))
+  #ifdef UNIX
     system ("clear");
-  else if (system ("cls"))
+  #elif WIN
     system ("cls");
-  else
-    {
-      for (i = 0; i < 24; i++)
-        printf ("\n");
-    }
+  #else
+    for (i = 0; i < 24; i++)
+      printf ("\n");
+  #endif
+}
+
+
+/***
+  Procedure make_pause:
+   Prints a message and waits until user press enter.
+***/
+void make_pause (void)
+{
+  printf ("\nPress Enter to continue... ");
+  fflush (stdout);
+  while (getchar () != '\n');
 }
 
 
@@ -103,35 +114,35 @@ void menu_info (Logic logic)
   unyCon unyaux;
   binCon binaux;
   
-  printf ("\n   Matrices dimmension:      ");
-  if (logic -> dimmension)
-    printf ("%ix%i", logic -> dimmension, logic -> dimmension);
+  printf ("   Matrices dimmension:    ");
+  if (logic->dimmension)
+    printf ("%ix%i", logic->dimmension, logic->dimmension);
   else
     printf ("Not defined!");
-  printf ("\n   Minimun Designated Value: ");
-  if (logic -> mdv)
-    printf ("%i", logic -> mdv);
+  printf ("\n   Min. Designated Value:  ");
+  if (logic->mdv)
+    printf ("%i", logic->mdv);
   else
     printf ("Not defined!");
   
-  printf ("\n   Unary  connectives:       ");
-  unyaux = logic -> unyConns;
+  printf ("\n   Unary  connectives:     ");
+  unyaux = logic->unyConns;
   while (unyaux)
     {
-      printf ("%c ", unyaux -> name);
-      unyaux = unyaux -> next;
+      printf ("%c ", unyaux->name);
+      unyaux = unyaux->next;
     }
-  printf ("\n   Binary connectives:       ");
-  binaux = logic -> binConns;
+  printf ("\n   Binary connectives:     ");
+  binaux = logic->binConns;
   while (binaux)
     {
-      printf ("%c ", binaux -> name);
-      binaux = binaux -> next;
+      printf ("%c ", binaux->name);
+      binaux = binaux->next;
     }
-  if (logic -> formula[0])
-    printf ("\n   Formula:                  %s", logic -> formula);
+  if (logic->formula[0])
+    printf ("\n   Formula:                %s", logic->formula);
   else
-    printf ("\n   Formula:                  Not defined!", logic -> formula);
+    printf ("\n   Formula:                Not defined!");
   printf ("\n\n\n");
 }
 
@@ -142,17 +153,17 @@ void menu_info (Logic logic)
 ***/
 void menu_options (void)
 {  
-  printf ("Options:\n"
+  printf (" Options:\n"
           "   V: Redefine the Minimun Designated Value.\n"
           "\n"
-          "   R: Read matrices from external file.       A: Add a new connective.\n"
+          "   P: Print matrices into the screen.         N: Add a new connective.\n"
           "   W: Write matrices to external file.        D: Delete a connective.\n"
           "\n"
           "   F: Introduce a new formula.\n"
           "   E: Evaluate formula.\n"
-          "                                                       H: Help    Q: Quit\n"
+          "                                           A: About    H: Help    Q: Quit\n"
           "\n"
-          "Select your option: ");
+          " Select your option: ");
 }
 
 
@@ -186,66 +197,4 @@ void menu_index (Logic logic)
   menu_info (logic);
   menu_options();
 }
-
-
-/*
-void menu (void)
-{
-  clear_scr();
-  printf ("\n"
-          "                             --- MaTest ---\n"
-          "                     Matrix Tester for logical matrices\n"
-          "\n"
-          "\n"
-          "  V: Redefine the Minimun Designated Value.\n"
-          "\n"
-          "  R: Read matrices from external file.\n"
-          "  W: Write matrices in to external file.\n"
-          "\n"
-          "\n"
-          "  Redefine matrices manually:\n"
-          "\n"
-          "       I: Implication        C: Conjunction           D: Disjunction\n"
-          "       N: Negation           L: Necessity             M: Possibility\n"
-          "\n"
-          "\n"
-          "  F: Introduce new formula.\n" 
-          "  E: Evaluate formula.\n"
-          "                                                                  Q: Quit\n"
-          "\n"
-          " Select your option: ");
-}
-*/
-
-/*
-{
-  printf ("\n\n");
-  printf ("V: Redefinir minimo valor designado\n\n");
-  printf ("R: Leer matrices desde archivo\n");
-  printf ("W: Guardar las matrices a un archivo\n");
-  printf ("P: Ver matrices\n");
-  printf ("Redefinir matrices:\n");
-  printf ("  I)mplicacion  C)onjuncion  D)isyuncion\n");
-  printf ("  N)egacion     (L) Necesidad   (M) Posibilidad\n\n");
-  printf ("F: Introducir formula\n");
-  printf ("E: Evaluar formula\n\n");
-  printf ("Q: Salir\n\n");
-  printf ("Elija su opcion: ");
-}
-*/
-
-/*
-int main (void)
-{
-  the_logic = (Logic) malloc (sizeof (logicType));
-  the_logic -> dimmension = 10;
-  the_logic -> mdv = 7;
-  formula[0] = 0;
-  set_default_unycons (the_logic);
-  set_default_diacons (the_logic);
-  
-  menu_index();
-  printf ("\n");
-}
-*/
 

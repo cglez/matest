@@ -41,9 +41,9 @@ SymbolType symbol_type (char symbol, Logic logic)
 {
   if (islower (symbol))
     return VAR;
-  else if (is_unary_connective (symbol, &logic -> unyConns))
+  else if (is_unary_connective (symbol, &logic->unyConns))
     return UCON;
-  else if (is_binary_connective (symbol, &logic -> binConns))
+  else if (is_binary_connective (symbol, &logic->binConns))
     return BCON;
   else
     return NONE;
@@ -89,9 +89,9 @@ bool is_wff_pk (char formula[], Logic logic)
           
           else if (isupper (formula[i]))
             {
-              if (is_unary_connective (formula[i], &logic -> unyConns))
+              if (is_unary_connective (formula[i], &logic->unyConns))
                 crtl = crtl;
-              else if (is_binary_connective (formula[i], &logic -> binConns))
+              else if (is_binary_connective (formula[i], &logic->binConns))
                 crtl++;
               else
                 {
