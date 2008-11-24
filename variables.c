@@ -43,10 +43,10 @@ bool is_empty_list (VarList list)
 
 
 /***
-  Procedure del_list:
-   Frees the memory of the whole list.
+  Procedure del_var_list:
+   Deletes the variable list and frees the memory.
 ***/
-void del_list (VarList *list)
+void del_var_list (VarList *list)
 {
   Var aux;
   
@@ -80,8 +80,44 @@ bool is_in_list (char var_name, VarList *list)
 
 
 /***
+***/
+Var search_var (char var_name, VarList list)
+{
+  Var aux = list;
+  
+  while (aux)
+    {
+      if (aux->name == var_name)
+        return aux;
+      else
+        aux = aux->next;
+    }
+  
+  return NULL;
+}
+
+
+/***
+***/
+Var last_var (VarList list)
+{
+  Var aux = list;
+  
+  while (aux)
+    {
+      if (aux->next == NULL)
+        return aux;
+      else
+        aux = aux->next;
+    }
+  
+  return NULL;
+}
+
+
+/***
   Procedure add_var:
-   Adds a variable if it doesn't exist, in the variable list in alphabetical
+   Adds a variable, if it doesn't exist, in the variable list in alphabetical
    order.
 ***/
 void add_var (char var_name, VarList *list)
@@ -125,14 +161,14 @@ void add_var (char var_name, VarList *list)
   Procedure register_vars:
    Adds all the variables present in a formula into a variable list.
 ***/
-void register_vars (Logic logic)
+void register_vars (Work work)
 {
   int i;
   
-  for (i = 0; i < strlen (logic->formula); i++)
+  for (i = 0; i < strlen (work->pol_formula); i++)
     {
-      if (symbol_type (logic->formula[i], logic) == VAR)
-        add_var (logic->formula[i], &logic->Vars);
+      if (symbol_type (work->pol_formula[i], work->logic) == VAR)
+        add_var (work->pol_formula[i], &work->logic->Vars);
     }
 }
 

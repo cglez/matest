@@ -37,55 +37,83 @@ int main (void)
 {
   char opt, answer[BUFSIZ], namefile[BUFSIZ];
   FILE *outfile;
-  Logic the_logic;
+  Work the_work;
   
-  the_logic = (Logic) malloc (sizeof (logicType));
+  the_work = (Work) malloc (sizeof (workType));
+  the_work->logic = (Logic) malloc (sizeof (logicType));
   
   menu_init();
   
   do
     {
-      printf ("Matrices dimmension (<1): ");
+      printf (" Matrices dimmension (<1): ");
       fgets (answer, BUFSIZ, stdin);
-      sscanf (answer, "%i", &the_logic->dimmension);
+      sscanf (answer, "%i", &the_work->logic->dimmension);
     }
-  while (the_logic->dimmension < 2);
+  while (the_work->logic->dimmension < 2);
   
-  the_logic->mdv = the_logic->dimmension - 1;
+  the_work->logic->mdv = the_work->logic->dimmension - 1;
   
-  set_default_uny_conns (the_logic);
-  set_default_bin_conns (the_logic);
+  set_default_uny_conns (the_work->logic);
+  set_default_bin_conns (the_work->logic);
+  
+  the_work->eval_values = ALL;
   
   /* Manage options */
   for (;;)
     {
-      menu_index (the_logic);
-      opt = readin (answer, "vpwndfeahq");
+      menu_index (the_work);
+      opt = readin (answer, "vmpwndfeahq");
       
       switch (opt)
         {
           case 'v':
             clear_scr ();
             menu_header ();
-            menu_info (the_logic);
+            menu_info (the_work);
+            printf (" What values do you want to be evaluated?\n"
+                    " All, Designated, Not designated. (a/d/n): ");
+            opt = readin (answer, "adn\n");
+            switch (opt)
+              {
+                case 'a':
+                  the_work->eval_values = ALL;
+                  break;
+                case 'd':
+                  the_work->eval_values = DESIGNATED;
+                  break;
+                case 'n':
+                  the_work->eval_values = NOTDESIGNATED;
+                  break;
+              }
+            break;
+          
+          
+          case 'm':
+            clear_scr ();
+            menu_header ();
+            menu_info (the_work);
             do
               {
-                printf ("New Minimun Designated Value [0 - %i]: ", the_logic->dimmension - 1);
+                printf ("New Minimun Designated Value [1 - %i]: ", the_work->logic->dimmension - 1);
                 fgets (answer, BUFSIZ, stdin);
-                sscanf (answer, "%i", &the_logic->mdv);
+                sscanf (answer, "%i", &the_work->logic->mdv);
               }
-            while ((the_logic->mdv < 0) || ((the_logic->mdv) > (the_logic->dimmension - 1)));
+            while ((the_work->logic->mdv < 1) || ((the_work->logic->mdv) > (the_work->logic->dimmension - 1)));
             break;
           
           
           case 'p':
             clear_scr ();
-            show_matrices (the_logic);
+            show_matrices (the_work->logic);
             make_pause ();
             break;
           
           
           case 'w':
+            clear_scr ();
+            menu_header ();
+            menu_info (the_work);
             printf ("Type the name of the file to write to: ");
             fgets (answer, BUFSIZ, stdin);
             sscanf (answer, "%s", namefile);
@@ -93,19 +121,19 @@ int main (void)
             
             if (outfile)
               {
-                printf ("File exists, do you want to replace it? (y/[n]): ");
+                printf ("File \'%s\' exists, do you want to replace it? (y/N): ", namefile);
                 opt = readin (answer, "y\n");
                 if (opt == 'y')
                   {
                     outfile = freopen (namefile, "w", outfile);
                     if (outfile)
                       {
-                        write_matrices (the_logic, outfile);
+                        write_matrices (the_work->logic, outfile);
                         fclose (outfile);
                       }
                     else
                       {
-                        printf ("\nYou haven't got write permissions for this file!\n");
+                        printf ("\nYou haven't got write permissions!\n");
                         make_pause ();
                       }
                   }
@@ -117,7 +145,7 @@ int main (void)
                 outfile = fopen (namefile, "w");
                 if (outfile)
                   {
-                    write_matrices (the_logic, outfile);
+                    write_matrices (the_work->logic, outfile);
                     fclose (outfile);
                   }
                 else
@@ -132,36 +160,36 @@ int main (void)
           case 'n':
             clear_scr ();
             menu_header ();
-            menu_info (the_logic);
+            menu_info (the_work);
             printf ("Unary or Binary connective? (u/b): ");
             
-            opt = readin (answer, "bu");
+            opt = readin (answer, "ub");
             switch (opt)
               {
                 case 'u':
                   printf ("Unary connective name: ");
                   opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-                  if (is_unary_connective (opt, &the_logic->unyConns) ||
-                      is_binary_connective (opt, &the_logic->binConns) )
+                  if (is_unary_connective (opt, &the_work->logic->unyConns) ||
+                      is_binary_connective (opt, &the_work->logic->binConns) )
                     {
                       printf ("Connective is already defined.\n");
                       break;
                     }
                   else
-                    add_custom_uny_conn (opt, &the_logic->unyConns, the_logic->dimmension);
+                    add_custom_uny_conn (opt, &the_work->logic->unyConns, the_work->logic->dimmension);
                   break;
                 
                 case 'b':
                   printf ("Binary connective name: ");
                   opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-                  if (is_unary_connective (opt, &the_logic->unyConns) ||
-                      is_binary_connective (opt, &the_logic->binConns) )
+                  if (is_unary_connective (opt, &the_work->logic->unyConns) ||
+                      is_binary_connective (opt, &the_work->logic->binConns) )
                     {
                       printf ("Connective is already defined.\n");
                       break;
                     }
                   else
-                    add_custom_bin_conn (opt, &the_logic->binConns, the_logic->dimmension);
+                    add_custom_bin_conn (opt, &the_work->logic->binConns, the_work->logic->dimmension);
                   break;
               }
             break;
@@ -170,47 +198,68 @@ int main (void)
           case 'd':
             clear_scr ();
             menu_header ();
-            menu_info (the_logic);
+            menu_info (the_work);
             
             printf ("Delete connective: ");
             opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-            del_connective (opt, the_logic);
+            del_connective (opt, the_work->logic);
             break;
           
+          
           case 'f':
+            clear_scr ();
+            menu_header ();
+            menu_info (the_work);
             do
               {
-                printf ("Write a formula in polk notation: ");
+                printf ("Write a formula in polish notation: ");
                 fgets (answer, BUFSIZ, stdin);
-                sscanf (answer, "%s", the_logic->formula);
+                sscanf (answer, "%s", the_work->pol_formula);
               }
-            while (!is_wff_pk (the_logic->formula, the_logic));
+            while (!is_wff_pk (the_work->pol_formula, the_work->logic));
+            
+            if (the_work->logic->Vars)
+              del_var_list (&the_work->logic->Vars);
+            register_vars (the_work);
+            
+            if (the_work->wff)
+              del_wff (the_work->wff);
+            parse_polish (the_work->pol_formula, &the_work->wff, the_work->logic);
+            
             break;
           
           
           case 'e':
-            if (the_logic->formula[0] == 0)
-              printf ("\nPrimero debe introducir una formula!\n");
-            /*
+            if (the_work->pol_formula[0] == 0)
+              printf ("\nFirst type a Well Formed Formula.\n");
             else
               {
-                evaluate (formula);
-                make_pause ();
+                clear_scr ();
+                evaluate (the_work);
               }
-            */
+            make_pause ();
             break;
           
           
           case 'a':
+            menu_about ();
+            make_pause ();
             break;
           
           
           case 'h':
+            menu_help ();
+            make_pause ();
             break;
           
           
           case 'q':
-            return 0;
+            printf ("Are you sure? (y/N): ");
+            opt = readin (answer, "y\n");
+            if (opt == 'y')
+              return 0;
+            else
+              break;
         }
     }
 }

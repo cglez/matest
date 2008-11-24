@@ -30,7 +30,7 @@
 *    The most functions in this file comes in pairs, ones for the unary
 *    connectives, others for the binary connectives (ones for vectors, other
 *    for marices).
-*/    
+*/
 
 
 #include "MaTest.h"
@@ -414,23 +414,27 @@ void del_connective (char con_name, Logic logic)
   
   if (is_unary_connective (con_name, &logic->unyConns))
     {
-      if (logic->unyConns->name == con_name)
+      unyprev = NULL;
+      unyaux = logic->unyConns;
+      
+      while (unyaux && unyaux->name != con_name)
         {
-          unyprev = logic->unyConns;
-          unyaux = logic->unyConns->next;
-          free (unyprev->matrix);
-          free (unyprev);
-          logic->unyConns = unyaux;
+          unyprev = unyaux;
+          unyaux = unyaux->next;
+        }
+      if (!unyaux || unyaux->name != con_name)
+        {
+          printf ("Unexpected error!\n");
+          make_pause ();
+          return;
         }
       else
         {
-          unyaux = logic->unyConns;
-          while (unyaux->name != con_name)
-            {
-              unyprev = unyaux;
-              unyaux = unyaux->next;
-            }
-          unyprev->next = unyaux->next;
+          if (!unyprev)
+            logic->unyConns = unyaux->next;
+          else
+            unyprev->next = unyaux->next;
+          
           free (unyaux->matrix);
           free (unyaux);
         }
@@ -438,25 +442,27 @@ void del_connective (char con_name, Logic logic)
   
   else if (is_binary_connective (con_name, &logic->binConns))
     {
-      if (logic->binConns->name == con_name)
+      binprev = NULL;
+      binaux = logic->binConns;
+      
+      while (binaux && binaux->name != con_name)
         {
-          binprev = logic->binConns;
-          binaux = logic->binConns->next;
-          for (i = 0; i < logic->dimmension; i++)
-            free (binprev->matrix[i]);
-          free (binprev->matrix);
-          free (binprev);
-          logic->binConns = binaux;
+          binprev = binaux;
+          binaux = binaux->next;
+        }
+      if (!binaux || binaux->name != con_name)
+        {
+          printf ("Unexpected error!\n");
+          make_pause ();
+          return;
         }
       else
         {
-          binaux = logic->binConns;
-          while (binaux->name != con_name)
-            {
-              binprev = binaux;
-              binaux = binaux->next;
-            }
-          binprev->next = binaux->next;
+          if (!binprev)
+            logic->binConns = binaux->next;
+          else
+            binprev->next = binaux->next;
+          
           for (i = 0; i < logic->dimmension; i++)
             free (binaux->matrix[i]);
           free (binaux->matrix);

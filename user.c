@@ -38,7 +38,7 @@
   Function readin:
    Returns the first character from a given string that is in the given pattern.
 ***/
-char readin (char *str, char *pattern)
+char readin (char str[], char pattern[])
 {
   char ch;
   int i;
@@ -109,41 +109,52 @@ void menu_header (void)
   Procedure menu_info:
    Prints information about the state of the configurable elements.
 ***/
-void menu_info (Logic logic)
+void menu_info (Work work)
 {
   unyCon unyaux;
   binCon binaux;
   
-  printf ("   Matrices dimmension:    ");
-  if (logic->dimmension)
-    printf ("%ix%i", logic->dimmension, logic->dimmension);
-  else
-    printf ("Not defined!");
-  printf ("\n   Min. Designated Value:  ");
-  if (logic->mdv)
-    printf ("%i", logic->mdv);
+  printf ("   Matrices dimmension:   ");
+  if (work->logic->dimmension)
+    printf ("%ix%i", work->logic->dimmension, work->logic->dimmension);
   else
     printf ("Not defined!");
   
-  printf ("\n   Unary  connectives:     ");
-  unyaux = logic->unyConns;
+  printf ("\n   Min. Desig. Value:     ");
+  if (work->logic->mdv)
+    printf ("%i", work->logic->mdv);
+  else
+    printf ("Not defined!");
+  
+  printf ("\n   Unary  connectives:    ");
+  unyaux = work->logic->unyConns;
   while (unyaux)
     {
       printf ("%c ", unyaux->name);
       unyaux = unyaux->next;
     }
-  printf ("\n   Binary connectives:     ");
-  binaux = logic->binConns;
+  
+  printf ("\n   Binary connectives:    ");
+  binaux = work->logic->binConns;
   while (binaux)
     {
       printf ("%c ", binaux->name);
       binaux = binaux->next;
     }
-  if (logic->formula[0])
-    printf ("\n   Formula:                %s", logic->formula);
+  
+  if (work->pol_formula[0])
+    printf ("\n   Formula:               %s", work->pol_formula);
   else
-    printf ("\n   Formula:                Not defined!");
-  printf ("\n\n\n");
+    printf ("\n   Formula:               Not defined");
+  
+  if (work->eval_values == ALL)
+    printf ("\n   Evaluate values:       [All]   Designated   Not designated");
+  if (work->eval_values == DESIGNATED)
+    printf ("\n   Evaluate values:       All   [Designated]   Not designated");
+  if (work->eval_values == NOTDESIGNATED)
+    printf ("\n   Evaluate values:       All   Designated   [Not designated]");
+  
+  printf ("\n\n");
 }
 
 
@@ -154,12 +165,13 @@ void menu_info (Logic logic)
 void menu_options (void)
 {  
   printf (" Options:\n"
-          "   V: Redefine the Minimun Designated Value.\n"
+          "   V: Values evaluated.\n"
+          "   M: Redefine the Minimun Designated Value.\n"
           "\n"
-          "   P: Print matrices into the screen.         N: Add a new connective.\n"
-          "   W: Write matrices to external file.        D: Delete a connective.\n"
+          "   N: New connective.           P: Print matrices into the screen.\n"
+          "   D: Delete a connective.      W: Write matrices to external file.\n"
           "\n"
-          "   F: Introduce a new formula.\n"
+          "   F: Introduce a new Formula.\n"
           "   E: Evaluate formula.\n"
           "                                           A: About    H: Help    Q: Quit\n"
           "\n"
@@ -170,20 +182,58 @@ void menu_options (void)
 /***
   Procedure menu_init:
    Prints a simple message asking for a dimmension of the matrices.
-   It's designed to appears at the beginning.
+   It's designed to appear at the beginning.
 ***/
 void menu_init (void)
 {
   menu_header();
-  printf ("  Copyright (C) 2008  César González Gutiérrez.\n"
-          "  License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
-          "  This is free software: you are free to change and redistribute it.\n"
-          "  There is NO WARRANTY, to the extent permitted by law.\n"
-          "  For more details type 'a' in the main menu.\n\n\n"
-          "To start working you need to define the matrices dimmension and then the\n"
-          "program will define the most common connectives like in Łuckassiewicz\n"
-          "multivaluate logics.\n\n"
-          "Matrix dimmension: ");
+  printf ("\n"
+          "   Copyright (C) 2008  César González Gutiérrez.\n"
+          "   License GPLv3+: GNU GPL version 3 or later\n"
+          "   <http://gnu.org/licenses/gpl.html>\n"
+          "   This is free software: you are free to change and redistribute it.\n"
+          "   There is NO WARRANTY, to the extent permitted by law.\n"
+          "   For more details type 'a' in the main menu.\n\n\n"
+          " To start working you have to define the matrices dimmension.\n"
+          " Then, the program will define the most common connectives like in\n"
+          " Łuckassiewicz multivaluate logics model.\n\n");
+}
+
+
+/***
+***/
+void menu_about (void)
+{
+  menu_header();
+  printf ("\n"
+          " Name:    MaTest (Matrix Tester for logical matrices)\n"
+          " Version: %s\n"
+          " Author:  César González Gutiérrez <ceguel@gmail.com>\n"
+          "\n"
+          "\n"
+          " Copyright (C) 2008, César González.\n"
+          " MaTest is free software: you can redistribute it and/or modify\n"
+          " it under the terms of the GNU General Public License as published by\n"
+          " the Free Software Foundation, either version 3 of the License, or\n"
+          " (at your option) any later version.\n"
+          "\n"
+          " MaTest is distributed in the hope that it will be useful, but\n"
+          " WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+          " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+          " See the GNU General Public License for more details:\n"
+          " <http://gnu.org/licenses/gpl.html>.\n"
+          "\n", VERSION);
+}
+
+
+/***
+***/
+void menu_help (void)
+{
+  menu_header();
+  printf ("\n"
+          "There isn't inline help available by now.\n"
+          "See the Readme.txt file that come with this program.\n");
 }
 
 
@@ -191,10 +241,10 @@ void menu_init (void)
   Procedure menu_index:
    Prints the global menu.
 ***/
-void menu_index (Logic logic)
+void menu_index (Work work)
 {
   menu_header();
-  menu_info (logic);
+  menu_info (work);
   menu_options();
 }
 
