@@ -23,11 +23,11 @@
 \*****************************************************************************/
 
 
-/*                               wffs_polk.c
+/*                               wffs_pn.c
 *
-*    This file contains the functions that evalues if given formula is a well
-*    formed formula in polk notation. For more information about polk notation
-*    see the readme file.
+*    This file contains the functions that evaluates if given formula is a well
+*    formed formula in polish notation. For more information about polish
+*    notation see the Readme file.
 */
 
 
