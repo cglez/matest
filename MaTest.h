@@ -44,7 +44,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define VERSION "1.0 beta"
+#define VERSION "1.0"
 #define MAX_FORMULA_LENGHT BUFSIZ
 
 
@@ -52,7 +52,7 @@
 ***  Data definition
 */
 
-/* Symbol types enumeration */
+/* Symbol types and Atom types for well formed formulas */
 typedef enum
   {
     VAR,
@@ -60,7 +60,8 @@ typedef enum
     BCON,
     NONE
   }
-  SymbolType;
+  SymbolType,
+  AtomType;
 
 
 /* Evaluation show types enumeration */
@@ -109,7 +110,7 @@ typedef unyConType *unyCon;
 typedef unyConType *unyConList;
 
 
-/* Dyadic connective node */
+/* Binary connective node */
 typedef struct _node_bin_con
   {
     char name;
@@ -122,11 +123,25 @@ typedef binConType *binCon;
 typedef binConType *binConList;
 
 
-/* Global struct */
+/* Well Formed Formula nodes */
+typedef struct _node_atom
+  {
+    AtomType type;
+    char name;
+    int *value;
+    struct _node_atom *arg1;
+    struct _node_atom *arg2;
+  }
+  typeAtom;
+
+typedef typeAtom *atom;
+typedef typeAtom *WFF;
+
+
+/* Struct with all data that defines one logic */
 typedef struct _logic
   {
     int dimmension, mdv;
-    char formula[MAX_FORMULA_LENGHT];
     VarList Vars;
     unyConList unyConns;
     binConList binConns;
@@ -134,6 +149,18 @@ typedef struct _logic
   logicType;
   
 typedef logicType *Logic;
+
+
+typedef struct _work
+  {
+    EvalType eval_values;
+    char pol_formula[MAX_FORMULA_LENGHT];
+    WFF wff;
+    Logic logic;
+  }
+  workType;
+
+typedef workType *Work;
 
 
 /*
@@ -167,14 +194,19 @@ bool is_wff_pk (char formula[], Logic logic);
 
 
 /* User related functions prototypes */
-char readin (char *str, char *pattern);
+char readin (char str[], char pattern[]);
 void clear_scr (void);
 void menu_header (void);
-void menu_info (Logic logic);
+void menu_info (Work work);
 void menu_options (void);
 void menu_dimmension (void);
-void menu_index (Logic logic);
+void menu_index (Work work);
 
+
+/* Evaluation related functions prototypes */
+bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue);
+void parse_polish (char formula[], WFF *tree, Logic logic);
+void print_wff (WFF f);
+int eval_formula (WFF wff, Logic logic);
 
 #endif
-
