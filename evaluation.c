@@ -26,6 +26,12 @@
 #include "MaTest.h"
 
 
+/***
+  Function set_atom:
+   Searches, recursively, the first free connective argument into given well
+   formed formula tree. Then sets type, name, and a pointer to value if it's
+   a variable.
+***/
 bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue)
 {
   atom father = NULL;
@@ -33,11 +39,13 @@ bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue)
   
   while (node)
     {
+      // Unary connective nodes has only one argument, it's trivial.
       if (node->type == UCON)
         {
           father = node;
           node = node->arg1;
         }
+      // With binary connectives, search recursively.
       else if (node->type == BCON)
         {
           if (set_atom (&node->arg1, intype, inname, invalue))
@@ -47,6 +55,7 @@ bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue)
           else
             return false;
         }
+      // Variables hasn't got arguments.
       else if (node->type == VAR)
         return false;
     }
@@ -102,6 +111,11 @@ bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue)
 
 
 /***
+  Procedure parse_polish:
+   Parses a well formed formula in polish notation.
+   Here, we read the formula from left to right setting atoms one by one, that
+   makes a correct well formed formula tree, that is a characteristic of
+   prefixed notations and polish notation is a prefixed notation.
 ***/
 void parse_polish (char formula[], WFF *tree, Logic logic)
 {
@@ -130,16 +144,16 @@ void parse_polish (char formula[], WFF *tree, Logic logic)
 
 
 /***
+  Procedure del_wff:
+   Deletes given well formed formula tree freeing its memory.
 ***/
 void del_wff (WFF *wff)
 {
-  if (*wff == NULL)
-    return;
   if ((*wff)->arg1)
     del_wff (&(*wff)->arg1);
   if ((*wff)->arg2)
     del_wff (&(*wff)->arg2);
-  free (wff);
+  free (*wff);
 }
 
 
@@ -156,6 +170,9 @@ void print_wff (WFF f)
 
 
 /***
+  Function eval_formula:
+   Calculates, recursively, the value of given formula based on its current
+   values and returns it. If well formed formula tree is empty, returns -1.
 ***/
 int eval_formula (WFF wff, Logic logic)
 {
@@ -177,13 +194,16 @@ int eval_formula (WFF wff, Logic logic)
       return bcon->matrix[eval_formula (wff->arg1, logic)][eval_formula(wff->arg2, logic)];
     }
   else
-    printf ("Evaluating current formula. Unexpected error!");
+    printf ("Evaluating current formula. Unexpected error!\n");
 }
 
 
 /***
+  Procedure print_eval_formula_pn:
+   Prints current evaluating polish notation formula changing variables for its
+   values.
 ***/
-void print_eval_formula (char formula[], Logic logic)
+void print_eval_formula_pn (char formula[], Logic logic)
 {
   int i;
   
@@ -198,8 +218,11 @@ void print_eval_formula (char formula[], Logic logic)
 
 
 /***
+  Procedure evaluation:
+   The great job. Evaluates all possibilities of the formula, prints it
+   depending on evaluation type selected and finally prints statistics.
 ***/
-void evaluate (Work work)
+void evaluation (Work work)
 {
   int i, j, all = 0, nodesig = 0;
   Var var, aux, last;
@@ -207,33 +230,40 @@ void evaluate (Work work)
   var = work->logic->Vars;
   last = (Var) last_var (work->logic->Vars);
   
+  // Initialize all variable values to 0
   while (var)
     {
       var->value = 0;
       var = var->next;
     }
   
-  printf ("%s\n", work->pol_formula);
-  for (i = 0; i < strlen (work->pol_formula); i++)
+  // Print a header with the polish notation formula
+  printf ("%s\n", work->formula_pn);
+  for (i = 0; i < strlen (work->formula_pn); i++)
     printf ("-");
   printf ("\n");
   
-  while (last->value < work->logic->dimmension)
+  // The evaluation
+  while (last->value < work->logic->dimension)
     {
+      // Always start with the first variable
       var = work->logic->Vars;
-      for (i = 0; i < work->logic->dimmension; i++)
+      // Go all the first variable values
+      for (i = 0; i < work->logic->dimension; i++)
         {
           set_var_value (var->name, i, work->logic->Vars);
           j = eval_formula (work->wff, work->logic);
+          // Count all evaluations
           all++;
           
+          // Print it depending on the evaluation type and count no designated values
           if (j < work->logic->mdv)
             {
               nodesig++;
               
               if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
                 {
-                  print_eval_formula (work->pol_formula, work->logic);
+                  print_eval_formula_pn (work->formula_pn, work->logic);
                   printf ("  %i\n", j);
                 }
             }
@@ -241,17 +271,18 @@ void evaluate (Work work)
             {
               if (work->eval_values == ALL || work->eval_values == DESIGNATED)
                 {
-                  print_eval_formula (work->pol_formula, work->logic);
+                  print_eval_formula_pn (work->formula_pn, work->logic);
                   printf (" *%i\n", j);
                 }
             }
         }
       
+      // Add 1 to the next order element when it has reached its maximum value
       while (var)
         {
-          if (var->value == work->logic->dimmension - 1
+          if (var->value == work->logic->dimension - 1
               && var->next
-              && var->next->value < work->logic->dimmension - 1)
+              && var->next->value < work->logic->dimension - 1)
             {
               j = get_var_value (var->next->name, work->logic->Vars);
               set_var_value (var->next->name, ++j, work->logic->Vars);
@@ -264,159 +295,23 @@ void evaluate (Work work)
                 }
               break;
             }
-          else if (var->value == work->logic->dimmension - 1
+          // The stop condition
+          else if (var->value == work->logic->dimension - 1
                    && !var->next)
-            var->value = work->logic->dimmension;
+            var->value = work->logic->dimension;
           else
             var = var->next;
         }
     }
-  printf ("\n %i posibilities evaluated.\n", all);
-  printf (" %i not designated values.\n", nodesig);
+  
+  // Print statistics
+  printf ("\n %i possibilities evaluated.\n", all);
+  printf (" %i designated values.\n", all - nodesig);
   if (nodesig == 0)
     printf (" Tautology.\n");
   else if (nodesig == all)
     printf (" Contradiction.\n");
   else
-    printf (" The matrices falses this formula.\n");
+    printf (" The matrices false this formula.\n");
 }
-
-
-/*
-int eval_rpn (char formula[], Logic logic)
-{ 
-  int i, pos = 0, val1, val2;
-  int *lifo;
-  unyCon ucon;
-  binCon bcon;
-  
-  lifo = calloc (strlen (formula), sizeof (int));
-  
-  for (i = strlen (formula) - 1; i >= 0; i--)
-    {
-      switch (symbol_type (formula[i]))
-        {
-          case VAR:
-            printf ("Ponemos la variable en la pila.\n");
-            lifo[pos] = var_value (formula[i]);
-            pos++;
-            printf ("Puesta.\n");
-            break;
-          case UCON:
-            val1 = lifo[--pos];
-            ucon = (unyCon) search_unycon (logic->unyConns, formula[i]);
-            lifo[pos++] = ucon->matrix [val1];
-          case BCON:
-            val1 = lifo[--pos];
-            val2 = lifo[--pos];
-            bcon = (binCon) search_dyacon (logic->binConns, formula[i]);
-            lifo[pos++] = bcon->matrix [val1][val2];
-        }
-    }
-  
-  return lifo[pos];
-}
-*/
-
-
-/*
-FIFO create_fifo (int size)
-{
-  FIFO *fifo;
-  fifo = (FIFO) malloc (sizeof (FIFO);
-  fifo->position = -1;
-  fifo->vector = calloc (size, sizeof (int));
-  return fifo;
-}
-*/
-
-/*
-void del_fifo (FIFO fifo)
-{
-  free (fifo->vector);
-  free (fifo);
-  return;
-}
-*/
-
-/*
-void fifo_push (int *fifo, int pos, int value)
-{
-  fifo[pos] = value;
-}
-
-int fifo_push (int *fifo, int pos)
-{
-  return fifo[pos];
-}
-*/
-
-/*
-void evaluate (int base, int orden, char formula[])
-{
-  int i, j;
-  variable varnode;
-  */
-  /* Inicialize all the values to 0 */
-  /*
-  for (i = 0; i <= orden; i++)
-    auxvec[i] = 0;
-  
-  while (varnode->next != NULL && node->value <= base)
-    {
-      for (i = 0; i < base; i++)
-        {
-          varnode->value = i;
-          
-          for (j = orden - 1; j >= 0; j--)
-            printf ("%i", auxvec[j]);
-          printf ("\n");
-        }
-      
-      for (i = 0; i < orden; i++)
-        {
-          if ((auxvec[i] == base - 1) && (auxvec[i + 1] < base - 1))
-            {
-              auxvec[i + 1]++;
-              for (j = i; j >= 0; j--)
-                auxvec[j] = 0;
-              break;
-            }
-        }
-    }
-}
-*/
-
-/*
-int main (void)
-{
-  int val;
-  char the_formula[100];
-  Logic the_logic;
-  
-  the_logic = (Logic) malloc (sizeof (logicType));
-  
-  the_logic->dimmension = 5;
-  the_logic->mdv = the_logic->dimmension - 1;
-  the_logic->vars = (VarList) malloc (sizeof (varType));
-  // the_logic->vars = NULL;
-  
-  set_default_unycons (the_logic);
-  set_default_dyacons (the_logic);
-  
-  do
-    {
-      printf ("Dame una formula: ");
-      scanf ("%s", the_formula);
-    }
-  while (!is_wff_pk (the_formula));
-  printf ("OK. %i elements.\n", strlen (the_formula));
-  
-  register_vars (the_logic->vars, the_formula);
-  print_var_list (the_logic->vars);
-  
-  val = polk_eval (the_formula);
-  printf ("%i\n", val);
-}
-*/
 

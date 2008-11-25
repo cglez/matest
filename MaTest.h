@@ -123,7 +123,7 @@ typedef binConType *binCon;
 typedef binConType *binConList;
 
 
-/* Well Formed Formula nodes */
+/* Well Formed Formula node */
 typedef struct _node_atom
   {
     AtomType type;
@@ -141,7 +141,7 @@ typedef typeAtom *WFF;
 /* Struct with all data that defines one logic */
 typedef struct _logic
   {
-    int dimmension, mdv;
+    int dimension, mdv;
     VarList Vars;
     unyConList unyConns;
     binConList binConns;
@@ -151,10 +151,11 @@ typedef struct _logic
 typedef logicType *Logic;
 
 
+/* General struct, contains all data needed for the evaluation */
 typedef struct _work
   {
     EvalType eval_values;
-    char pol_formula[MAX_FORMULA_LENGHT];
+    char formula_pn[MAX_FORMULA_LENGHT];
     WFF wff;
     Logic logic;
   }
@@ -167,46 +168,72 @@ typedef workType *Work;
 ***  Function prototypes
 */
 
-/* Connective related functions prototypes */
+/* Connective related function prototypes.
+   Functions present in file connectives.c */
 bool is_unary_connective (char con_name, unyConList *list);
 bool is_binary_connective (char con_name, binConList *list);
-int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimmension);
-int add_binary_connective (char con_name, int **mtx, binConList *list, int dimmension);
+unyCon search_uny_con (char con_name, unyConList list);
+binCon search_bin_con (char con_name, binConList list);
+int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimension);
+int add_binary_connective (char con_name, int **mtx, binConList *list, int dimension);
+void add_custom_uny_conn (char con_name, unyConList *list, int dimension);
+void add_custom_bin_conn (char con_name, binConList *list, int dimension);
 void set_default_uny_conns (Logic logic);
 void set_default_bin_conns (Logic logic);
-void print_uny_matrix (unyCon connective, int dimmension, int mdv);
-void print_bin_matrix (binCon connective, int dimmension, int mdv);
-int write_uny_matrix (unyCon connective, FILE *file, int dimmension);
-int write_bin_matrix (binCon connective, FILE *file, int dimmension);
+void del_connective (char con_name, Logic logic);
+void print_uny_matrix (unyCon connective, int dimension, int mdv);
+void print_bin_matrix (binCon connective, int dimension, int mdv);
+void show_matrices (Logic logic);
+int write_uny_matrix (unyCon connective, FILE *file, int dimension);
+int write_bin_matrix (binCon connective, FILE *file, int dimension);
+void write_matrices (Logic logic, FILE *file);
 
 
-/* Variable related functions prototypes */
-void add_var (char var_name, VarList *list);
+/* Variable related function prototypes.
+   Functions present in file variables.c */
 bool is_empty_list (VarList list);
-void del_list (VarList *list);
-void print_list (VarList ls);
+void del_var_list (VarList *list);
 bool is_in_list (char var_name, VarList *list);
+Var search_var (char var_name, VarList list);
+Var last_var (VarList list);
+void add_var (char var_name, VarList *list);
+void register_vars (Work work);
+int num_elements (VarList list);
+void set_var_value (char var_name, int n, VarList list);
+int get_var_value (char var_name, VarList list);
 
 
-/* Polk well formed formula related functions prototypes */
+
+/* Well formed formulas in polish notation related function prototypes.
+   Functions present in file wffs_pn.c */
+SymbolType symbol_type (char symbol, Logic logic);
 bool check_string (char formul[]);
 bool is_wff_pk (char formula[], Logic logic);
 
 
-/* User related functions prototypes */
+/* Evaluation related function prototypes.
+   Functions present in file evaluation.c */
+bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue);
+void parse_polish (char formula[], WFF *tree, Logic logic);
+void del_wff (WFF *wff);
+int eval_formula (WFF wff, Logic logic);
+void print_eval_formula (char formula[], Logic logic);
+void evaluation (Work work);
+
+
+/* User related function prototypes.
+   Functions present in file user.c */
 char readin (char str[], char pattern[]);
 void clear_scr (void);
+void make_pause (void);
 void menu_header (void);
 void menu_info (Work work);
 void menu_options (void);
-void menu_dimmension (void);
+void menu_init (void);
+void menu_dimension (void);
+void menu_about (void);
+void menu_help (void);
 void menu_index (Work work);
 
-
-/* Evaluation related functions prototypes */
-bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue);
-void parse_polish (char formula[], WFF *tree, Logic logic);
-void print_wff (WFF f);
-int eval_formula (WFF wff, Logic logic);
-
 #endif
+

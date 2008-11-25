@@ -44,7 +44,7 @@ bool is_empty_list (VarList list)
 
 /***
   Procedure del_var_list:
-   Deletes the variable list and frees the memory.
+   Deletes given variable list freeing the memory.
 ***/
 void del_var_list (VarList *list)
 {
@@ -80,6 +80,9 @@ bool is_in_list (char var_name, VarList *list)
 
 
 /***
+  Function search_var:
+   Returns a pointer to the variable given by name, otherwise returns a null
+   pointer.
 ***/
 Var search_var (char var_name, VarList list)
 {
@@ -98,6 +101,9 @@ Var search_var (char var_name, VarList list)
 
 
 /***
+  Function last_var:
+   Returns a pointer to the last variable into given variable list, otherwise
+   returns a null pointer.
 ***/
 Var last_var (VarList list)
 {
@@ -124,26 +130,26 @@ void add_var (char var_name, VarList *list)
 {
   Var new, aux;
   
-  /* We dischard the elements already in the list */
+  // Discard  elements in the list
   if (is_in_list (var_name, list))
     return;
   else
     {
-      /* Create a new node */
+      // Create a new node
       new = (Var) malloc (sizeof (varType));
       new->name = var_name;
       new->value = 0;
       
-      /* If the list is empty or the given character is previous than the
-         first element, now it is the first */
+      /* If list is empty or given character is previous than the first
+         element, now it is the first */
       if ((*list == NULL) || (var_name < (*list)->name))
         {
-          /* We add the list after the new node */
+          // Add list after new node
           new->next = *list;
-          /* Now, list begins at the new node */
+          // Now, list begins at new node
           *list = new;
         }
-      /* Else we search the last element or the node with a previous character */
+      // Else, search the last element or the node with a previous character
       else
         {
           aux = *list;
@@ -165,19 +171,19 @@ void register_vars (Work work)
 {
   int i;
   
-  for (i = 0; i < strlen (work->pol_formula); i++)
+  for (i = 0; i < strlen (work->formula_pn); i++)
     {
-      if (symbol_type (work->pol_formula[i], work->logic) == VAR)
-        add_var (work->pol_formula[i], &work->logic->Vars);
+      if (symbol_type (work->formula_pn[i], work->logic) == VAR)
+        add_var (work->formula_pn[i], &work->logic->Vars);
     }
 }
 
 
 /***
-  Function num_elements:
-   Returns the number of elements.
+  Function num_vars:
+   Returns the number of elements in given variable list.
 ***/
-int num_elements (VarList list)
+int num_vars (VarList list)
 {
   int count = 0;
   VarList aux = list;
@@ -198,7 +204,7 @@ int num_elements (VarList list)
 
 /***
   Procedure set_var_value:
-   Sets a value for a variable in the given list of variables.
+   Sets given value for a variable, given by name, in a list of variables.
 ***/
 void set_var_value (char var_name, int n, VarList list)
 {
@@ -221,7 +227,8 @@ void set_var_value (char var_name, int n, VarList list)
 
 /***
   Function get_var_value:
-   Returns the value of a variable in the given list of variables.
+   Returns the value of a variable in the given list of variables. If variable
+   doesn't exist, returns -1.
 ***/
 int get_var_value (char var_name, VarList list)
 {
@@ -264,7 +271,7 @@ void del_var (varList *ls, char var)
 }
 */
 
-
+/*
 void print_var_list (VarList list)
 {
   Var aux = list;
@@ -281,4 +288,5 @@ void print_var_list (VarList list)
       printf(".\n");
     }
 }
+*/
 

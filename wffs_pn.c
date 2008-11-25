@@ -25,9 +25,10 @@
 
 /*                               wffs_pn.c
 *
-*    This file contains the functions that evaluates if given formula is a well
-*    formed formula in polish notation. For more information about polish
-*    notation see the Readme file.
+*    This file contains the functions needed to evaluate a well formed formula
+*    in polish notation.
+*    We use the next convention for formulas in polish notation: all upper case
+*    characters are connectives, all lower case characters are variables.
 */
 
 
@@ -36,6 +37,8 @@
 
 /***
   Function symbol_type:
+   Returns symbol type of given character. Possible symbol types are:
+   VAR (variable), UCON (unary connective), BCON (binary connective) or NONE.
 ***/
 SymbolType symbol_type (char symbol, Logic logic)
 {
@@ -52,7 +55,7 @@ SymbolType symbol_type (char symbol, Logic logic)
 
 /***
   Function check_string:
-   Checks the string and asures that only contains alpha characters and then
+   Checks the string and assures that only contains alpha characters and then
    returns true, otherwise returns false.
 ***/
 bool check_string (char formula[])
@@ -72,43 +75,53 @@ bool check_string (char formula[])
 
 
 /***
-  Function is_wff_pk:
-   Checks if the given formula is a well formed formula in polk notation. If
-   it's a WFF returns true, otherwise returns false.
+  Function is_wff_pn:
+   Checks if the given formula is a well formed formula in polish notation.
+   If it's a WFF returns true, otherwise returns false.
 ***/
-bool is_wff_pk (char formula[], Logic logic)
+bool is_wff_pn (char formula[], Logic logic)
 {
-  int i, crtl = 1;
+  int i, deep = 1;
   
+  // First check the formula for not implemented characters
   if (check_string (formula))
     {
       for (i = 0; i < strlen (formula); i++)
         {
+          // Variables decrease the formula deep
           if (islower (formula[i]))
-            crtl--;
+            deep--;
           
           else if (isupper (formula[i]))
             {
+              // Unary connectives don't change the formula deep
               if (is_unary_connective (formula[i], &logic->unyConns))
-                crtl = crtl;
+                deep = deep;
+              // Binary connectives increase the formula deep
               else if (is_binary_connective (formula[i], &logic->binConns))
-                crtl++;
+                deep++;
+              // Else, if connective isn't unary or binary, it doesn't exists
               else
                 {
                   printf ("The connective %c is not defined.\n", formula[i]);
                   return false;
                 }
             }
-          
-          if (crtl == 0 && formula[i + 1] != 0)
+          // If all connectives have arguments now but still rests arguments:
+          // deep exceeded
+          if (deep == 0 && formula[i + 1] != 0)
             {
-              printf ("Formula \"%s\" isn't a WFF!\n", formula);
+              printf (" Formula \"%s\" isn't a WFF!\n", formula);
+              printf (" Deep exceeded, too much variables. Check the formula.\n");
               return false;
             }
         }
-      if (crtl != 0)
+      // If, after all, there are connectives without arguments: deep 
+      // insufficient.
+      if (deep != 0)
         {
-          printf ("Formula \"%s\" isn't a WFF!\n", formula);
+          printf (" Formula \"%s\" isn't a WFF!\n", formula);
+          printf (" Deep insufficient, too few variables. Check the formula.\n");
           return false;
         }
       else

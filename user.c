@@ -25,9 +25,8 @@
 
 /*                               user.c
 *
-*    This file contains the functions that do the user interactuation, that is
-*    functions that show information in the screen and others that get input
-*    information.
+*    This file contains functions that interactuate with the user, functions
+*    that show information in the screen and others that get input information.
 */
 
 
@@ -92,7 +91,7 @@ void make_pause (void)
 
 /***
   Procedure menu_header:
-   Prints a header with the name of the programm, version and a short
+   Prints a header with the name of the program, version and a short
    description.
 ***/
 void menu_header (void)
@@ -114,9 +113,9 @@ void menu_info (Work work)
   unyCon unyaux;
   binCon binaux;
   
-  printf ("   Matrices dimmension:   ");
-  if (work->logic->dimmension)
-    printf ("%ix%i", work->logic->dimmension, work->logic->dimmension);
+  printf ("   Matrices dimension:    ");
+  if (work->logic->dimension)
+    printf ("%ix%i", work->logic->dimension, work->logic->dimension);
   else
     printf ("Not defined!");
   
@@ -142,8 +141,8 @@ void menu_info (Work work)
       binaux = binaux->next;
     }
   
-  if (work->pol_formula[0])
-    printf ("\n   Formula:               %s", work->pol_formula);
+  if (work->formula_pn[0])
+    printf ("\n   Formula:               %s", work->formula_pn);
   else
     printf ("\n   Formula:               Not defined");
   
@@ -160,13 +159,13 @@ void menu_info (Work work)
 
 /***
   Procedure menu_options:
-   Prints the options available.
+   Prints the menu of options available.
 ***/
 void menu_options (void)
 {  
   printf (" Options:\n"
           "   V: Values evaluated.\n"
-          "   M: Redefine the Minimun Designated Value.\n"
+          "   M: Redefine the Minimum Designated Value.\n"
           "\n"
           "   N: New connective.           P: Print matrices into the screen.\n"
           "   D: Delete a connective.      W: Write matrices to external file.\n"
@@ -181,8 +180,8 @@ void menu_options (void)
 
 /***
   Procedure menu_init:
-   Prints a simple message asking for a dimmension of the matrices.
-   It's designed to appear at the beginning.
+   Prints a short credits message and legal notice.
+   Designed to appear at the beginning.
 ***/
 void menu_init (void)
 {
@@ -193,14 +192,25 @@ void menu_init (void)
           "   <http://gnu.org/licenses/gpl.html>\n"
           "   This is free software: you are free to change and redistribute it.\n"
           "   There is NO WARRANTY, to the extent permitted by law.\n"
-          "   For more details type 'a' in the main menu.\n\n\n"
-          " To start working you have to define the matrices dimmension.\n"
-          " Then, the program will define the most common connectives like in\n"
-          " Łuckassiewicz multivaluate logics model.\n\n");
+          "   For more details type 'a' in the main menu.\n\n\n");
 }
 
 
 /***
+  Procedure menu_dimension:
+   Message before asking for dimension matrices.
+***/
+void menu_dimension (void)
+{
+  printf (" To start working you have to define the matrices dimension.\n"
+          " Then, the program will define the most common connectives like in\n"
+          " Łukasiewicz multivaluated logics model.\n\n");
+}
+
+
+/***
+  Procedure menu_about:
+   Message showing short description, version, credits and long legal notice.
 ***/
 void menu_about (void)
 {
@@ -227,6 +237,8 @@ void menu_about (void)
 
 
 /***
+  Procedure menu_help:
+   Will show the inline help. Not implemented by now.
 ***/
 void menu_help (void)
 {
