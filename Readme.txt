@@ -63,6 +63,15 @@ COPYRIGHT
 
 CHANGELOG
 
+ MaTest-1.0a (08/12/08)
+
+ * Historia del programa.
+ 
+ * Mejoras en las estadísticas de la evaluación.
+ 
+ * Pequeña reestructuración del código.
+
+
  MaTest-1.0 (25/11/08)
  
  *  Código fuente modular.
