@@ -23,6 +23,17 @@
 \*****************************************************************************/
 
 
+/*                               evaluation.c
+*
+*    This file contains the global evaluation job. That contains the function
+*    . Here is also the 
+*
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+
 #include "MaTest.h"
 
 
@@ -60,6 +71,7 @@ bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue)
         return false;
     }
   
+  // If tree is empty, allocate memory and set given values
   if (father == NULL)
     {
       (*tree) = (WFF) malloc (sizeof (typeAtom));
@@ -106,39 +118,6 @@ bool set_atom (WFF *tree, AtomType intype, char inname, int *invalue)
     {
       printf ("Unexpected error!\n");
       make_pause ();
-    }
-}
-
-
-/***
-  Procedure parse_polish:
-   Parses a well formed formula in polish notation.
-   Here, we read the formula from left to right setting atoms one by one, that
-   makes a correct well formed formula tree, that is a characteristic of
-   prefixed notations and polish notation is a prefixed notation.
-***/
-void parse_polish (char formula[], WFF *tree, Logic logic)
-{
-  Var var;
-  int i;
-  
-  for (i = 0; i < strlen (formula); i++)
-    {
-      if (symbol_type (formula[i], logic) == VAR)
-        {
-          var = (Var) search_var (formula[i], logic->Vars);
-          set_atom (tree, VAR, formula[i], &var->value);
-        }
-      else if (symbol_type (formula[i], logic) == UCON)
-        set_atom (tree, UCON, formula[i], NULL);
-      else if (symbol_type (formula[i], logic) == BCON)
-        set_atom (tree, BCON, formula[i], NULL);
-      else
-        {
-          printf ("Parsing... Unexpected error!\n");
-          make_pause ();
-          return;
-        }
     }
 }
 
@@ -224,7 +203,7 @@ void print_eval_formula_pn (char formula[], Logic logic)
 ***/
 void evaluation (Work work)
 {
-  int i, j, all = 0, nodesig = 0;
+  int i, j, all = 0, desig = 0;
   Var var, aux, last;
   
   var = work->logic->Vars;
@@ -238,7 +217,7 @@ void evaluation (Work work)
     }
   
   // Print a header with the polish notation formula
-  printf ("%s\n", work->formula_pn);
+  printf (" %s\n ", work->formula_pn);
   for (i = 0; i < strlen (work->formula_pn); i++)
     printf ("-");
   printf ("\n");
@@ -256,23 +235,25 @@ void evaluation (Work work)
           // Count all evaluations
           all++;
           
-          // Print it depending on the evaluation type and count no designated values
-          if (j < work->logic->mdv)
+          // Print it depending on the evaluation type and count designated values
+          if (j >= work->logic->mdv)
             {
-              nodesig++;
+              desig++;
               
-              if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
+              if (work->eval_values == ALL || work->eval_values == DESIGNATED)
                 {
+                  printf (" ");
                   print_eval_formula_pn (work->formula_pn, work->logic);
-                  printf ("  %i\n", j);
+                  printf (" *%i\n", j);
                 }
             }
           else
             {
-              if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+              if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
                 {
+                  printf (" ");
                   print_eval_formula_pn (work->formula_pn, work->logic);
-                  printf (" *%i\n", j);
+                  printf ("  %i\n", j);
                 }
             }
         }
@@ -306,12 +287,14 @@ void evaluation (Work work)
   
   // Print statistics
   printf ("\n %i possibilities evaluated.\n", all);
-  printf (" %i designated values.\n", all - nodesig);
-  if (nodesig == 0)
+  if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+    printf (" %i designated values.\n", desig);
+  else
+    printf (" %i not designated values.\n", all - desig);
+  if (desig == all)
     printf (" Tautology.\n");
-  else if (nodesig == all)
+  else if (desig == 0)
     printf (" Contradiction.\n");
   else
     printf (" The matrices false this formula.\n");
 }
-

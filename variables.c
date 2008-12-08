@@ -29,14 +29,18 @@
 *    variables and variables itself.
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 
 #include "MaTest.h"
 
 
 /***
-  Function is_empty_list:
+  Function is_empty_var_list:
 ***/
-bool is_empty_list (VarList list)
+bool is_empty_var_list (VarList list)
 {
   return (list == NULL);
 }
@@ -60,10 +64,10 @@ void del_var_list (VarList *list)
 
 
 /***
-  Function is_in_list:
+  Function is_in_var_list:
    True if the variable is in the list, false otherwise.
 ***/
-bool is_in_list (char var_name, VarList *list)
+bool is_in_var_list (char var_name, VarList *list)
 {
   Var aux = *list;
   
@@ -131,7 +135,7 @@ void add_var (char var_name, VarList *list)
   Var new, aux;
   
   // Discard  elements in the list
-  if (is_in_list (var_name, list))
+  if (is_in_var_list (var_name, list))
     return;
   else
     {
@@ -188,7 +192,7 @@ int num_vars (VarList list)
   int count = 0;
   VarList aux = list;
   
-  if (is_empty_list (list))
+  if (is_empty_var_list (list))
     return count;
   else
     {

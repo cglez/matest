@@ -20,12 +20,19 @@ AUTOR
  Escrito por César González Gutiérrez <ceguel@gmail.com>.
 
 
+HISTORIA
+
+ MaTest es el sucesor de Matrigüity, creado por José Manuel Méndez Rodríguez y
+ Benito García Noriega en 1982. Para más detalles léase el archivo History.txt.
+
+
 DESCARGAS
 
  Puedes descargarlo desde http://forja.rediris.es/projects/cusl3-matest/
  
  La versión en desarrollo es accesible mediante Subversion en la dirección:
  https://forja.rediris.es/svn/cusl3-matest/trunk/
+
 
 
 INSTALACIÓN

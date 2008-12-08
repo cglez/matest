@@ -30,6 +30,7 @@
 *    prototypes of the functions.
 */
 
+#include <stdbool.h>
 
 #ifndef _MATEST_H_
 #define _MATEST_H_
@@ -39,12 +40,7 @@
 ***  Preprocessor declarations 
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-
-#define VERSION "1.0"
+#define VERSION "1.0a"
 #define MAX_FORMULA_LENGHT BUFSIZ
 
 
@@ -191,9 +187,9 @@ void write_matrices (Logic logic, FILE *file);
 
 /* Variable related function prototypes.
    Functions present in file variables.c */
-bool is_empty_list (VarList list);
+bool is_empty_var_list (VarList list);
 void del_var_list (VarList *list);
-bool is_in_list (char var_name, VarList *list);
+bool is_in_var_list (char var_name, VarList *list);
 Var search_var (char var_name, VarList list);
 Var last_var (VarList list);
 void add_var (char var_name, VarList *list);

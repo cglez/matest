@@ -29,6 +29,9 @@
 *    that show information in the screen and others that get input information.
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "MaTest.h"
 
@@ -66,7 +69,7 @@ void clear_scr (void)
 {
   int i;
   
-  #ifdef UNIX
+  #ifdef POSIX
     system ("clear");
   #elif WIN
     system ("cls");
@@ -187,12 +190,12 @@ void menu_init (void)
 {
   menu_header();
   printf ("\n"
-          "   Copyright (C) 2008  César González Gutiérrez.\n"
-          "   License GPLv3+: GNU GPL version 3 or later\n"
-          "   <http://gnu.org/licenses/gpl.html>\n"
-          "   This is free software: you are free to change and redistribute it.\n"
-          "   There is NO WARRANTY, to the extent permitted by law.\n"
-          "   For more details type 'a' in the main menu.\n\n\n");
+          "      Copyright (C) 2008  César González Gutiérrez.\n"
+          "      License GPLv3+: GNU General Public Licence version 3 or later,\n"
+          "      see <http://gnu.org/licenses/gpl.html>.\n"
+          "      This is free software: you are free to change and redistribute it.\n"
+          "      There is NO WARRANTY, to the extent permitted by law.\n"
+          "      For more details type 'a' in the main menu.\n\n\n");
 }
 
 
@@ -203,7 +206,7 @@ void menu_init (void)
 void menu_dimension (void)
 {
   printf (" To start working you have to define the matrices dimension.\n"
-          " Then, the program will define the most common connectives like in\n"
+          " Then, the program will define for you the most common connectives like in\n"
           " Łukasiewicz multivaluated logics model.\n\n");
 }
 
@@ -214,25 +217,29 @@ void menu_dimension (void)
 ***/
 void menu_about (void)
 {
-  menu_header();
+  clear_scr();
   printf ("\n"
-          " Name:    MaTest (Matrix Tester for logical matrices)\n"
-          " Version: %s\n"
-          " Author:  César González Gutiérrez <ceguel@gmail.com>\n"
+          " This is MaTest version %s\n"
           "\n"
+          " AUTHOR: César González Gutiérrez <ceguel@gmail.com>\n"
           "\n"
-          " Copyright (C) 2008, César González.\n"
-          " MaTest is free software: you can redistribute it and/or modify\n"
-          " it under the terms of the GNU General Public License as published by\n"
-          " the Free Software Foundation, either version 3 of the License, or\n"
-          " (at your option) any later version.\n"
+          " DESCRIPTION: MaTest (Matrix Tester) is a free, cross-platform logical matrix\n"
+          "  tester. Defined a couple of connectives as matrices, a minimun designated\n"
+          "  value and given a formula, it gets all possible values for the formula and\n"
+          "  evaluate if they are designated or not.\n"
+          "  Sucessor of Matrigüity by J. M. Méndez & B. García Noriega (1982).\n"
           "\n"
-          " MaTest is distributed in the hope that it will be useful, but\n"
-          " WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-          " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
-          " See the GNU General Public License for more details:\n"
-          " <http://gnu.org/licenses/gpl.html>.\n"
-          "\n", VERSION);
+          " COPYRIGHT (C) 2008, César González Gutiérrez <ceguel@gmail.com>.\n"
+          "  MaTest is free software: you can redistribute it and/or modify\n"
+          "  it under the terms of the GNU General Public License as published by\n"
+          "  the Free Software Foundation, either version 3 of the License, or\n"
+          "  (at your option) any later version.\n"
+          "\n"
+          "  MaTest is distributed in the hope that it will be useful, but\n"
+          "  without any warranty; without even the implied warranty of\n"
+          "  merchantability or fitness for a particular purpose.\n"
+          "  See the GNU General Public License for more details:\n"
+          "  <http://gnu.org/licenses/gpl.html>.\n", VERSION);
 }
 
 

@@ -29,6 +29,9 @@
 *    the program.
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "MaTest.h"
 
@@ -50,13 +53,13 @@ int main (void)
   menu_dimension ();
   do
     {
-      printf (" Matrices dimension (<1): ");
+      printf (" Matrices dimension ( <1 ): ");
       fgets (answer, BUFSIZ, stdin);
       sscanf (answer, "%i", &the_work->logic->dimension);
     }
   while (the_work->logic->dimension < 2);
   
-  // Define default Minimum designated value like in Łukasiewicz logics
+  // Define default Minimum Designated Value like in Łukasiewicz model
   the_work->logic->mdv = the_work->logic->dimension - 1;
   
   // Define the default connectives
@@ -125,7 +128,7 @@ int main (void)
             clear_scr ();
             menu_header ();
             menu_info (the_work);
-            printf ("Type the name of the file to write to: ");
+            printf (" Type the name of the file to write to: ");
             fgets (answer, BUFSIZ, stdin);
             sscanf (answer, "%s", namefile);
             
@@ -133,7 +136,7 @@ int main (void)
             outfile = fopen (namefile, "r");
             if (outfile)
               {
-                printf ("File \'%s\' exists, do you want to replace it? (y/N): ", namefile);
+                printf (" File \'%s\' exists, do you want to replace it? (y/N): ", namefile);
                 opt = readin (answer, "y\n");
                 if (opt == 'y')
                   {
@@ -145,7 +148,7 @@ int main (void)
                       }
                     else
                       {
-                        printf ("\nYou haven't got write permissions!\n");
+                        printf ("\n You haven't got write permissions!\n");
                         make_pause ();
                       }
                   }
@@ -162,7 +165,7 @@ int main (void)
                   }
                 else
                   {
-                    printf ("\nCouldn't write the file!\n");
+                    printf ("\n Couldn't write the file!\n");
                     make_pause ();
                   }
               }
@@ -174,18 +177,18 @@ int main (void)
             clear_scr ();
             menu_header ();
             menu_info (the_work);
-            printf ("Unary or Binary connective? (u/b): ");
+            printf (" Unary or Binary connective? (u/b): ");
             
             opt = readin (answer, "ub");
             switch (opt)
               {
                 case 'u':
-                  printf ("Unary connective name: ");
+                  printf (" Unary connective name: ");
                   opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
                   if (is_unary_connective (opt, &the_work->logic->unyConns) ||
                       is_binary_connective (opt, &the_work->logic->binConns) )
                     {
-                      printf ("Connective is already defined.\n");
+                      printf (" Connective is already defined.\n");
                       break;
                     }
                   else
@@ -193,12 +196,12 @@ int main (void)
                   break;
                 
                 case 'b':
-                  printf ("Binary connective name: ");
+                  printf (" Binary connective name: ");
                   opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
                   if (is_unary_connective (opt, &the_work->logic->unyConns) ||
                       is_binary_connective (opt, &the_work->logic->binConns) )
                     {
-                      printf ("Connective is already defined.\n");
+                      printf (" Connective is already defined.\n");
                       break;
                     }
                   else
@@ -214,7 +217,7 @@ int main (void)
             menu_header ();
             menu_info (the_work);
             
-            printf ("Delete connective: ");
+            printf (" Delete connective: ");
             opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
             del_connective (opt, the_work->logic);
             break;
@@ -227,7 +230,7 @@ int main (void)
             menu_info (the_work);
             do
               {
-                printf ("Write a formula in polish notation: ");
+                printf ("\n Write a formula in polish notation: ");
                 fgets (answer, BUFSIZ, stdin);
                 sscanf (answer, "%s", the_work->formula_pn);
               }
@@ -250,7 +253,7 @@ int main (void)
           // Make evaluation
           case 'e':
             if (the_work->formula_pn[0] == 0)
-              printf ("\nFirst type a Well Formed Formula.\n");
+              printf ("\n First type a Well Formed Formula.\n");
             else
               {
                 clear_scr ();
@@ -275,7 +278,7 @@ int main (void)
           
           // Quit asking for confirmation
           case 'q':
-            printf ("Are you sure? (y/N): ");
+            printf (" Are you sure? (y/N): ");
             opt = readin (answer, "y\n");
             if (opt == 'y')
               return 0;

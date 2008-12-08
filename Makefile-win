@@ -1,10 +1,12 @@
 # Makefile for MaTest, dos/win* version
 
-CC = gcc.exe -D$(SYSTEM)
-OBJS = MaTest.o connectives.o wffs_pn.o variables.o user.o evaluation.o
-#SYSTEM = UNIX
-SYSTEM = WIN -fexec-charset=UTF-8
+CC = gcc.exe
+#SYSTEM = POSIX
+SYSTEM = WIN
 VERBOSITY = -ansi
+CFLAGS = -O3 -pipe -ftracer -fexec-charset=UTF-8 -D$(SYSTEM)
+
+OBJS = MaTest.o connectives.o wffs_pn.o variables.o user.o evaluation.o
 
 all : MaTest
 

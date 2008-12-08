@@ -28,10 +28,13 @@
 *    This file contains the code that deals with connectives, its creation,
 *    definition, etc.
 *    The most functions in this file comes in pairs, ones for the unary
-*    connectives, others for the binary connectives (ones for vectors, other
+*    connectives, others for the binary connectives (ones for vectors, others
 *    for matrices).
 */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 #include "MaTest.h"
 

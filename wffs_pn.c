@@ -31,6 +31,9 @@
 *    characters are connectives, all lower case characters are variables.
 */
 
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
 
 #include "MaTest.h"
 
@@ -55,7 +58,7 @@ SymbolType symbol_type (char symbol, Logic logic)
 
 /***
   Function check_string:
-   Checks the string and assures that only contains alpha characters and then
+   Checks the string and assures that only contains alpha characters, then
    returns true, otherwise returns false.
 ***/
 bool check_string (char formula[])
@@ -131,3 +134,35 @@ bool is_wff_pn (char formula[], Logic logic)
     return false;
 }
 
+
+/***
+  Procedure parse_polish:
+   Parses a well formed formula in polish notation.
+   Here, we read the formula from left to right, setting atoms one by one, that
+   makes a correct well formed formula tree, that is a characteristic of
+   prefixed notations and polish notation is a prefixed notation.
+***/
+void parse_polish (char formula[], WFF *tree, Logic logic)
+{
+  Var var;
+  int i;
+  
+  for (i = 0; i < strlen (formula); i++)
+    {
+      if (symbol_type (formula[i], logic) == VAR)
+        {
+          var = (Var) search_var (formula[i], logic->Vars);
+          set_atom (tree, VAR, formula[i], &var->value);
+        }
+      else if (symbol_type (formula[i], logic) == UCON)
+        set_atom (tree, UCON, formula[i], NULL);
+      else if (symbol_type (formula[i], logic) == BCON)
+        set_atom (tree, BCON, formula[i], NULL);
+      else
+        {
+          printf ("Parsing... Unexpected error!\n");
+          make_pause ();
+          return;
+        }
+    }
+}
