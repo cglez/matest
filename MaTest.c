@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "MaTest.h"
 
@@ -40,99 +41,101 @@ int main (void)
 {
   char opt, answer[BUFSIZ], namefile[BUFSIZ];
   FILE *outfile;
-  Work the_work;
-  
-  the_work = (Work) malloc (sizeof (workType));
-  the_work->logic = (Logic) malloc (sizeof (logicType));
-  the_work->formula_pn[0] = 0;
-  the_work->wff = NULL;
-  
+  Work work;
+
+  work = (Work) malloc (sizeof (workType));
+  work->logic = (Logic) malloc (sizeof (LogicType));
+  work->formula_pn[0] = 0;
+  work->wff = NULL;
+
   menu_init();
-  
-  // Ask for the matrices dimension
-  menu_dimension ();
+
+  /* Ask for the matrices dimension */
+  menu_dimension();
   do
     {
       printf (" Matrices dimension ( <1 ): ");
       fgets (answer, BUFSIZ, stdin);
-      sscanf (answer, "%i", &the_work->logic->dimension);
+      sscanf (answer, "%i", &work->DIM);
     }
-  while (the_work->logic->dimension < 2);
+  while (work->DIM < 2);
   
-  // Define default Minimum Designated Value like in Łukasiewicz model
-  the_work->logic->mdv = the_work->logic->dimension - 1;
+  /* Define default Minimum Designated Value like in Łukasiewicz model */
+  work->MDV = work->DIM - 1;
   
-  // Define the default connectives
-  set_default_uny_conns (the_work->logic);
-  set_default_bin_conns (the_work->logic);
+  /* Define the default connectives */
+  set_default_UCons (work->logic);
+  set_default_BCons (work->logic);
   
-  // Show all evaluated values by default
-  the_work->eval_values = ALL;
+  /* Show all evaluated values by default */
+  work->eval_values = ALL;
   
   /* Manage options */
   for (;;)
     {
-      menu_index (the_work);
+      menu_index (work);
       opt = readin (answer, "vmpwndfeahq");
       
       switch (opt)
         {
-          // Change the evaluated values showed
+          /* Change the evaluated values showed */
           case 'v':
             clear_scr ();
             menu_header ();
-            menu_info (the_work);
+            menu_info (work);
             printf (" What values do you want to be evaluated?\n"
                     " All, Designated, Not designated. (a/d/n): ");
             opt = readin (answer, "adn\n");
             switch (opt)
               {
                 case 'a':
-                  the_work->eval_values = ALL;
+                  work->eval_values = ALL;
                   break;
                 case 'd':
-                  the_work->eval_values = DESIGNATED;
+                  work->eval_values = DESIGNATED;
                   break;
                 case 'n':
-                  the_work->eval_values = NOTDESIGNATED;
+                  work->eval_values = NOTDESIGNATED;
+                  break;
+                default:
                   break;
               }
             break;
           
           
-          // Change the Minimum Designated Value
+          /* Change the Minimum Designated Value */
           case 'm':
             clear_scr ();
             menu_header ();
-            menu_info (the_work);
+            menu_info (work);
             do
               {
-                printf ("New Minimum Designated Value [1 - %i]: ", the_work->logic->dimension - 1);
+                printf ("New Minimum Designated Value [1 - %i]: ", work->DIM - 1);
                 fgets (answer, BUFSIZ, stdin);
-                sscanf (answer, "%i", &the_work->logic->mdv);
+                sscanf (answer, "%i", &work->MDV);
               }
-            while ((the_work->logic->mdv < 1) || ((the_work->logic->mdv) > (the_work->logic->dimension - 1)));
+            while ((work->MDV < 1) || ((work->MDV) > (work->DIM - 1)));
             break;
           
           
-          // Print the matrices into the screen
+          /* Print the matrices into the screen */
           case 'p':
             clear_scr ();
-            show_matrices (the_work->logic);
+            show_matrices (work->logic);
             make_pause ();
             break;
           
           
-          // Write matrices to an external file
+          /* Write matrices to an external file */
           case 'w':
             clear_scr ();
             menu_header ();
-            menu_info (the_work);
+            menu_info (work);
             printf (" Type the name of the file to write to: ");
             fgets (answer, BUFSIZ, stdin);
             sscanf (answer, "%s", namefile);
             
-            // Look if file exists
+            /* Look if file exists */
             outfile = fopen (namefile, "r");
             if (outfile)
               {
@@ -143,7 +146,7 @@ int main (void)
                     outfile = freopen (namefile, "w", outfile);
                     if (outfile)
                       {
-                        write_matrices (the_work->logic, outfile);
+                        write_matrices (work->logic, outfile);
                         fclose (outfile);
                       }
                     else
@@ -160,7 +163,7 @@ int main (void)
                 outfile = fopen (namefile, "w");
                 if (outfile)
                   {
-                    write_matrices (the_work->logic, outfile);
+                    write_matrices (work->logic, outfile);
                     fclose (outfile);
                   }
                 else
@@ -172,119 +175,118 @@ int main (void)
             break;
           
           
-          // Define a new, custom connective
+          /* Define a new, custom connective */
           case 'n':
             clear_scr ();
             menu_header ();
-            menu_info (the_work);
+            menu_info (work);
             printf (" Unary or Binary connective? (u/b): ");
             
-            opt = readin (answer, "ub");
+            opt = readin (answer, "ub\n");
             switch (opt)
               {
                 case 'u':
                   printf (" Unary connective name: ");
                   opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-                  if (is_unary_connective (opt, &the_work->logic->unyConns) ||
-                      is_binary_connective (opt, &the_work->logic->binConns) )
+                  if (search_UCon (work->logic->UCons, opt) ||
+                      search_BCon (work->logic->BCons, opt) )
                     {
                       printf (" Connective is already defined.\n");
                       break;
                     }
                   else
-                    add_custom_uny_conn (opt, &the_work->logic->unyConns, the_work->logic->dimension);
+                    add_custom_UCon (&work->logic->UCons, opt, work->DIM);
                   break;
                 
                 case 'b':
                   printf (" Binary connective name: ");
                   opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-                  if (is_unary_connective (opt, &the_work->logic->unyConns) ||
-                      is_binary_connective (opt, &the_work->logic->binConns) )
+                  if (search_UCon (work->logic->UCons, opt) ||
+                      search_BCon (work->logic->BCons, opt))
                     {
                       printf (" Connective is already defined.\n");
                       break;
                     }
                   else
-                    add_custom_bin_conn (opt, &the_work->logic->binConns, the_work->logic->dimension);
+                    add_custom_BCon (work->logic, opt);
                   break;
               }
             break;
           
           
-          // Delete an existing connective
+          /* Delete an existing connective */
           case 'd':
             clear_scr ();
             menu_header ();
-            menu_info (the_work);
+            menu_info (work);
             
             printf (" Delete connective: ");
             opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-            del_connective (opt, the_work->logic);
+            del_connective (work->logic, opt);
             break;
           
           
-          // Prompt for new well formed formula and parse it
+          /* Prompt for new well formed formula and parse it */
           case 'f':
-            clear_scr ();
-            menu_header ();
-            menu_info (the_work);
+            clear_scr();
+            menu_header();
+            menu_info (work);
             do
               {
                 printf ("\n Write a formula in polish notation: ");
                 fgets (answer, BUFSIZ, stdin);
-                sscanf (answer, "%s", the_work->formula_pn);
+                sscanf (answer, "%s", work->formula_pn);
               }
-            while (!is_wff_pn (the_work->formula_pn, the_work->logic));
+            while (!is_wff_pn (work->formula_pn, work->logic));
             
-            if (the_work->logic->Vars)
-              del_var_list (&the_work->logic->Vars);
-            register_vars (the_work);
+            if (work->logic->Vars)
+              del_var_list (&work->logic->Vars);
+            register_vars (work->logic, work->formula_pn);
             
-            if (the_work->wff)
+            if (work->wff)
               {
-                del_wff (&the_work->wff);
-                the_work->wff = NULL;
+                del_wff (&work->wff);
+                work->wff = NULL;
               }
-            parse_polish (the_work->formula_pn, &the_work->wff, the_work->logic);
+            parse_polish (&work->wff, work->formula_pn, work->logic);
             
             break;
           
           
-          // Make evaluation
+          /* Make evaluation */
           case 'e':
-            if (the_work->formula_pn[0] == 0)
+            if (work->formula_pn[0] == 0)
               printf ("\n First type a Well Formed Formula.\n");
             else
               {
                 clear_scr ();
-                evaluation (the_work);
+                evaluation (work);
               }
             make_pause ();
             break;
           
           
-          // Show about page
+          /* Show about page */
           case 'a':
             menu_about ();
             make_pause ();
             break;
           
           
-          // Show help menu
+          /* Show help menu */
           case 'h':
             menu_help ();
             make_pause ();
             break;
           
-          // Quit asking for confirmation
+          /* Quit asking for confirmation */
           case 'q':
             printf (" Are you sure? (y/N): ");
-            opt = readin (answer, "y\n");
-            if (opt == 'y')
+            fgets (answer, BUFSIZ, stdin);
+            if (answer[0] == 'y')
               return 0;
             else
               break;
         }
     }
 }
-

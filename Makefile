@@ -5,12 +5,12 @@ BIN = /usr/local/bin
 
 # Compiler configuration
 CC = cc
-OPTIMIZATION	= -O3 -pipe -ftracer -fomit-frame-pointer -fPIC
-# OPTIMIZATION	= -g -Wall
+OPTIMIZATION = -O3 -pipe -ftracer -fomit-frame-pointer -fPIC
+#OPTIMIZATION = -g -Wall
 SYSTEM = POSIX
 #SYSTEM = WIN
-VERBOSITY = -w
-CFLAGS	= $(OPTIMIZATION) $(VERBOSITY) -D$(SYSTEM)
+VERBOSITY = -W -Wall -ansi -pedantic
+CFLAGS = $(OPTIMIZATION) $(VERBOSITY) -D$(SYSTEM)
 
 OBJS = MaTest.o connectives.o wffs_pn.o variables.o user.o evaluation.o
 
@@ -29,5 +29,4 @@ clean :
 uninstall :
 	rm -f $(BIN)/matest
 
-$(OBJS) : MaTest.h
-
+$(OBJS) : MaTest.h logics.h

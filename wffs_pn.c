@@ -34,22 +34,23 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "MaTest.h"
 
 
 /***
-  Function symbol_type:
+  Function symbol_type_pn:
    Returns symbol type of given character. Possible symbol types are:
    VAR (variable), UCON (unary connective), BCON (binary connective) or NONE.
 ***/
-SymbolType symbol_type (char symbol, Logic logic)
+LogicSymbKind symbol_kind_pn (char symbol, Logic logic)
 {
   if (islower (symbol))
     return VAR;
-  else if (is_unary_connective (symbol, &logic->unyConns))
+  else if (search_UCon (logic->UCons, symbol))
     return UCON;
-  else if (is_binary_connective (symbol, &logic->binConns))
+  else if (search_BCon (logic->BCons, symbol))
     return BCON;
   else
     return NONE;
@@ -65,11 +66,11 @@ bool check_string (char formula[])
 {
   int i;
   
-  for (i = 0; i < strlen (formula); i++)
+  for (i = 0; i < (int) strlen (formula); i++)
     {
       if (!isalpha (formula[i]))
         {
-          printf ("Given formula has not-implemented characters.\n");
+          perror ("Given formula has not-implemented characters.\n");
           return false;
         }
     }
@@ -86,32 +87,32 @@ bool is_wff_pn (char formula[], Logic logic)
 {
   int i, deep = 1;
   
-  // First check the formula for not implemented characters
+  /* First check the formula for not implemented characters */
   if (check_string (formula))
     {
-      for (i = 0; i < strlen (formula); i++)
+      for (i = 0; i < (int) strlen (formula); i++)
         {
-          // Variables decrease the formula deep
+          /* Variables decrease formula deep */
           if (islower (formula[i]))
             deep--;
           
           else if (isupper (formula[i]))
             {
-              // Unary connectives don't change the formula deep
-              if (is_unary_connective (formula[i], &logic->unyConns))
+              /* Unary connectives don't change the formula deep */
+              if (search_UCon (logic->UCons, formula[i]))
                 deep = deep;
-              // Binary connectives increase the formula deep
-              else if (is_binary_connective (formula[i], &logic->binConns))
+              /* Binary connectives increase the formula deep */
+              else if (search_BCon (logic->BCons, formula[i]))
                 deep++;
-              // Else, if connective isn't unary or binary, it doesn't exists
+              /* Else, if connective isn't unary or binary, it doesn't exists */
               else
                 {
                   printf ("The connective %c is not defined.\n", formula[i]);
                   return false;
                 }
             }
-          // If all connectives have arguments now but still rests arguments:
-          // deep exceeded
+          /* If all connectives have arguments now but still rests arguments:
+             deep exceeded. */
           if (deep == 0 && formula[i + 1] != 0)
             {
               printf (" Formula \"%s\" isn't a WFF!\n", formula);
@@ -119,8 +120,8 @@ bool is_wff_pn (char formula[], Logic logic)
               return false;
             }
         }
-      // If, after all, there are connectives without arguments: deep 
-      // insufficient.
+      /* If, after all, there are connectives without arguments: deep
+         insufficient. */
       if (deep != 0)
         {
           printf (" Formula \"%s\" isn't a WFF!\n", formula);
@@ -142,26 +143,26 @@ bool is_wff_pn (char formula[], Logic logic)
    makes a correct well formed formula tree, that is a characteristic of
    prefixed notations and polish notation is a prefixed notation.
 ***/
-void parse_polish (char formula[], WFF *tree, Logic logic)
+void parse_polish (LogicWFF *tree, char formula[], Logic logic)
 {
-  Var var;
+  LogicVar var;
   int i;
   
-  for (i = 0; i < strlen (formula); i++)
+  for (i = 0; i < (int) strlen (formula); i++)
     {
-      if (symbol_type (formula[i], logic) == VAR)
+      if (symbol_kind_pn (formula[i], logic) == VAR)
         {
-          var = (Var) search_var (formula[i], logic->Vars);
+          var = (LogicVar) search_var (logic->Vars, formula[i]);
           set_atom (tree, VAR, formula[i], &var->value);
         }
-      else if (symbol_type (formula[i], logic) == UCON)
+      else if (symbol_kind_pn (formula[i], logic) == UCON)
         set_atom (tree, UCON, formula[i], NULL);
-      else if (symbol_type (formula[i], logic) == BCON)
+      else if (symbol_kind_pn (formula[i], logic) == BCON)
         set_atom (tree, BCON, formula[i], NULL);
       else
         {
           printf ("Parsing... Unexpected error!\n");
-          make_pause ();
+          make_pause();
           return;
         }
     }

@@ -25,14 +25,14 @@
 
 /*                               user.c
 *
-*    This file contains functions that interactuate with the user, functions
-*    that show information in the screen and others that get input information.
+*    This file contains functions that interactuate with the user, others that
+*    show information into the screen and others that get input information.
 */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <ctype.h>
 #include "MaTest.h"
 
 
@@ -44,7 +44,7 @@ char readin (char str[], char pattern[])
 {
   char ch;
   int i;
-
+  
   fflush (stdout);
   for (;;)
     {
@@ -67,13 +67,12 @@ char readin (char str[], char pattern[])
 ***/
 void clear_scr (void)
 {
-  int i;
-  
   #ifdef POSIX
     system ("clear");
   #elif WIN
     system ("cls");
   #else
+    int i;
     for (i = 0; i < 24; i++)
       printf ("\n");
   #endif
@@ -113,23 +112,23 @@ void menu_header (void)
 ***/
 void menu_info (Work work)
 {
-  unyCon unyaux;
-  binCon binaux;
+  LogicUCon unyaux;
+  LogicBCon binaux;
   
   printf ("   Matrices dimension:    ");
-  if (work->logic->dimension)
-    printf ("%ix%i", work->logic->dimension, work->logic->dimension);
+  if (work->DIM)
+    printf ("%ix%i", work->DIM, work->DIM);
   else
     printf ("Not defined!");
   
   printf ("\n   Min. Desig. Value:     ");
-  if (work->logic->mdv)
-    printf ("%i", work->logic->mdv);
+  if (work->MDV)
+    printf ("%i", work->MDV);
   else
     printf ("Not defined!");
   
   printf ("\n   Unary  connectives:    ");
-  unyaux = work->logic->unyConns;
+  unyaux = work->logic->UCons;
   while (unyaux)
     {
       printf ("%c ", unyaux->name);
@@ -137,7 +136,7 @@ void menu_info (Work work)
     }
   
   printf ("\n   Binary connectives:    ");
-  binaux = work->logic->binConns;
+  binaux = work->logic->BCons;
   while (binaux)
     {
       printf ("%c ", binaux->name);
@@ -165,7 +164,7 @@ void menu_info (Work work)
    Prints the menu of options available.
 ***/
 void menu_options (void)
-{  
+{
   printf (" Options:\n"
           "   V: Values evaluated.\n"
           "   M: Redefine the Minimum Designated Value.\n"
@@ -228,18 +227,18 @@ void menu_about (void)
           "  value and given a formula, it gets all possible values for the formula and\n"
           "  evaluate if they are designated or not.\n"
           "  Sucessor of Matrigüity by J. M. Méndez & B. García Noriega (1982).\n"
-          "\n"
-          " COPYRIGHT (C) 2008, César González Gutiérrez <ceguel@gmail.com>.\n"
+          "\n", VERSION);
+  printf (" COPYRIGHT (C) 2008, César González Gutiérrez <ceguel@gmail.com>.\n"
           "  MaTest is free software: you can redistribute it and/or modify\n"
           "  it under the terms of the GNU General Public License as published by\n"
           "  the Free Software Foundation, either version 3 of the License, or\n"
           "  (at your option) any later version.\n"
-          "\n"
-          "  MaTest is distributed in the hope that it will be useful, but\n"
+          "\n");
+  printf ("  MaTest is distributed in the hope that it will be useful, but\n"
           "  without any warranty; without even the implied warranty of\n"
           "  merchantability or fitness for a particular purpose.\n"
           "  See the GNU General Public License for more details:\n"
-          "  <http://gnu.org/licenses/gpl.html>.\n", VERSION);
+          "  <http://gnu.org/licenses/gpl.html>.\n");
 }
 
 
@@ -266,4 +265,3 @@ void menu_index (Work work)
   menu_info (work);
   menu_options();
 }
-

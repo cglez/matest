@@ -32,90 +32,50 @@
 *    for matrices).
 */
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "MaTest.h"
 
 
 /***
-  Function is_unary_connective:
-   Returns true if the name of the connective in the list of unary
-   connectives, otherwise returns false.
-***/
-bool is_unary_connective (char con_name, unyConList *list)
-{
-  unyCon aux = *list;
-  
-  while (aux)
-    {
-      if (aux->name == con_name)
-        return true;
-      else
-        aux = aux->next;
-    }
-  
-  return false;
-}
-
-
-/***
-  Function is_binary_connective:
-   Returns true if the name of the connective in the list of dyadic
-   connectives, otherwise returns false.
-***/
-bool is_binary_connective (char con_name, binConList *list)
-{
-  binCon aux = *list;
-  
-  while (aux)
-    {
-      if (aux->name == con_name)
-        return true;
-      else
-        aux = aux->next;
-    }
-  
-  return false;
-}
-
-
-/***
-  Function search_uny_con:
+  Function search_UCon:
    Searches an unary connective in the list of unary connectives. Returns a
    pointer to it if exists, or a null pointer if don't.
 ***/
-unyCon search_uny_con (char con_name, unyConList list)
+LogicUCon search_UCon (LogicUConList list, char name)
 {
-  unyCon aux;
+  LogicUCon aux;
   aux = list;
-  
+
   while (aux)
     {
-      if (aux->name == con_name)
+      if (aux->name == name)
         return aux;
       else
         aux = aux->next;
     }
-  
+
   return aux;
 }
 
 
 /***
-  Function search_bin_con:
+  Function search_BCon:
    Searches a binary connective in the list of binary connectives. Returns a
    pointer to it if exists, or a null pointer if don't.
 ***/
-binCon search_bin_con (char con_name, binConList list)
+LogicBCon search_BCon (LogicBConList list, char name)
 {
-  binCon aux;
+  LogicBCon aux;
   aux = list;
   
   while (aux)
     {
-      if (aux->name == con_name)
+      if (aux->name == name)
         return aux;
       else
         aux = aux->next;
@@ -126,20 +86,20 @@ binCon search_bin_con (char con_name, binConList list)
 
 
 /***
-  Function add_unary_connective:
+  Function add_UCon:
    Generic function for adding an unary connective with an specific name and
    matrix into a list of unary connectives.
      Returns 0: successful.
      Returns 2: error, connective is in the list.
 ***/
-int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimension)
+int add_UCon (LogicUConList *list, char name, int *mtx, int dimension)
 {
   int i;
-  unyCon new, aux;
+  LogicUCon new, aux;
   
-  new = (unyCon) malloc (sizeof (unyConType));
+  new = (LogicUCon) malloc (sizeof (LogicUConType));
   
-  // If list is empty, new node is the first element now
+  /* If list is empty, now new node is the first element */
   if (*list == NULL)
     {
       new->next = *list;
@@ -148,11 +108,11 @@ int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimensi
   else
     {
       aux = *list;
-      // Search the last element
+      /* Search the last element */
       while (aux->next)
         {
-          // Discard elements in the list
-          if (aux->name == con_name || aux->next->name == con_name)
+          /* Discard elements in the list */
+          if (aux->name == name || aux->next->name == name)
             return 2;
           else
             aux = aux->next;
@@ -161,8 +121,8 @@ int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimensi
         aux->next = new;
     }
   
-  // Define the connective elements
-  new->name = con_name;
+  /* Define the connective elements */
+  new->name = name;
   new->matrix = (int*) calloc (dimension, sizeof (int));
   for (i = 0; i < dimension; i++)
     new->matrix[i] = mtx[i];
@@ -172,20 +132,20 @@ int add_unary_connective (char con_name, int *mtx, unyConList *list, int dimensi
 
 
 /***
-  Function add_binary_connective:
+  Function add_BCon:
    Generic function for adding a binary connective with an specific name and
    matrix into a list of binary connectives.
      Returns 0: successful.
      Returns 2: error, connective is in the list.
 ***/
-int add_binary_connective (char con_name, int **mtx, binConList *list, int dimension)
+int add_BCon (LogicBConList *list, char name, int **mtx, int dimension)
 {
   int i, j;
-  binCon new, aux;
+  LogicBCon new, aux;
   
-  new = (binCon) malloc (sizeof (binConType));
+  new = (LogicBCon) malloc (sizeof (LogicBConType));
   
-  // If list is empty, new node is the first element now
+  /* If list is empty, new node is the first element now */
   if (*list == NULL)
     {
       new->next = *list;
@@ -194,11 +154,11 @@ int add_binary_connective (char con_name, int **mtx, binConList *list, int dimen
   else
     {
       aux = *list;
-      // Search the last element
+      /* Search the last element */
       while (aux->next)
         {
-          // Discard elements in the list
-          if (aux->name == con_name || aux->next->name == con_name)
+          /* Discard elements in the list */
+          if (aux->name == name || aux->next->name == name)
             return 2;
           else
             aux = aux->next;
@@ -207,31 +167,27 @@ int add_binary_connective (char con_name, int **mtx, binConList *list, int dimen
         aux->next = new;
     }
   
-  // Define the connective elements
-  new->name = con_name;
+  /* Define the connective elements */
+  new->name = name;
   new->matrix = (int**) calloc (dimension, sizeof (int*));
   for (i = 0; i < dimension; i++)
-    {
-      new->matrix[i] = (int*) calloc (dimension, sizeof (int));
-    }
+    new->matrix[i] = (int*) calloc (dimension, sizeof (int));
   for (i = 0; i < dimension; i++)
     {
       for (j = 0; j < dimension; j++)
-        {
-          new->matrix[i][j] = mtx[i][j];
-        }
+        new->matrix[i][j] = mtx[i][j];
     }
   return 0;
 }
 
 
 /***
-  Procedure add_custom_uny_conn:
+  Procedure add_custom_UCon:
    Adds a new, custom unary connective into the unary connective list. Asks
    user for new values. If user press return whit no value, this position is
    set with the last prompted value.
 ***/
-void add_custom_uny_conn (char con_name, unyConList *list, int dimension)
+void add_custom_UCon (LogicUConList *list, char name, int dimension)
 {
   int i;
   int *mtx;
@@ -239,16 +195,16 @@ void add_custom_uny_conn (char con_name, unyConList *list, int dimension)
   
   mtx = (int*) calloc (dimension, sizeof (int));
   
-  // Initialize all values to -1 for error control
+  /* Initialize all values to -1 for error control */
   for (i = 0; i < dimension; i++)
     mtx[i] = -1;
   
-  // Ask for new values
+  /* Ask for new values */
   for (i = 0; i < dimension; i++)
     {
       do
         {
-          printf ("%c %i: ", con_name, i);
+          printf ("%c %i: ", name, i);
           fgets (value, 9, stdin);
           if (value[0] == '\n')
             {
@@ -257,7 +213,7 @@ void add_custom_uny_conn (char con_name, unyConList *list, int dimension)
               else
                 {
                   mtx[i] = mtx[i - 1];
-                  printf ("%c %i: %i\n", con_name, i, mtx[i]);
+                  printf ("%c %i: %i\n", name, i, mtx[i]);
                 }
             }
           else
@@ -266,42 +222,42 @@ void add_custom_uny_conn (char con_name, unyConList *list, int dimension)
       while (mtx[i] < 0 || mtx[i] >= dimension);
     }
   
-  add_unary_connective (con_name, mtx, list, dimension);
+  add_UCon (list, name, mtx, dimension);
   free (mtx);
 }
 
 
 /***
-  Procedure add_custom_bin_conn:
-   Adds a new, custom binary connective into the binary connective list. Asks
+  Procedure add_custom_BCon:
+   Adds a new, custom binary connective into binary connective list. Asks
    user for new values. If user press return with no value, this position is
    set with the last prompted value.
 ***/
-void add_custom_bin_conn (char con_name, binConList *list, int dimension)
+void add_custom_BCon (Logic logic, char connective)
 {
   int i, j;
   int **mtx;
   char value[10];
-  
-  mtx = (int**) calloc (dimension, sizeof (int*));
-  for (i = 0; i < dimension; i++)
-    mtx[i] = calloc (dimension, sizeof (int));
-  
-  // Initialize all the values to -1 for error control
-  for (i = 0; i < dimension; i++)
+
+  mtx = (int**) calloc (DIM, sizeof (int*));
+  for (i = 0; i < DIM; i++)
+    mtx[i] = calloc (DIM, sizeof (int));
+
+  /* Initialize all the values to -1 for error control */
+  for (i = 0; i < DIM; i++)
     {
-      for (j = 0; j < dimension; j++)
+      for (j = 0; j < DIM; j++)
         mtx[i][j] = -1;
     }
-  
-  // Ask for new values
-  for (i = 0; i < dimension; i++)
+
+  /* Ask for new values */
+  for (i = 0; i < DIM; i++)
     {
-      for (j = 0; j < dimension; j++)
+      for (j = 0; j < DIM; j++)
         {
           do
             {
-              printf ("%c %i %i: ", con_name, i, j);
+              printf (" %c %i %i: ", connective, i, j);
               fgets (value, 8, stdin);
               if (value[0] == '\n')
                 {
@@ -309,107 +265,92 @@ void add_custom_bin_conn (char con_name, binConList *list, int dimension)
                     mtx[i][j] = -1;
                   else if (j == 0)
                     {
-                      mtx[i][j] = mtx[i - 1][dimension - 1];
-                      printf ("%c %i %i: %i\n", con_name, i, j, mtx[i][j]);
+                      mtx[i][j] = mtx[i - 1][logic->dim - 1];
+                      printf (" %c %i %i: %i\n", connective, i, j, mtx[i][j]);
                     }
                   else
                     {
                       mtx[i][j] = mtx[i][j - 1];
-                      printf ("%c %i %i: %i\n", con_name, i, j, mtx[i][j]);
+                      printf (" %c %i %i: %i\n", connective, i, j, mtx[i][j]);
                     }
                 }
               else
                 sscanf (value, "%i", &mtx[i][j]);
             }
-          while (mtx[i][j] < 0 || mtx[i][j] >= dimension);
+          while (mtx[i][j] < 0 || mtx[i][j] >= DIM);
         }
     }
-  
-  add_binary_connective (con_name, mtx, list, dimension);
+
+  add_BCon (&logic->BCons, connective, mtx, logic->dim);
   free (mtx);
 }
 
 
 /***
-  Procedure set_default_uny_conns:
+  Procedure set_default_UCons:
    Sets the unary connectives at default; default is as in Łukasiewicz
    multivaluated logics definition. There is only a default unary connective,
    the negation connective (N).
 ***/
-void set_default_uny_conns (Logic logic)
+void set_default_UCons (Logic logic)
 {
   int i;
   int *mtx;
-  
-  mtx = (int*) calloc (logic->dimension, sizeof (int));
-  
+
+  mtx = (int*) calloc (DIM, sizeof (int));
+
   /* Setting the negation connective (N):
        Nx [¬x]  =df  (1 - x) */
-  for (i = 0; i < logic->dimension; i++)
-    mtx[i] = logic->dimension - 1 - i;
-  add_unary_connective ('N', mtx, &logic->unyConns, logic->dimension);
-  
+  for (i = 0; i < DIM; i++)
+    mtx[i] = logic->dim - 1 - i;
+  add_UCon (&logic->UCons, 'N', mtx, logic->dim);
+
   free (mtx);
 }
 
 
 /***
-  Procedure set_default_bin_conns:
+  Procedure set_default_BCons:
    Sets the binary connectives at default. Default is as in Łukasiewicz
    multivaluated logics definition. The default binary connectives are the
    implication connective (C), the conjunction connective (K) and the
    disjunction connective (A).
 ***/
-void set_default_bin_conns (Logic logic)
+void set_default_BCons (Logic logic)
 {
   int i, j;
   int **mtx;
   
-  mtx = (int**) calloc (logic->dimension, sizeof (int*));
-  for (i = 0; i < logic->dimension; i++)
-    mtx[i] = calloc (logic->dimension, sizeof (int));
+  mtx = (int**) calloc (DIM, sizeof (int*));
+  for (i = 0; i < DIM; i++)
+    mtx[i] = calloc (DIM, sizeof (int));
 
   /* Setting the implication connective (C):
-       Cxy [x->y]  =df  min {1, (1 - x) + y} */  
-  for (i = 0; i < logic->dimension; i++)
+       Cxy [x->y]  =df  min {n, (n - x) + y} */
+  for (i = 0; i < DIM; i++)
     {
-      for (j = 0; j < logic->dimension; j++)
-        {
-          if ((logic->dimension - 1) < ((logic->dimension - 1) - i + j))
-            mtx[i][j] = (logic->dimension - 1);
-          else
-            mtx[i][j] = ((logic->dimension - 1) - i + j);
-        }
+      for (j = 0; j < DIM; j++)
+        mtx[i][j] = MIN ((DIM - 1), (DIM - 1 - i + j));
     }
-  add_binary_connective ('C', mtx, &logic->binConns, logic->dimension);
-  
+  add_BCon (&logic->BCons, 'C', mtx, logic->dim);
+
   /* Setting the conjunction connective (K):
        Kxy [x & y]  =df  min {x, y} */
-  for (i = 0; i < logic->dimension; i++)
+  for (i = 0; i < DIM; i++)
     {
-      for (j = 0; j < logic->dimension; j++)
-        {
-          if (i < j)
-            mtx[i][j] = i;
-          else
-            mtx[i][j] = j;
-        }
+      for (j = 0; j < DIM; j++)
+        mtx[i][j] = MIN (i, j);
     }
-  add_binary_connective ('K', mtx, &logic->binConns, logic->dimension);
-  
+  add_BCon (&logic->BCons, 'K', mtx, logic->dim);
+
   /* Setting the disjunction connective (A):
        Axy [x v y]  =df  Max {x, y} */
-  for (i = 0; i < logic->dimension; i++)
+  for (i = 0; i < DIM; i++)
     {
-      for (j = 0; j < logic->dimension; j++)
-        {
-          if (i > j)
-            mtx[i][j] = i;
-          else
-            mtx[i][j] = j;
-        }
+      for (j = 0; j < DIM; j++)
+        mtx[i][j] = MAX (i, j);
     }
-  add_binary_connective ('A', mtx, &logic->binConns, logic->dimension);
+  add_BCon (&logic->BCons, 'A', mtx, logic->dim);
   
   free (mtx);
 }
@@ -419,23 +360,23 @@ void set_default_bin_conns (Logic logic)
   Procedure del_connective:
    Deletes, if exists, an unary or binary connective given by its name.
 ***/
-void del_connective (char con_name, Logic logic)
+void del_connective (Logic logic, char connective)
 {
   int i;
-  unyCon unyprev, unyaux;
-  binCon binprev, binaux;
+  LogicUCon unyprev, unyaux;
+  LogicBCon binprev, binaux;
   
-  if (is_unary_connective (con_name, &logic->unyConns))
+  if (search_UCon (logic->UCons, connective))
     {
       unyprev = NULL;
-      unyaux = logic->unyConns;
+      unyaux = logic->UCons;
       
-      while (unyaux && unyaux->name != con_name)
+      while (unyaux && unyaux->name != connective)
         {
           unyprev = unyaux;
           unyaux = unyaux->next;
         }
-      if (!unyaux || unyaux->name != con_name)
+      if (!unyaux || unyaux->name != connective)
         {
           printf ("Unexpected error!\n");
           make_pause ();
@@ -444,7 +385,7 @@ void del_connective (char con_name, Logic logic)
       else
         {
           if (!unyprev)
-            logic->unyConns = unyaux->next;
+            logic->UCons = unyaux->next;
           else
             unyprev->next = unyaux->next;
           
@@ -453,17 +394,17 @@ void del_connective (char con_name, Logic logic)
         }
     }
   
-  else if (is_binary_connective (con_name, &logic->binConns))
+  else if (search_BCon (logic->BCons, connective))
     {
       binprev = NULL;
-      binaux = logic->binConns;
+      binaux = logic->BCons;
       
-      while (binaux && binaux->name != con_name)
+      while (binaux && binaux->name != connective)
         {
           binprev = binaux;
           binaux = binaux->next;
         }
-      if (!binaux || binaux->name != con_name)
+      if (!binaux || binaux->name != connective)
         {
           printf ("Unexpected error!\n");
           make_pause ();
@@ -472,11 +413,11 @@ void del_connective (char con_name, Logic logic)
       else
         {
           if (!binprev)
-            logic->binConns = binaux->next;
+            logic->BCons = binaux->next;
           else
             binprev->next = binaux->next;
           
-          for (i = 0; i < logic->dimension; i++)
+          for (i = 0; i < DIM; i++)
             free (binaux->matrix[i]);
           free (binaux->matrix);
           free (binaux);
@@ -485,7 +426,7 @@ void del_connective (char con_name, Logic logic)
   
   else
     {
-      printf ("Connective %c doesn't exist.\n", con_name);
+      printf ("Connective %c doesn't exist.\n", connective);
       make_pause ();
     }
 }
@@ -495,25 +436,25 @@ void del_connective (char con_name, Logic logic)
   Procedure print_uny_matrix:
    Prints matrix values of given unary connective in table format.
 ***/
-void print_uny_matrix (unyCon connective, int dimension, int mdv)
+void print_uny_matrix (LogicUCon connective, Logic logic)
 {
   int i;
   
   printf ("\n");
   
   printf ("  %c |", connective->name);
-  for (i = 0; i < dimension; i++)
+  for (i = 0; i < DIM; i++)
     printf ("  %i", i);
   
   printf ("\n----+");
-  for (i = 0; i < dimension; i++)
+  for (i = 0; i < DIM; i++)
     printf ("---");
   
   printf ("-\n"
           "    |");
-  for (i = 0; i < dimension; i++)
+  for (i = 0; i < DIM; i++)
     {
-      if (connective->matrix[i] >= mdv)
+      if (connective->matrix[i] >= logic->mdv)
         printf (" *%i", connective->matrix[i]);
       else
         printf ("  %i", connective->matrix[i]);
@@ -526,31 +467,31 @@ void print_uny_matrix (unyCon connective, int dimension, int mdv)
   Procedure print_bin_matrix:
    Prints matrix values of given binary connective in table format.
 ***/
-void print_bin_matrix (binCon connective, int dimension, int mdv)
+void print_bin_matrix (LogicBCon connective, Logic logic)
 {
-  int i,j;
+  int i, j;
   
   printf ("\n");
   
   printf ("  %c |", connective->name);
-  for (i = 0; i < dimension; i++)
+  for (i = 0; i < DIM; i++)
     printf ("  %i", i);
   
   printf ("\n----+");
-  for (i = 0; i < dimension; i++)
+  for (i = 0; i < DIM; i++)
     printf ("---");
   
   printf ("-\n");
-  for (i = 0; i < dimension; i++)
+  for (i = 0; i < DIM; i++)
     {
-      if (i >= mdv)
+      if (i >= logic->mdv)
         printf (" *%i |", i);
       else
         printf ("  %i |", i);
-      
-      for (j = 0; j < dimension; j++)
+
+      for (j = 0; j < DIM; j++)
         {
-          if (connective->matrix[i][j] >= mdv)
+          if (connective->matrix[i][j] >= logic->mdv)
             printf (" *%i", connective->matrix[i][j]);
           else
             printf ("  %i", connective->matrix[i][j]);
@@ -567,20 +508,20 @@ void print_bin_matrix (binCon connective, int dimension, int mdv)
 ***/
 void show_matrices (Logic logic)
 {
-  unyCon unyaux;
-  binCon binaux;
+  LogicUCon unyaux;
+  LogicBCon binaux;
   
-  unyaux = logic->unyConns;
+  unyaux = logic->UCons;
   while (unyaux)
     {
-      print_uny_matrix (unyaux, logic->dimension, logic->mdv);
+      print_uny_matrix (unyaux, logic);
       unyaux = unyaux->next;
     }
   
-  binaux = logic->binConns;
+  binaux = logic->BCons;
   while (binaux)
     {
-      print_bin_matrix (binaux, logic->dimension, logic->mdv);
+      print_bin_matrix (binaux, logic);
       binaux = binaux->next;
     }
 }
@@ -591,7 +532,7 @@ void show_matrices (Logic logic)
    Writes given unary connective matrix into external file. Format here is
    simpler than table format, pretends to be human and machine readable.
 ***/
-int write_uny_matrix (unyCon connective, FILE *file, int dimension)
+int write_uny_matrix (FILE *file, LogicUCon connective, int dimension)
 {
   int i;
   
@@ -614,7 +555,7 @@ int write_uny_matrix (unyCon connective, FILE *file, int dimension)
    Writes given binary connective matrix into external file. Format here is
    simpler than table format, pretends to be human and machine readable.
 ***/
-int write_bin_matrix (binCon connective, FILE *file, int dimension)
+int write_bin_matrix (FILE *file, LogicBCon connective, int dimension)
 {
   int i, j;
   
@@ -643,64 +584,20 @@ int write_bin_matrix (binCon connective, FILE *file, int dimension)
 ***/
 void write_matrices (Logic logic, FILE *file)
 {
-  unyCon unyaux;
-  binCon binaux;
+  LogicUCon unyaux;
+  LogicBCon binaux;
   
-  unyaux = logic->unyConns;
+  unyaux = logic->UCons;
   while (unyaux)
     {
-      write_uny_matrix (unyaux, file, logic->dimension);
+      write_uny_matrix (file, unyaux, DIM);
       unyaux = unyaux->next;
     }
   
-  binaux = logic->binConns;
+  binaux = logic->BCons;
   while (binaux)
     {
-      write_bin_matrix (binaux, file, logic->dimension);
+      write_bin_matrix (file, binaux, DIM);
       binaux = binaux->next;
     }
 }
-
-
-/***
-  Function read_matrix:
-    Returns 3: error, wrong format file.
-    Returns 4: error, dimension is set and isn't the same as in the file.
-***/
-/*
-int read_matrix (FILE *file)
-{
-  char string[BUFSIZ];
-  char con;
-  int vector[256];
-  int i, j, val, dim;
-  
-  if (file)
-    {
-      fgets (string, BUFSIZ, file);
-      sscanf (string, "%c", &con);
-      if (con > 'A' || con < 'Z')
-        {
-          do
-            fgets (string, BUFSIZ, file);
-          while (string[0] == '\n');
-          for (i = 0; string[i] =! 0; i++);
-            {
-              sscanf (string, "%i", &val);
-              vector[i] = val;
-              dim++;
-            }
-          if (dim < 2)
-            return 3;
-          else if (the_logic->dimension && (dim =! the_logic->dimension))
-            return 4;
-          do
-            {
-              fgets (string, BUFSIZ, file);
-            }
-          while (string[0] == '\n');
-        }
-    }
-}
-*/
-
