@@ -1,33 +1,33 @@
-/******************************************************************************
-*                                                                             *
-*                           ---   MaTest 1.0   ---                            *
-*                     Matrix Tester for logical matrices.                     *
-*       Copyright (C) 2008, César González Gutiérrez <ceguel@gmail.com>       *
-*                                                                             *
-*    This file is part of MaTest.                                             *
-*                                                                             *
-*    MaTest is free software: you can redistribute it and/or modify           *
-*    it under the terms of the GNU General Public License as published by     *
-*    the Free Software Foundation, either version 3 of the License, or        *
-*    (at your option) any later version.                                      *
-*                                                                             *
-*    MaTest is distributed in the hope that it will be useful,                *
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of           *
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the            *
-*    GNU General Public License for more details.                             *
-*                                                                             *
-*    You should have received a copy of the GNU General Public License        *
-*    along with MaTest.  If not, see <http://www.gnu.org/licenses/>.          *
-*                                                                             *
-*                                                                             *
- *****************************************************************************/
+/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
+/*
+ * variables.c
+ * This file is part of MaTest
+ *
+ * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, 
+ * Boston, MA 02111-1307, USA. 
+ */
 
 
-/*                               variables.c
-*
-*    This file contains the code of functions that deals with lists of
-*    variables and variables itself.
-*/
+/**
+ * @file variables.c
+ *
+ * Este archivo contiene las funciones encargadas de manejar las variables
+ * proposicionales y sus listas.
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,162 +37,167 @@
 #include "MaTest.h"
 
 
-/***
-  Function is_empty_var_list:
-***/
-bool is_empty_var_list (LogicVarList list)
+bool
+is_empty_var_list (LogicVarList list)
 {
-  return (list == NULL);
+	return (list == NULL);
 }
 
 
-/***
-  Procedure del_var_list:
-   Deletes given variable list freeing the memory.
-***/
-void del_var_list (LogicVarList *list)
+/**
+ * Procedimiento que elimina una lista de variables por completo liberando la
+ * memoria reservada. FIXME?
+ */
+void
+del_var_list (LogicVarList *list)
 {
-  LogicVar aux;
-  
-  while (*list)
-    {
-      aux = *list;
-      *list = aux->next;
-      free (aux);
-    }
+	LogicVar aux;
+	
+	while (*list)
+		{
+			aux = *list;
+			*list = aux->next;
+			free (aux);
+		}
 }
 
 
-/***
-  Function search_var:
-   Returns a pointer to the variable given by name, otherwise returns a null
-   pointer.
-***/
-LogicVar search_var (LogicVarList list, char variable)
+/**
+ * Busca una variable dada por su nombre en una lista de variables.
+ *
+ * @return Puntero a la variable si existe, o el puntero nulo en caso contrario.
+ */
+LogicVar
+search_var (LogicVarList list, char variable)
 {
-  LogicVar aux = list;
-  
-  while (aux)
-    {
-      if (aux->name == variable)
-        return aux;
-      else
-        aux = aux->next;
-    }
-  
-  return aux;
+	LogicVar aux = list;
+	
+	while (aux)
+		{
+			if (aux->name == variable)
+				return aux;
+			else
+				aux = aux->next;
+		}
+	
+	return aux;
 }
 
 
-/***
-  Procedure add_var:
-   Adds a variable, if it doesn't exist, in the variable list in alphabetical
-   order.
-***/
-void add_var (LogicVarList *list, char variable)
+/**
+ * Añade una variable proposicional a una lista si no existe ya una con ese
+ * nombre, y la sitúa por orden alfabético, con lo que la lista queda ordenada.
+ */
+void
+add_var (LogicVarList *list, char variable)
 {
-  LogicVar new, aux;
-  
-  /* Discard  elements in the list */
-  if (search_var (*list, variable))
-    return;
-  else
-    {
-      /* Create a new node */
-      new = (LogicVar) malloc (sizeof (LogicVarType));
-      new->name = variable;
-      new->value = 0;
-      
-      /* If list is empty or given character is previous than the first
-         element, now it is the first */
-      if ((*list == NULL) || (variable < (*list)->name))
-        {
-          /* Add list after new node */
-          new->next = *list;
-          /* Now, list begins at new node */
-          *list = new;
-        }
-      /* Else, search the last element or the node with a previous character */
-      else
-        {
-          aux = *list;
-          while (aux->next && aux->name < variable)
-            aux = aux->next;
-          
-          new->next = aux->next;
-          aux->next = new;
-        }
-    }
+	LogicVar new, aux;
+	
+	/* Descarta los elementos que ya están en la lista */
+	if (search_var (*list, variable))
+		return;
+	else
+		{
+			/* Crea el nuevo nodo */
+			new = (LogicVar) malloc (sizeof (LogicVarType));
+			new->name = variable;
+			new->value = 0;
+			
+			/* Si la lista está vacía o la letra es previa a la primera de la lista,
+			 * el nuevo nodo es ahora el primer elemento */
+			if ((*list == NULL) || (variable < (*list)->name))
+				{
+					/* Añade la lista después del nodo */
+					new->next = *list;
+					/* Ahora la lista empieza con este nodo */
+					*list = new;
+				}
+			/* Sino, busca una variable de letra posterior para situarla antes o al
+			 * final de la lista. */
+			else
+				{
+					aux = *list;
+					while (aux->next && aux->name < variable)
+						aux = aux->next;
+					
+					new->next = aux->next;
+					aux->next = new;
+				}
+		}
 }
 
 
-/***
-  Procedure register_vars:
-   Adds all the variables present in a formula into a variable list.
-***/
-void register_vars (Logic logic, char formula[])
+/**
+ * Procedimiento para registrar las variables de una fórmula. Añade todas las
+ * variables presentes en una fórmula en la lista de variables de una lógica.
+ *
+ * @param logic Lógica a la que van destinadas las variables, además sirve de
+ *        contexto para identificar los elementos que son variables.
+ * @param formula Fórmula dada como cadena de caracteres.
+ */
+void
+register_vars (Logic logic, char formula[])
 {
-  int i;
-  
-  for (i = 0; i < (int) strlen (formula); i++)
-    {
-      if (symbol_kind_pn (formula[i], logic) == VAR)
-        add_var (&logic->Vars, formula[i]);
-    }
+	int i;
+	
+	for (i = 0; i < (int) strlen (formula); i++)
+		{
+			if (symbol_kind_pn (formula[i], logic) == VAR)
+				add_var (&logic->Vars, formula[i]);
+		}
 }
 
 
-/***
-  Function num_vars:
-   Returns the number of elements in given variable list.
-***/
-int num_vars (LogicVarList list)
+/**
+ * Devuelve el número de elementos que contiene una lista de variables.
+ */
+int
+num_vars (LogicVarList list)
 {
-  int count = 0;
-  LogicVarList aux = list;
-  
-  if (is_empty_var_list (list))
-    return count;
-  else
-    {
-      while (aux)
-        {
-          count++;
-          aux = aux->next;
-        }
-    }
-  return count;
+	int count = 0;
+	LogicVarList aux = list;
+	
+	if (is_empty_var_list (list))
+		return count;
+	else
+		{
+			while (aux)
+				{
+					count++;
+					aux = aux->next;
+				}
+		}
+	return count;
 }
 
 
-/***
-  Procedure set_var_value:
-   Sets given value for a variable.
-***/
-void set_var_value (LogicVar var, int n)
+/**
+ * Establece el valor dado en una variable proposicional.
+ */
+void
+set_var_value (LogicVar var, int n)
 {
-  if (var)
-    var->value = n;
-  else
-    {
-      perror ("Variable is not in the list.");
-      return;
-    }
+	if (var)
+		var->value = n;
+	else
+    perror ("La variable no está en la lista.\n");
 }
 
 
-/***
-  Function var_value:
-   Returns the value of a variable in the given list of variables. If variable
-   doesn't exist, returns -1.
-***/
-int var_value (LogicVar var)
+/**
+ * Devuelve el valor de una variable proposicional.
+ *
+ * @return \f$n \geq 0\f$ : el valor de la variable.\n
+ *         -1: error, la variable no existe.
+ */
+int
+var_value (LogicVar var)
 {
-  if (var)
-    return var->value;
-  else
-    {
-      perror ("Variable doesn't exists.");
-      return -1;
-    }
+	if (var)
+		return var->value;
+	else
+		{
+			perror ("La variable no existe.\n");
+			return -1;
+		}
 }
