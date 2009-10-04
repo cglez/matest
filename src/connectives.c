@@ -205,7 +205,8 @@ add_BCon (LogicBConList *list, char name, int **mtx, int dimension)
  * Procedimiento para definir de manera interactiva una conectiva unaria nueva
  * dada por su nombre en una lista de conectivas unarias. Se pregunta al usuario
  * por todos los valores uno por uno, indicando el subíndice del elemento
- * actual. Si el usuario presiona Enter sin introducir ningún valor, se asigna
+ * actual.
+ * Si el usuario presiona Enter sin introducir ningún valor, se asigna
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
@@ -227,7 +228,7 @@ add_custom_UCon (LogicUConList *list, char name, int dimension)
 			do
 				{
 					printf (" %c %i: ", name, i);
-					fgets (value, 9, stdin);
+					(void) fgets (value, 9, stdin);
 					if (value[0] == '\n')
 						{
 							if (i == 0)
@@ -253,8 +254,9 @@ add_custom_UCon (LogicUConList *list, char name, int dimension)
  * Procedimiento para definir de manera interactiva una conectiva binaria nueva
  * dada por su nombre en una lista de conectivas binarias. Se pregunta al
  * usuario por todos los valores uno por uno, indicando los subíndices del
- * elemento actual. Si el usuario presiona Enter sin introducir ningún valor,
- * se asigna autómaticamente a la posición actual el último valor introducido.
+ * elemento actual.
+ * Si el usuario presiona Enter sin introducir ningún valor, se asigna
+ * autómaticamente a la posición actual el último valor introducido.
  */
 void
 add_custom_BCon (Logic logic, char connective)
@@ -282,7 +284,7 @@ add_custom_BCon (Logic logic, char connective)
 					do
 						{
 							printf (" %c %i %i: ", connective, i, j);
-							fgets (value, 8, stdin);
+							(void) fgets (value, 8, stdin);
 							if (value[0] == '\n')
 								{
 									if (j == 0 && i == 0)

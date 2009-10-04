@@ -42,8 +42,6 @@
 
 
 /**
- * @fn readin:
- * 
  * Esta función busca el primer caracter que coincida con un patrón dado por
  * una cadena de caracteres. Está pensada para recoger una opción dada por el
  * usuario por teclado. Esta función hace la entrada insensible a mayúsculas,
@@ -61,7 +59,7 @@ char readin (char str[], char pattern[])
 	fflush (stdout);
 	for (;;)
 		{
-			fgets (str, BUFSIZ, stdin);
+			(void) fgets (str, BUFSIZ, stdin);
 			ch = 0;
 			for (i = 0; str[i]; i++)
 				{
@@ -239,7 +237,7 @@ void menu_about (void)
 	printf (_("\n"
 	          " MaTest versión %s\n"
 	          "\n"
-	          " AUTHOR: César González Gutiérrez <ceguel@gmail.com>\n"
+	          " AUTOR: César González Gutiérrez <ceguel@gmail.com>\n"
 	          "\n"
 	          " DESCRIPCIÓN: MaTest (Matrix Tester) es un tester de matrices lógicas, libre\n"
 	          "  y multiplataforma. Definidas unas conectivas como matrices, un mínimo valor\n"

@@ -44,7 +44,7 @@
  * interactivo.
  */
 int
-main (void)
+main (int argc, char** argv)
 {
 	char opt, answer[BUFSIZ], namefile[BUFSIZ];
 	FILE *outfile;

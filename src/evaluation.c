@@ -75,7 +75,7 @@ set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
 	/* Si el árbol está vacío, reservamos memoria y establecemos los valores */
 	if (father == NULL)
 		{
-			(*tree) = (LogicWFF) malloc (sizeof (LogicAtomType));
+			(*tree) = (LogicWFF) malloc (sizeof (LogicWFFtype));
 			(*tree)->kind = kind;
 			(*tree)->name = name;
 			(*tree)->value = value;
@@ -84,7 +84,7 @@ set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
 		}
 	else if (father->kind == UCON)
 		{
-			node = (LogicAtom) malloc (sizeof (LogicAtomType));
+			node = (LogicAtom) malloc (sizeof (LogicWFFtype));
 			father->postarg = node;
 			node->kind = kind;
 			node->name = name;
@@ -96,7 +96,7 @@ set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
 		{
 			if (!father->prearg)
 				{
-					node = (LogicAtom) malloc (sizeof (LogicAtomType));
+					node = (LogicAtom) malloc (sizeof (LogicWFFtype));
 					father->prearg = node;
 					node->kind = kind;
 					node->name = name;
@@ -106,7 +106,7 @@ set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
 				}
 			else
 				{
-					node = (LogicAtom) malloc (sizeof (LogicAtomType));
+					node = (LogicAtom) malloc (sizeof (LogicWFFtype));
 					father->postarg = node;
 					node->kind = kind;
 					node->name = name;

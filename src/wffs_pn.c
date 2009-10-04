@@ -40,7 +40,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 
-#include "logics.h"
+#include "MaTest.h"
 
 
 /**
