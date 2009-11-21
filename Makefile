@@ -27,7 +27,7 @@ install : all
 	cp matest $(BIN)
 
 clean :
-	rm -f src/*.o matest
+	rm -f src/*.o MaTest
 
 uninstall :
 	rm -f $(BIN)/matest
