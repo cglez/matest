@@ -37,9 +37,9 @@
 
 
 /**
- * Busca recursivamente el primer argumento de conectiva sin ocupar en el árbol
- * de fbf dado. Después establece el nombre del elemento, el tipo y el puntero
- * al valor correspondiente si se trata de una variable.
+ * Busca recursivamente el primer argumento libre en el árbol de fbf dado.
+ * Después establece el nombre del elemento, el tipo y el puntero al valor
+ * correspondiente si se trata de una variable.
  *
  * @return true: si tiene éxito, false: en caso contrario.
  */
@@ -133,21 +133,21 @@ del_wff (LogicWFF *wff)
 {
 	if (!(*wff))
 		return;
-	
 	del_wff (&(*wff)->prearg);
 	del_wff (&(*wff)->postarg);
 	free (*wff);
+	*wff = NULL;
 }
 
 
 /**
  * Calcula recursivamente y devuelve el valor que se asigna a una fórmula
- * recorriendo el árbol de la fbf, basándose en los valores que toman las
+ * recorriendo el árbol de la fbf, basándose en los valores que toman sus
  * variables.
  *
  * @return n >= 0: el valor que toma la fórmula.\n
- *         -1: error, el árbol de la fbf está vacío.\n
- *         -2: error inesperado.
+ *             -1: error, el árbol de la fbf está vacío.\n
+ *             -2: error inesperado.
  */
 int
 eval_formula (LogicWFF wff, Logic logic)
@@ -180,42 +180,42 @@ eval_formula (LogicWFF wff, Logic logic)
 }
 
 
-/**
+/*
  * Procedimiento para imprimir la fórmula que se está evaluando actualmente
  * en notación polaca cambiando las variables por los valores que correspondan.
  */
 void
-print_current_evaluating_formula_pn (char formula[], Logic logic)
+print_current_evaluating_formula_pn (FILE *output, char formula[], Logic logic)
 {
 	int i;
 	
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
 			if (isupper (formula[i]))
-				printf ("%c", formula[i]);
+				fprintf (output, "%c", formula[i]);
 			else if (islower (formula[i]))
-				printf ("%i", var_value (search_var (logic->Vars, formula[i])));
+				fprintf (output, "%i", var_value (search_var (logic->Vars, formula[i])));
 		}
 }
 
 
 /**
- * Función que realiza el trabajo general de 
-	Procedure evaluation:
-	 The great job. Evaluates all possibilities of the formula, prints it
-	 depending on evaluation type selected and finally prints statistics.
-**/
+ * Función que realiza el trabajo general de evaluación. Recorre todas y cada
+ * una de las posibilidades de valoración de la fórmula evaluando cada
+ * instancia. Imprime las instancias seleccionadas en el tipo de evaluación e
+ * imprime las estadísticas obtenidas.
+ */
 void
-evaluation (Work work)
+evaluation (FILE *output, Work work)
 {
 	int i, all = 0, desig = 0;
 	LogicVar var;
 	
 	/* Imprime una cabecera con la fórmula en notación polaca */
-	printf (" %s\n ", work->formula_pn);
+	fprintf (output, " %s\n ", work->formula_pn);
 	for (i = 0; i < (int) strlen (work->formula_pn); i++)
-		printf ("-");
-	printf ("\n");
+		fprintf (output, "-");
+	fprintf (output, "\n");
 	
 	/*
 	 * El algoritmo contador
@@ -234,18 +234,18 @@ evaluation (Work work)
 					(*desig)++;
 					if (work->eval_values == ALL || work->eval_values == DESIGNATED)
 						{
-							 printf (" ");
-							 print_current_evaluating_formula_pn (work->formula_pn, work->logic);
-							 printf (" *%i\n", i);
+							 fprintf (output, " ");
+							 print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
+							 fprintf (output, " *%i\n", i);
 						}
 				 }
 			else
 				{
 					if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
 						{
-							printf (" ");
-							print_current_evaluating_formula_pn (work->formula_pn, work->logic);
-							printf ("  %i\n", i);
+							fprintf (output, " ");
+							print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
+							fprintf (output, "  %i\n", i);
 						}
 				}
 		}
@@ -278,15 +278,16 @@ evaluation (Work work)
 	while (var);
 	
 	/* Imprime las estadísticas */
-	printf ("\n %i posibilidades evaluadas.\n", all);
+	fprintf (output, "\n %i posibilidades evaluadas.\n", all);
 	if (work->eval_values == ALL || work->eval_values == DESIGNATED)
-		printf (" %i valores designados.\n", desig);
+		fprintf (output, " %i valores designados.\n", desig);
 	else
-		printf (" %i valores no designados.\n", all - desig);
+		fprintf (output, " %i valores no designados.\n", all - desig);
 	if (desig == all)
-		printf (" TAUTOLOGÍA.\n");
+		fprintf (output, " TAUTOLOGÍA.\n");
 	else if (desig == 0)
-		printf (" CONTRADICCIÓN.\n");
+		fprintf (output, " CONTRADICCIÓN.\n");
 	else
-		printf (" Las matrices dadas FALSAN la fórmula.\n");
+		fprintf (output, " Las matrices dadas FALSAN la fórmula.\n");
 }
+

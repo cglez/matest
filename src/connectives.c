@@ -40,7 +40,7 @@
 
 #include <libintl.h>
 #define _(String) gettext (String)
-#include "logics.h"
+#include "MaTest.h"
 
 
 /**
@@ -202,117 +202,6 @@ add_BCon (LogicBConList *list, char name, int **mtx, int dimension)
 
 
 /**
- * Procedimiento para definir de manera interactiva una conectiva unaria nueva
- * dada por su nombre en una lista de conectivas unarias. Se pregunta al usuario
- * por todos los valores uno por uno, indicando el subíndice del elemento
- * actual.
- * Si el usuario presiona Enter sin introducir ningún valor, se asigna
- * autómaticamente a la posición actual el último valor introducido.
- */
-void
-add_custom_UCon (LogicUConList *list, char name, int dimension)
-{
-	int i;
-	int *mtx;
-	char value[10];
-
-	mtx = (int*) calloc (dimension, sizeof (int));
-
-	/* Iniciamos todos los valores a -1 para el control de errores */
-	for (i = 0; i < dimension; i++)
-		mtx[i] = -1;
-
-	/* Preguntamos por los nuevos valores, uno a uno */
-	for (i = 0; i < dimension; i++)
-		{
-			do
-				{
-					printf (" %c %i: ", name, i);
-					(void) fgets (value, 9, stdin);
-					if (value[0] == '\n')
-						{
-							if (i == 0)
-								mtx[i] = -1;
-							else
-								{
-									mtx[i] = mtx[i - 1];
-									printf (" %c %i: %i\n", name, i, mtx[i]);
-								}
-						}
-					else
-						sscanf (value, "%i", &mtx[i]);
-				}
-			while (mtx[i] < 0 || mtx[i] >= dimension);
-		}
-
-	add_UCon (list, name, mtx, dimension);
-	free (mtx);
-}
-
-
-/**
- * Procedimiento para definir de manera interactiva una conectiva binaria nueva
- * dada por su nombre en una lista de conectivas binarias. Se pregunta al
- * usuario por todos los valores uno por uno, indicando los subíndices del
- * elemento actual.
- * Si el usuario presiona Enter sin introducir ningún valor, se asigna
- * autómaticamente a la posición actual el último valor introducido.
- */
-void
-add_custom_BCon (Logic logic, char connective)
-{
-	int i, j;
-	int **mtx;
-	char value[10];
-
-	mtx = (int**) calloc (DIM, sizeof (int*));
-	for (i = 0; i < DIM; i++)
-		mtx[i] = calloc (DIM, sizeof (int));
-
-	/* Iniciamos todos los valores a -1 para el control de errores */
-	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				mtx[i][j] = -1;
-		}
-
-	/* Preguntamos por los nuevos valores, uno a uno */
-	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				{
-					do
-						{
-							printf (" %c %i %i: ", connective, i, j);
-							(void) fgets (value, 8, stdin);
-							if (value[0] == '\n')
-								{
-									if (j == 0 && i == 0)
-										mtx[i][j] = -1;
-									else if (j == 0)
-										{
-											mtx[i][j] = mtx[i - 1][logic->dim - 1];
-											printf (" %c %i %i: %i\n", connective, i, j, mtx[i][j]);
-										}
-									else
-										{
-											mtx[i][j] = mtx[i][j - 1];
-											printf (" %c %i %i: %i\n", connective, i, j, mtx[i][j]);
-										}
-								}
-							else
-								sscanf (value, "%i", &mtx[i][j]);
-						}
-					while (mtx[i][j] < 0 || mtx[i][j] >= DIM);
-				}
-		}
-
-	add_BCon (&logic->BCons, connective, mtx, logic->dim);
-	free (mtx);
-}
-
-
-/**
  * Define las conectivas unarias por defecto, esto es, como en el modelo de las
  * lógicas multivaluadas de Łukasiewicz. Sólo se define una conectiva unaria,
  * la negación (N), de este modo: \f$ \neg x =_{def} ( 1 - x ) \f$.
@@ -417,7 +306,7 @@ del_connective (Logic logic, char connective)
 				}
 			if (!unyaux || unyaux->name != connective)
 				{
-					perror ("Unexpected error!\n");
+					perror ("¡Error inesperado!\n");
 					return;
 				}
 			else
@@ -444,7 +333,7 @@ del_connective (Logic logic, char connective)
 				}
 			if (!binaux || binaux->name != connective)
 				{
-					perror ("Unexpected error!\n");
+					perror ("¡Error inesperado!\n");
 					return;
 				}
 			else
@@ -460,119 +349,8 @@ del_connective (Logic logic, char connective)
 					free (binaux);
 				}
 		}
-
 	else
-		{
-			printf (_(" Connective %c doesn't exist.\n"), connective);
-			make_pause ();
-		}
-}
-
-
-/**
- * Imprime la matriz de una conectiva unaria en forma de tabla, marcando los
- * valores designados con asterisco.
- */
-void
-print_uny_matrix (LogicUCon connective, Logic logic)
-{
-	int i;
-
-	printf ("\n");
-
-	printf ("  %c |", connective->name);
-	for (i = 0; i < DIM; i++)
-		{
-			if (i >= MDV)
-				printf (" *%i", i);
-			else
-				printf ("  %i", i);
-		}
-
-	printf ("\n----+");
-	for (i = 0; i < DIM; i++)
-		printf ("---");
-
-	printf ("-\n"
-					"    |");
-	for (i = 0; i < DIM; i++)
-		{
-			if (connective->matrix[i] >= MDV)
-				printf (" *%i", connective->matrix[i]);
-			else
-				printf ("  %i", connective->matrix[i]);
-		}
-	printf ("\n");
-}
-
-
-/**
- * Imprime la matriz de una conectiva binaria en forma de tabla, marcando los
- * valores designados con asterisco.
- */
-void
-print_bin_matrix (LogicBCon connective, Logic logic)
-{
-	int i, j;
-
-	printf ("\n");
-
-	printf ("  %c |", connective->name);
-	for (i = 0; i < DIM; i++)
-		{
-			if (i >= MDV)
-				printf (" *%i", i);
-			else
-				printf ("  %i", i);
-		}
-
-	printf ("\n----+");
-	for (i = 0; i < DIM; i++)
-		printf ("---");
-
-	printf ("-\n");
-	for (i = 0; i < DIM; i++)
-		{
-			if (i >= MDV)
-				printf (" *%i |", i);
-			else
-				printf ("  %i |", i);
-
-			for (j = 0; j < DIM; j++)
-				{
-					if (connective->matrix[i][j] >= MDV)
-						printf (" *%i", connective->matrix[i][j]);
-					else
-						printf ("  %i", connective->matrix[i][j]);
-				}
-			printf ("\n");
-		}
-}
-
-
-/**
- * Imprime todas las matrices de todas las conectivas, primero las unarias,
- * luego las binarias, en el orden en que se hayen definidas.
- */
-void
-show_matrices (Logic logic)
-{
-	LogicUCon unyaux;
-	LogicBCon binaux;
-
-	unyaux = logic->UCons;
-	while (unyaux)
-		{
-			print_uny_matrix (unyaux, logic);
-			unyaux = unyaux->next;
-		}
-
-	binaux = logic->BCons;
-	while (binaux)
-		{
-			print_bin_matrix (binaux, logic);
-			binaux = binaux->next;
-		}
+		fprintf (stderr, " La conectiva %c no existe.\n", connective);
 }
 
 

@@ -93,6 +93,9 @@ typedef workType *Work;
 ***	Prototipos de las funciones
  */
 
+int mode_text (Work work);
+int mode_gui (int argc, char *argv[], Work work);
+
 /* Prototipos de las funciones relacionadas con el manejo de conectivas.
  * Funciones presentes en el archivo connectives.c */
 void add_custom_UCon (LogicUConList *list, char name, int dimension);
@@ -116,7 +119,6 @@ void register_vars (Logic logic, char formula[]);
  * Funciones presentes en el archivo wffs_pn.c */
 LogicSymbKind symbol_kind_pn (char symbol, Logic logic);
 bool check_string (char formula[]);
-bool is_wff_pn (char formula[], Logic logic);
 
 
 /* Prototipos de las funciones relacionadas con la evaluación.
@@ -126,7 +128,7 @@ void parse_polish (LogicWFF *tree, char formula[], Logic logic);
 void del_wff (LogicWFF *wff);
 int eval_formula (LogicWFF wff, Logic logic);
 void print_eval_formula (char formula[], Logic logic);
-void evaluation (Work work);
+void evaluation (FILE *output, Work work);
 
 
 /* Prototipos de las funciones que interactúan con el usuario.
@@ -134,6 +136,8 @@ void evaluation (Work work);
 char readin (char str[], char pattern[]);
 void clear_scr (void);
 void make_pause (void);
+void menu_usage (void);
+void menu_version (void);
 void menu_header (void);
 void menu_info (Work work);
 void menu_options (void);

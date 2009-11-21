@@ -1,0 +1,17 @@
+# Makefile for MaTest, MinGW cross-compiling
+
+CC = i586-mingw32msvc-gcc
+#SYSTEM = POSIX
+SYSTEM = WIN32
+VERBOSITY = -W -Wall -ansi
+#CFLAGS = -O3 -pipe -ftracer -fexec-charset=UTF-8 -D$(SYSTEM)
+CFLAGS = $(OPTIMIZATION) $(VERBOSITY) -D$(SYSTEM)
+
+OBJS = src/MaTest.o src/connectives.o src/wffs_pn.o src/variables.o src/user.o src/evaluation.o
+
+all : MaTest
+
+MaTest : $(OBJS)
+	$(CC) $(OBJS) -o matest.exe
+
+$(OBJS) : src/MaTest.h src/logics.h /usr/include/libintl.h

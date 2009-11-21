@@ -1,0 +1,78 @@
+ MaTest-1.1
+
+
+ MaTest-1.0a (08/12/08)
+
+ * Historia del programa.
+ 
+ * Mejoras en las estadísticas de la evaluación.
+ 
+ * Pequeña reestructuración del código.
+
+
+ MaTest-1.0 (25/11/08)
+ 
+ *  Código fuente modular.
+ 
+ *  Lenguaje natural del programa: cambiado al Inglés.
+ 
+ *  Reserva dinámica de memoria.
+ 
+ *  Dimensión de las matrices libre (limitado por la memoria disponible).
+ 
+ *  Posibilidad de definir nuevas conectivas y de borrar las ya existentes.
+ 
+ *  Posibilidad de guardar las matrices en un archivo externo. Éstas se guardan
+    en formato de tabla simple, legible tanto por una persona como por un
+    ordenador.
+ 
+ *  Las variables son registradas por demanda.
+ 
+ *  Menús rediseñados. Mejorada la robustez de la entrada de datos.
+ 
+ *  La detección de las fórmulas bien formadas en notación polaca se efectúa en
+    función de los datos proporcionados por el usuario según la siguiente con-
+    vención: cualquier letra mayúscula es una conectiva, cualquier letra minús-
+    cula es una variable.
+    Mejoras en la detección de errores en fórmulas mal formadas.
+ 
+ *  Creado un parser que transforma una fórmula bien formada en notación polaca
+    en una estructura de datos tipo árbol. 
+ 
+ *  Algoritmo de evaluación general. Las fbf individuales se evalúan mediante la
+    estructura en árbol (evaluación independiente de la notación empleada),
+    todas las posibilidades se calculan en función de la dimensión dada y de las
+    variables definidas por el usuario (independiente de valores predefinidos).
+ 
+ *  Posibilidad de seleccionar los valores mostrados en la evaluación, entre:
+    todos, valores designados o valores no designados.
+    También se muestran estadísticas después de la evaluación.
+
+
+ MaTest-0.1 (First release)
+
+ *  Archivo único de código fuente.
+ 
+ *  Reserva estática de memoria.
+ 
+ *  Las matrices están limitadas a una dimensión máxima de 10×10.
+ 
+ *  Las conectivas y el mínimo valor designado son definidos automáticamente,
+    después de que el usuario introduzca la dimensión de las matrices, según el
+    modelo de las lógicas multivaluadas de Łukasiewicz.
+ 
+ *  Mínimo valor designado redefinible.
+ 
+ *  6 conectivas predefinidas: implicación, negación, conjunción, disyunción,
+    necesidad y posibilidad.
+ 
+ *  Posibilidad de redefinir las matrices introduciendo los valores uno a uno.
+ 
+ *  5 variables: p, q, r, s, t.
+ 
+ *  Acepta fórmulas bien formadas en notación polaca, éstas se identifican
+    dependiendo de las conectivas y variables predefinidas.
+ 
+ *  Algoritmo de evaluación implementado en base a las conectivas y variables
+    predefinidas. Marca con un asterisco los valores designados.
+

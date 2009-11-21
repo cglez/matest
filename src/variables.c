@@ -46,7 +46,7 @@ is_empty_var_list (LogicVarList list)
 
 /**
  * Procedimiento que elimina una lista de variables por completo liberando la
- * memoria reservada. FIXME?
+ * memoria reservada.
  */
 void
 del_var_list (LogicVarList *list)

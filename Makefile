@@ -4,20 +4,23 @@
 BIN = /usr/local/bin
 
 # Compiler configuration
-CC = cc
+CC = cc $(DEBUG) $(LIBS) $(CFLAGS) $(OPTIMIZATION)
+VERBOSITY = -W -ansi -pedantic
+CFLAGS = -export-dynamic `pkg-config --cflags libglade-2.0`
+LIBS = `pkg-config --libs libglade-2.0`
+DEBUG  = -Wall -g
 OPTIMIZATION = -O3 -pipe -ftracer -fomit-frame-pointer -fPIC
-#OPTIMIZATION = -g -Wall
 SYSTEM = POSIX
 #SYSTEM = WIN32
-VERBOSITY = -W -Wall -ansi
-CFLAGS = $(OPTIMIZATION) $(VERBOSITY) -D$(SYSTEM)
 
-OBJS = src/MaTest.o src/connectives.o src/wffs_pn.o src/variables.o src/user.o src/evaluation.o
+OBJECTS = src/MaTest.o src/connectives.o src/wffs_pn.o src/variables.o \
+          src/user.o src/user_text.o src/user_gui.o src/evaluation.o \
+          src/callbacks.c
 
 all : MaTest
 	
-MaTest : $(OBJS)
-	$(CC) $(OBJS) -o matest
+MaTest : $(OBJECTS)
+	$(CC) $(OBJECTS) -o $@
 
 install : all
 	mkdir -p $(BIN)
@@ -29,4 +32,4 @@ clean :
 uninstall :
 	rm -f $(BIN)/matest
 
-$(OBJS) : src/MaTest.h src/logics.h
+$(OBJECTS) : src/MaTest.h src/logics.h

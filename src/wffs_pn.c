@@ -44,7 +44,7 @@
 
 
 /**
- * Categoriza el símbolo dado según una lógica de contexto (conectivas
+ * Categoriza el símbolo dado según una lógica de contexto (según las conectivas
  * definidas) y según la convención para las fórmulas en notación polaca.
  */
 LogicSymbKind
@@ -62,21 +62,26 @@ symbol_kind_pn (char symbol, Logic logic)
 
 
 /**
-	Function is_wff_pn:
-	 Checks if the given formula is a well formed formula in polish notation.
-	 If it's a WFF returns true, otherwise returns false.
-**/
+ * Comprueba que la fórmula dada sea una fórmula bien formada en notación
+ * polaca, dada una lógica de contexto. Los símbolos admitidos son sólo letras
+ * mayúsculas o minúsculas. Aquí se sigue una convención, en una fbf en notación
+ * polaca toda letra mayúscula es una conectiva y toda letra minúscula es una
+ * variable; se comprueba que las conectivas estén en efecto definidas en la
+ * lógica de contexto dada.
+ *
+ * @return true: si es una fbf en notación polaca, false en caso contrario.
+ */
 bool
 is_wff_pn (char formula[], Logic logic)
 {
 	int i, deep = 1;
 	
-	/* Comprobamos sólo haya caracteres válidos */
+	/* Comprobamos que sólo haya caracteres válidos */
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
 			if (!isalpha (formula[i]))
 				{
-					perror (" La fórmula dada contiene caracteres no implementados.\n");
+					perror (" La fórmula dada contiene caracteres no válidos.\n");
 					return false;
 				}
 		}
@@ -126,12 +131,12 @@ is_wff_pn (char formula[], Logic logic)
 
 
 /**
-	Procedure parse_polish:
-	 Parses a well formed formula in polish notation.
-	 Here, we read the formula from left to right, setting atoms one by one, that
-	 makes a correct well formed formula tree, that is a characteristic of
-	 prefixed notations and polish notation is a prefixed notation.
-**/
+ * Transforma una fbf en notación polaca en un árbol de fórmula bien formada.
+ * Aquí se lee la fórmula de izquierda a derecha, estableciendo cada elemento
+ * uno a uno, de la conectiva principal a sus argumentos. Esto da como resultado
+ * un árbol de fórmula bien formada correcto, como es propio de la notación
+ * polaca.
+ */
 void parse_polish (LogicWFF *tree, char formula[], Logic logic)
 {
 	LogicVar var;
