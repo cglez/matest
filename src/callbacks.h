@@ -25,9 +25,11 @@
 #ifndef __CALLBACKS_H__
 #define __CALLBACKS_H__
 
+#include <glib.h>
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <glade/glade.h>
 #include "MaTest.h"
+#include "logics.h"
 
 #define BUILDER_UI_FILE "matest.ui"
 
@@ -38,14 +40,24 @@ typedef struct
 		GtkWidget      *statusbar;
 		GtkWidget      *text_view;
 		GtkWidget      *progressbar;
+		GtkWidget      *spin_mdv;
+		GtkWidget      *hb_ucons;
+		GtkWidget      *hb_bcons;
 		GtkTextBuffer  *textbuffer;
 		GtkLabel       *label_dimmension;
-		GtkLabel       *label_ucons;
-		GtkLabel       *label_bcons;
 		GtkLabel       *label_formula;
 		Work           work;
+		char           bcon_to_edit;
 	}
 	MaTestGUI;
+
+
+typedef struct 
+	{
+		MaTestGUI  *gui;
+		LogicBCon  bcon;
+	}
+	EditBinCon;
 
 
 gboolean init_app (MaTestGUI *gui);
@@ -53,6 +65,12 @@ void on_window_destroy (GtkObject *object, MaTestGUI *gui);
 void error_message (const gchar *message);
 void on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui);
 void on_b_show_matrices_activate (GtkObject *object, MaTestGUI *gui);
+void on_b_uny_con_clicked (GtkObject *object, gpointer *data);
+void on_b_bin_con_clicked (GtkObject *object, GdkEventButton* event, MaTestGUI *gui);
 
+gchar* show_matrices_gui (Logic logic);
+gint add_BCon_gui (Logic logic);
+void refresh_gui (MaTestGUI *gui);
+void edit_bin_con_gui (Logic logic, char name);
 
 #endif

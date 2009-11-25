@@ -128,6 +128,7 @@
                             <property name="visible">True</property>
                             <property name="n_rows">6</property>
                             <property name="n_columns">2</property>
+                            <property name="column_spacing">4</property>
                             <child>
                               <object class="GtkLabel" id="label4">
                                 <property name="visible">True</property>
@@ -159,40 +160,27 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="label_ucons">
-                                <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Conectivas unarias:</property>
-                              </object>
-                              <packing>
-                                <property name="top_attach">2</property>
-                                <property name="bottom_attach">3</property>
-                                <property name="x_options">GTK_FILL</property>
-                                <property name="y_options">GTK_FILL</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkHBox" id="hbox6">
                                 <property name="visible">True</property>
                                 <child>
-                                  <object class="GtkButton" id="b_add_UCon">
+                                  <object class="GtkButton" id="b_add_uny_connective">
                                     <property name="label" translatable="yes">A&#xF1;adir</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_add_UCon_clicked"/>
+                                    <signal name="clicked" handler="on_b_add_uny_connective_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">0</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkButton" id="b_del_UCon">
+                                  <object class="GtkButton" id="b_del_uny_connective">
                                     <property name="label" translatable="yes">Borrar</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_del_UCon_clicked"/>
+                                    <signal name="clicked" handler="on_b_del_uny_connective_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">1</property>
@@ -208,39 +196,27 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="label_bcons">
-                                <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="label" translatable="yes">Conectivas binarias:</property>
-                              </object>
-                              <packing>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
-                                <property name="y_options">GTK_FILL</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkHBox" id="hbox7">
                                 <property name="visible">True</property>
                                 <child>
-                                  <object class="GtkButton" id="b_add_BCon">
+                                  <object class="GtkButton" id="b_add_bin_connective">
                                     <property name="label" translatable="yes">A&#xF1;adir</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_add_BCon_clicked"/>
+                                    <signal name="clicked" handler="on_b_add_bin_connective_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">0</property>
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkButton" id="b_del_BCon">
+                                  <object class="GtkButton" id="b_del_bin_connective">
                                     <property name="label" translatable="yes">Borrar</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_del_BCon_clicked"/>
+                                    <signal name="clicked" handler="on_b_del_bin_connective_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">1</property>
@@ -289,7 +265,7 @@
                                 <property name="visible">True</property>
                                 <property name="xalign">0</property>
                                 <property name="ypad">5</property>
-                                <property name="label" translatable="yes">Dimensi&#xF3;n de las matrices:</property>
+                                <property name="label" translatable="yes">Dimensi&#xF3;n de las matrices: </property>
                               </object>
                               <packing>
                                 <property name="y_options">GTK_FILL</property>
@@ -298,6 +274,7 @@
                             <child>
                               <object class="GtkLabel" id="label_dimmension">
                                 <property name="visible">True</property>
+                                <property name="xalign">1</property>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -322,14 +299,76 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLabel" id="label3">
+                              <object class="GtkHBox" id="hbox2">
                                 <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_ucons">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Conectivas unarias: </property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hb_ucons">
+                                    <property name="visible">True</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
                               </object>
                               <packing>
-                                <property name="top_attach">4</property>
-                                <property name="bottom_attach">5</property>
+                                <property name="top_attach">2</property>
+                                <property name="bottom_attach">3</property>
+                                <property name="x_options">GTK_FILL</property>
                                 <property name="y_options">GTK_FILL</property>
                               </packing>
+                            </child>
+                            <child>
+                              <object class="GtkHBox" id="hbox3">
+                                <property name="visible">True</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_bcons">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Conectivas binarias: </property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkHBox" id="hb_bcons">
+                                    <property name="visible">True</property>
+                                    <child>
+                                      <placeholder/>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
+                                <property name="y_options">GTK_FILL</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
                             </child>
                           </object>
                         </child>
@@ -400,7 +439,7 @@
                         <property name="shadow_type">in</property>
                         <child>
                           <object class="GtkTextView" id="text_view">
-                            <property name="width_request">200</property>
+                            <property name="width_request">230</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="editable">False</property>
@@ -432,7 +471,7 @@
                   <object class="GtkLabel" id="label9">
                     <property name="visible">True</property>
                     <property name="ypad">6</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Resultados:&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Resultado de la evaluaci&#xF3;n:&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                   </object>
                 </child>
@@ -461,7 +500,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkTextBuffer" id="textbuffer"/>
   <object class="GtkAdjustment" id="adjustment_mdv">
     <property name="value">1</property>
     <property name="lower">1</property>
@@ -470,4 +508,5 @@
     <property name="page_increment">10</property>
     <property name="page_size">10</property>
   </object>
+  <object class="GtkTextBuffer" id="textbuffer"/>
 </interface>

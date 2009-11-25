@@ -35,7 +35,7 @@
 #define MIN(a, b)	(((a) < (b)) ? (a) : (b))
 #define DIM logic->dim
 #define MDV logic->mdv
-#define MAXV (logic->dim - 1)
+#define MAXV logic->dim - 1
 
 
 /*

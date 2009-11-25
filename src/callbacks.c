@@ -49,7 +49,8 @@ on_b_evaluate_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_b_show_matrices_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+	gtk_text_buffer_set_text (gui->textbuffer,
+	                          show_matrices_gui (gui->work->logic), -1);
 }
 
 
@@ -57,6 +58,26 @@ void
 on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	
+}
+
+
+void
+on_b_uny_con_clicked (GtkObject *object, gpointer *data)
+{
+	g_print ("Definir %c\n", (gchar) data);
+}
+
+
+void
+on_b_bin_con_clicked (GtkObject *object, GdkEventButton* event, MaTestGUI *gui)
+{
+	gchar  *label;
+	char   name;
+	
+	label = gtk_button_get_label (GTK_BUTTON (object));
+	g_print ("%s\n", label);
+	//edit_bin_con_gui (bcon_edit->gui->work->logic, bcon_edit->bcon->name);
+	edit_bin_con_gui (gui->work->logic, *name);
 }
 
 
@@ -75,9 +96,9 @@ on_b_del_UCon_clicked (GtkObject *object, MaTestGUI *gui)
 
 
 void
-on_b_add_BCon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_add_bin_connective_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+	add_BCon_gui (gui->work->logic);
 }
 
 
@@ -91,5 +112,5 @@ on_b_del_BCon_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_spin_mdv_value_changed (GtkObject *object, MaTestGUI *gui)
 {
-	
+	gui->work->logic->mdv = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (gui->spin_mdv));
 }
