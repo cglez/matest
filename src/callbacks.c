@@ -21,9 +21,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #include "callbacks.h"
 
+
+void
+destroy (GtkWidget *widget, gpointer data)
+{
+	gtk_main_quit ();
+}
 
 void 
 on_window_destroy (GtkObject *object, MaTestGUI *gui)
@@ -42,7 +51,8 @@ on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui)
 void
 on_b_evaluate_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+	gtk_text_buffer_set_text (gui->textbuffer,
+	                          evaluation_gui (gui), -1);
 }
 
 
@@ -69,15 +79,12 @@ on_b_uny_con_clicked (GtkObject *object, gpointer *data)
 
 
 void
-on_b_bin_con_clicked (GtkObject *object, GdkEventButton* event, MaTestGUI *gui)
+on_b_bin_con_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	gchar  *label;
-	char   name;
+	char *name;
 	
-	label = gtk_button_get_label (GTK_BUTTON (object));
-	g_print ("%s\n", label);
-	//edit_bin_con_gui (bcon_edit->gui->work->logic, bcon_edit->bcon->name);
-	edit_bin_con_gui (gui->work->logic, *name);
+	name = gtk_button_get_label (GTK_BUTTON (object));
+	edit_bin_con_gui (gui->work->logic, (char) *name);
 }
 
 

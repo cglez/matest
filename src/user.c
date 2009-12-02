@@ -29,6 +29,7 @@
 #define _(String) gettext (String)
 #include "MaTest.h"
 
+
 /**
  * Esta función busca el primer caracter que coincida con un patrón dado por
  * una cadena de caracteres. Está pensada para recoger una opción dada por el

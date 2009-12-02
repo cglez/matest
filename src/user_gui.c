@@ -24,6 +24,26 @@
 #include <stdlib.h>
 #include "callbacks.h"
 
+/* Standard gettext macros. */
+#ifdef ENABLE_NLS
+#  include <libintl.h>
+#  undef _
+#  define _(String) dgettext (PACKAGE, String)
+#  ifdef gettext_noop
+#    define N_(String) gettext_noop (String)
+#  else
+#    define N_(String) (String)
+#  endif
+#else
+#  define textdomain(String) (String)
+#  define gettext(String) (String)
+#  define dgettext(Domain,Message) (Message)
+#  define dcgettext(Domain,Message,Type) (Message)
+#  define bindtextdomain(Domain,Directory) (Domain)
+#  define _(String) (String)
+#  define N_(String) (String)
+#endif
+
 
 /*
  * Llamamos a init_app() al arranque para cargar la estructura MaTestGUI, que
@@ -39,7 +59,7 @@ init_app (MaTestGUI *gui)
 
 	/* use GtkBuilder to build our interface from the XML file */
 	builder = gtk_builder_new ();
-	if (gtk_builder_add_from_file (builder, BUILDER_UI_FILE, &err) == 0)
+	if (gtk_builder_add_from_file (builder, UI_FILE, &err) == 0)
 		{
 			error_message (err->message);
 			g_error_free (err);
@@ -73,7 +93,7 @@ init_app (MaTestGUI *gui)
 	gtk_window_set_default_icon_name (GTK_STOCK_EDIT);
 
 	gtk_label_set_text (gui->label_dimmension,
-	                    g_strdup_printf ("%ix%i", gui->work->logic->dim, gui->work->logic->dim));
+	                    g_strdup_printf ("%ix%i", gui->work->DIM, gui->work->DIM));
 
 	refresh_gui (gui);
 
@@ -118,14 +138,26 @@ mode_gui (int argc, char *argv[], Work work)
 	/* allocate the memory needed by our MaTestGUI struct */
 	gui = g_slice_new (MaTestGUI);
 
-	gui->work = (Work) malloc (sizeof (workType));
+	//gui->work = (Work) malloc (sizeof (workType));
+	gui->work = work;
+	if (gui->work->logic->dim < 2)
+		{
+			gui->work->logic->dim = 2;
+			gui->work->logic->mdv = 1;
+		}
+	/*
 	gui->work->logic = (Logic) malloc (sizeof (LogicType));
 	gui->work->DIM = 3;
 	gui->work->MDV = gui->work->MAXV;
 	gui->work->formula_pn[0] = 0;
-	gui->work->wff = NULL;
+	gui->work->wff = NULL;	*/
+
+	gui->work->logic->UCons = NULL;
+	gui->work->logic->BCons = NULL;
 	set_default_UCons (gui->work->logic);
 	set_default_BCons (gui->work->logic);
+	if (gui->work->formula_pn[0] && is_wff_pn (gui->work->formula_pn, gui->work->logic))
+		parse_polish (gui->work->wff, gui->work->formula_pn, gui->work->logic);
 
 	/* initialize GTK+ libraries */
 	gtk_init (&argc, &argv);
@@ -230,7 +262,7 @@ add_BCon_gui (Logic logic)
 	guint           i, j;
 
 	win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title (GTK_WINDOW (win), Q_("Nueva conectiva binaria"));
+	gtk_window_set_title (GTK_WINDOW (win), _("Nueva conectiva binaria"));
 
 	table = gtk_table_new (DIM, DIM, TRUE);
 	gtk_container_add (GTK_CONTAINER (win), table);
@@ -296,12 +328,8 @@ void
 refresh_gui (MaTestGUI *gui)
 {
 	GtkWidget   *b_con;
-	EditBinCon  *bcon_data;
 	LogicUCon   unyaux;
 	LogicBCon   binaux;
-
-	bcon_data = g_slice_new (EditBinCon);
-	bcon_data->gui = gui;
 	
 	gtk_spin_button_set_range (GTK_SPIN_BUTTON (gui->spin_mdv),
 	                           1, gui->work->MAXV);
@@ -312,7 +340,7 @@ refresh_gui (MaTestGUI *gui)
 	while (unyaux)
 		{
 			b_con = gtk_button_new_with_label (g_strdup_printf ("%c", unyaux->name));
-			g_signal_connect (G_OBJECT (b_con), "clicked",
+			g_signal_connect (b_con, "clicked",
 		                    G_CALLBACK (on_b_uny_con_clicked), (gpointer) unyaux->name);
 		  gtk_container_add (GTK_CONTAINER (gui->hb_ucons), b_con);
 			gtk_widget_show (b_con);
@@ -323,7 +351,6 @@ refresh_gui (MaTestGUI *gui)
 	while (binaux)
 		{
 			b_con = gtk_button_new_with_label (g_strdup_printf ("%c", binaux->name));
-			bcon_data->bcon = binaux;
 			g_signal_connect (G_OBJECT (b_con), "clicked",
 		                    G_CALLBACK (on_b_bin_con_clicked), gui);
 			gtk_container_add (GTK_CONTAINER (gui->hb_bcons), b_con);
@@ -335,4 +362,183 @@ refresh_gui (MaTestGUI *gui)
 	                    g_strdup_printf ("Fórmula: %s", gui->work->formula_pn));
 
 	
+}
+
+
+void
+evaluation (FILE *output, Work work)
+{
+	int i, all = 0, desig = 0;
+	LogicVar var;
+	
+	/* Imprime una cabecera con la fórmula en notación polaca */
+	fprintf (output, " %s\n ", work->formula_pn);
+	for (i = 0; i < (int) strlen (work->formula_pn); i++)
+		fprintf (output, "-");
+	fprintf (output, "\n");
+	
+	/*
+	 * El algoritmo contador
+	 */
+	void action (Work work, int *all, int *desig)
+		{
+			int i;
+			
+			i = eval_formula (work->wff, work->logic);
+			/* Cuenta cada evaluación */
+			(*all)++;
+			/* Imprime una evaluación dependiendo del tipo de evaluación seleccionado
+			 * y cuenta los valores designados */
+			if (i >= work->MDV)
+				{
+					(*desig)++;
+					if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+						{
+							 fprintf (output, " ");
+							 print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
+							 fprintf (output, " *%i\n", i);
+						}
+				 }
+			else
+				{
+					if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
+						{
+							fprintf (output, " ");
+							print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
+							fprintf (output, "  %i\n", i);
+						}
+				}
+		}
+	
+	/* Condición inicial: todos los valores inicializados a 0 */
+	var = work->logic->Vars;
+	while (var)
+		{
+			var->value = 0;
+			var = var->next;
+		}
+	/* Primera acción con la primera de las condiciones */
+	action (work, &all, &desig);
+	/* El contador */
+	var = work->logic->Vars;
+	do
+		{
+			if (var_value (var) < work->DIM - 1)
+				{
+					set_var_value (var, var_value (var) + 1);
+					var = work->logic->Vars;
+					action (work, &all, &desig);
+				}
+			else
+				{
+					set_var_value (var, 0);
+					var = var->next;
+				}
+		}
+	while (var);
+	
+	/* Imprime las estadísticas */
+	fprintf (output, "\n %i posibilidades evaluadas.\n", all);
+	if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+		fprintf (output, " %i valores designados.\n", desig);
+	else
+		fprintf (output, " %i valores no designados.\n", all - desig);
+	if (desig == all)
+		fprintf (output, " TAUTOLOGÍA.\n");
+	else if (desig == 0)
+		fprintf (output, " CONTRADICCIÓN.\n");
+	else
+		fprintf (output, " Las matrices dadas FALSAN la fórmula.\n");
+}
+
+
+gchar*
+evaluation_gui (MaTestGUI *gui)
+{
+	int i, all = 0, desig = 0;
+	LogicVar var;
+	GString *text;
+
+	g_string_new ("");
+	
+	/* Imprime una cabecera con la fórmula en notación polaca */
+	g_string_append_printf (text, " %s\n ", gui->work->formula_pn);
+	for (i = 0; i < (int) strlen (gui->work->formula_pn); i++)
+		g_string_append_printf (text, "-");
+	g_string_append_printf (text, "\n");
+	
+	/*
+	 * El algoritmo contador
+	 */
+	void action (Work work, int *all, int *desig)
+		{
+			int i;
+			
+			i = eval_formula (gui->work->wff, gui->work->logic);
+			/* Cuenta cada evaluación */
+			(*all)++;
+			/* Imprime una evaluación dependiendo del tipo de evaluación seleccionado
+			 * y cuenta los valores designados */
+			if (i >= gui->work->MDV)
+				{
+					(*desig)++;
+					if (gui->work->eval_values == ALL || gui->work->eval_values == DESIGNATED)
+						{
+							 g_string_append_printf (text, " ");
+							 g_string_append_printf (text, print_current_evaluating_formula_pn (gui->work->formula_pn, gui->work->logic));
+							 g_string_append_printf (text, " *%i\n", i);
+						}
+				 }
+			else
+				{
+					if (gui->work->eval_values == ALL || gui->work->eval_values == NOTDESIGNATED)
+						{
+							g_string_append_printf (text, " ");
+							g_string_append_printf (text, print_current_evaluating_formula_pn (gui->work->formula_pn, gui->work->logic));
+							g_string_append_printf (text, "  %i\n", i);
+						}
+				}
+		}
+	
+	/* Condición inicial: todos los valores inicializados a 0 */
+	var = gui->work->logic->Vars;
+	while (var)
+		{
+			var->value = 0;
+			var = var->next;
+		}
+	/* Primera acción con la primera de las condiciones */
+	action (gui->work, &all, &desig);
+	/* El contador */
+	var = gui->work->logic->Vars;
+	do
+		{
+			if (var_value (var) < gui->work->DIM - 1)
+				{
+					set_var_value (var, var_value (var) + 1);
+					var = gui->work->logic->Vars;
+					action (gui->work, &all, &desig);
+				}
+			else
+				{
+					set_var_value (var, 0);
+					var = var->next;
+				}
+		}
+	while (var);
+	
+	/* Imprime las estadísticas */
+	g_string_append_printf (text, "\n %i posibilidades evaluadas.\n", all);
+	if (gui->work->eval_values == ALL || gui->work->eval_values == DESIGNATED)
+		g_string_append_printf (text, " %i valores designados.\n", desig);
+	else
+		g_string_append_printf (text, " %i valores no designados.\n", all - desig);
+	if (desig == all)
+		g_string_append_printf (text, " TAUTOLOGÍA.\n");
+	else if (desig == 0)
+		g_string_append_printf (text, " CONTRADICCIÓN.\n");
+	else
+		g_string_append_printf (text, " Las matrices dadas FALSAN la fórmula.\n");
+
+	return text->str;
 }
