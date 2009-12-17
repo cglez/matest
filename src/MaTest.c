@@ -45,7 +45,7 @@
 #include <gtk/gtk.h>
 
 #include "MaTest.h"
-
+#include "callbacks.h"
 
 
 /*
@@ -69,10 +69,6 @@
 #  define _(String) (String)
 #  define N_(String) (String)
 #endif
-
-
-
-#include "callbacks.h"
 
 
 GtkWidget*

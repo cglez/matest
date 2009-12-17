@@ -131,6 +131,7 @@ void parse_polish (LogicWFF *tree, char formula[], Logic logic);
 void del_wff (LogicWFF *wff);
 int eval_formula (LogicWFF wff, Logic logic);
 void print_eval_formula (char formula[], Logic logic);
+char* print_current_evaluating_formula_pn (char formula[], Logic logic);
 void evaluation (FILE *output, Work work);
 
 

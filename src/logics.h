@@ -139,7 +139,18 @@ typedef LogicBConType *LogicBConList;  /**< Declaración de listas de conectivas
 
 /**
  * Nodo Fórmula Bien Formada (WFF: Well Formed Formula).
- * Una fbf es una estructura tipo árbol 
+ * Una fbf es una estructura tipo árbol en la que el nodo principal es la
+ * conectiva principal, sus nodos hijos pueden ser o bien otras conectivas o
+ * bien variables, por último los nodos hoja son siempre variables. Puede darse
+ * el caso de que el árbol esté formado por un sólo elemento, un nodo hoja, el
+ * caso de que sea una variable proposicional.
+ *
+ * Cada nodo está bien formado si, o bien
+ * - el tipo de nodo es una conectiva binaria y tanto el preargumento como el
+ *   postargumento apuntan a sendos nodos, o bien
+ * - el tipo de nodo es una conectiva unaria, el postargumento apunta a otro
+ *   nodo y el preargumento es el puntero nulo, o bien
+ * - el tipo de nodo es una variable y ambos argumentos son el puntero nulo.
  */
 typedef struct _logic_wff_node
 	{

@@ -118,7 +118,6 @@ set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
 	else
 		{
 			perror ("Estableciendo el elemento de una fbf... ¡Error inesperado!\n");
-			make_pause ();
 			return false;
 		}
 }
@@ -188,7 +187,9 @@ char*
 print_current_evaluating_formula_pn (char formula[], Logic logic)
 {
 	int i;
-	static char str[MAX_FORMULA_LENGHT];
+	static char *str;
+
+	calloc (sizeof (char), strlen (formula) + 1);
 	
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
@@ -197,6 +198,96 @@ print_current_evaluating_formula_pn (char formula[], Logic logic)
 			else
 				str[i] = formula[i];
 		}
+	str[strlen (formula)] = '\0';
 
 	return str;
 }
+
+
+void
+evaluation (FILE *output, Work work)
+{
+	int i, all = 0, desig = 0;
+	LogicVar var;
+	
+	/* Imprime una cabecera con la fórmula en notación polaca */
+	fprintf (output, " %s\n ", work->formula_pn);
+	for (i = 0; i < (int) strlen (work->formula_pn); i++)
+		fprintf (output, "-");
+	fprintf (output, "\n");
+	
+	/*
+	 * El algoritmo contador
+	 */
+	void action (Work work, int *all, int *desig)
+		{
+			int i;
+			
+			i = eval_formula (work->wff, work->logic);
+			/* Cuenta cada evaluación */
+			(*all)++;
+			/* Imprime una evaluación dependiendo del tipo de evaluación seleccionado
+			 * y cuenta los valores designados */
+			if (i >= work->MDV)
+				{
+					(*desig)++;
+					if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+						{
+							 fprintf (output, " ");
+							 //print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
+							 fprintf (output, " *%i\n", i);
+						}
+				 }
+			else
+				{
+					if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
+						{
+							fprintf (output, " ");
+							//print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
+							fprintf (output, "  %i\n", i);
+						}
+				}
+		}
+	
+	/* Condición inicial: todos los valores inicializados a 0 */
+	var = work->logic->Vars;
+	while (var)
+		{
+			var->value = 0;
+			var = var->next;
+		}
+	/* Primera acción con la primera de las condiciones */
+	action (work, &all, &desig);
+	/* El contador */
+	var = work->logic->Vars;
+	do
+		{
+			if (var_value (var) < work->DIM - 1)
+				{
+					set_var_value (var, var_value (var) + 1);
+					var = work->logic->Vars;
+					action (work, &all, &desig);
+				}
+			else
+				{
+					set_var_value (var, 0);
+					var = var->next;
+				}
+		}
+	while (var);
+	
+	/* Imprime las estadísticas */
+	fprintf (output, "\n %i posibilidades evaluadas.\n", all);
+	if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+		fprintf (output, " %i valores designados.\n", desig);
+	else
+		fprintf (output, " %i valores no designados.\n", all - desig);
+	if (desig == all)
+		fprintf (output, " TAUTOLOGÍA.\n");
+	else if (desig == 0)
+		fprintf (output, " CONTRADICCIÓN.\n");
+	else
+		fprintf (output, " Las matrices dadas FALSAN la fórmula.\n");
+}
+
+

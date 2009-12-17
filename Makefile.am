@@ -5,12 +5,11 @@ SUBDIRS = src po
 
 matestdocdir = ${prefix}/doc/matest
 matestdoc_DATA = \
-	README\
-	COPYING\
-	AUTHORS\
-	ChangeLog\
 	INSTALL\
-	NEWS
+	ChangeLog.txt \
+	Licence.txt \
+	History.txt \
+	Readme.txt
 
 
 INTLTOOL_FILES = intltool-extract.in \

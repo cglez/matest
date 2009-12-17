@@ -21,9 +21,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 #include <gtk/gtk.h>
 #include "MaTest.h"
-#include "logics.h"
 
 /* store the widgets which may need to be accessed in a typedef struct */
 typedef struct
@@ -33,13 +35,13 @@ typedef struct
 		GtkWidget      *text_view;
 		GtkWidget      *progressbar;
 		GtkWidget      *spin_mdv;
+		GtkWidget      *entry_formula;
 		GtkWidget      *hb_ucons;
 		GtkWidget      *hb_bcons;
 		GtkTextBuffer  *textbuffer;
 		GtkLabel       *label_dimmension;
 		GtkLabel       *label_formula;
 		Work           work;
-		char           bcon_to_edit;
 	}
 	MaTestGUI;
 
@@ -49,12 +51,17 @@ void on_window_destroy (GtkObject *object, MaTestGUI *gui);
 void error_message (const gchar *message);
 void on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui);
 void on_b_show_matrices_activate (GtkObject *object, MaTestGUI *gui);
-void on_b_uny_con_clicked (GtkObject *object, gpointer *data);
-void on_b_bin_con_clicked (GtkObject *object, MaTestGUI *gui);
+void on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui);
+void on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui);
+void on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui);
+//void on_b_new_formula_ok_clicked (GtkObject *object, NewFormulaGUI *formulagui);
 
 gchar* show_matrices_gui (Logic logic);
-gint add_BCon_gui (Logic logic);
-void refresh_gui (MaTestGUI *gui);
-void edit_bin_con_gui (Logic logic, char name);
+gint add_ucon_gui (MaTestGUI *gui);
+gint add_bcon_gui (Logic logic);
+void edit_bcon_gui (Logic logic, char name);
+void add_formula_gui (MaTestGUI *gui);
+void on_spin_value_changed (GtkObject *object, gpointer *value);
+gchar* evaluation_gui (MaTestGUI *gui);
 
 void destroy (GtkWidget *widget, gpointer data);

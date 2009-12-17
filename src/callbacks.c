@@ -51,15 +51,15 @@ on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui)
 void
 on_b_evaluate_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	gtk_text_buffer_set_text (gui->textbuffer,
-	                          evaluation_gui (gui), -1);
+	gtk_text_buffer_set_text (GTK_TEXT_BUFFER (gui->textbuffer),
+	                          (gchar *) evaluation_gui (gui), -1);
 }
 
 
 void
 on_b_show_matrices_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	gtk_text_buffer_set_text (gui->textbuffer,
+	gtk_text_buffer_set_text (GTK_TEXT_BUFFER (gui->textbuffer),
 	                          show_matrices_gui (gui->work->logic), -1);
 }
 
@@ -67,50 +67,68 @@ on_b_show_matrices_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+	if (is_wff_pn ((char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)), gui->work->logic))
+		{
+			strcpy (gui->work->formula_pn, (char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)));
+			
+			if (gui->work->logic->Vars)
+				del_var_list (&gui->work->logic->Vars);
+			register_vars (gui->work->logic, gui->work->formula_pn);
+			
+			if (gui->work->wff)
+				del_wff (&gui->work->wff);
+			parse_polish (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
+		}
+	gtk_entry_set_text (GTK_ENTRY (gui->entry_formula), "");
+	gtk_label_set_text (GTK_LABEL (gui->label_formula),
+	                    g_strdup_printf ("Fórmula: %s", gui->work->formula_pn));
 }
 
 
 void
-on_b_uny_con_clicked (GtkObject *object, gpointer *data)
+on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	g_print ("Definir %c\n", (gchar) data);
+	gchar *symb;
+
+	symb = gtk_button_get_label (GTK_BUTTON (object));
+	printf ("Conectiva %c\n", symb[0]);
+	edit_ucon_gui (gui, (char) symb[0]);
 }
 
 
 void
-on_b_bin_con_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	char *name;
 	
 	name = gtk_button_get_label (GTK_BUTTON (object));
-	edit_bin_con_gui (gui->work->logic, (char) *name);
+	edit_bcon_gui (gui->work->logic, (char) *name);
 }
 
 
 void
-on_b_add_UCon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_add_ucon_clicked (GtkObject *object, MaTestGUI *gui)
+{
+	add_ucon_gui (gui);
+}
+
+
+void
+on_b_del_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	
 }
 
 
 void
-on_b_del_UCon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_add_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+	add_bcon_gui (gui->work->logic);
 }
 
 
 void
-on_b_add_bin_connective_clicked (GtkObject *object, MaTestGUI *gui)
-{
-	add_BCon_gui (gui->work->logic);
-}
-
-
-void
-on_b_del_BCon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_del_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	
 }
@@ -121,3 +139,35 @@ on_spin_mdv_value_changed (GtkObject *object, MaTestGUI *gui)
 {
 	gui->work->logic->mdv = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (gui->spin_mdv));
 }
+
+
+/*
+void
+on_spin_value_changed (GtkObject *object, gpointer *value)
+{
+	value = (gint) gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (object));
+}
+*/
+
+
+/*
+void
+on_b_new_formula_ok_clicked (GtkObject *object, NewFormulaGUI *formulagui)
+{
+	Work work = *formulagui->work;
+		if (is_wff_pn ((char *) gtk_entry_get_text (formulagui->entry),
+		               work->logic))
+			{
+				if (work->logic->Vars)
+					del_var_list (&work->logic->Vars);
+				register_vars (work->logic, work->formula_pn);
+				
+				if (work->wff)
+					del_wff (&work->wff);
+				parse_polish (&work->wff,
+				              work->formula_pn,
+				              work->logic);
+			}
+	gtk_widget_destroy (formulagui->win);
+}
+*/

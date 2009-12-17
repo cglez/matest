@@ -72,14 +72,44 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem3">
+              <object class="GtkMenuItem" id="m_view">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Ver</property>
                 <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu2">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="m_view_all">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Todos los valores</property>
+                        <property name="use_underline">True</property>
+                        <property name="active">True</property>
+                        <property name="draw_as_radio">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="m_view_notdesig">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Valores designados</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkRadioMenuItem" id="m_view_desig">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Valores no designados</property>
+                        <property name="use_underline">True</property>
+                        <property name="draw_as_radio">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="menuitem4">
+              <object class="GtkMenuItem" id="m_help">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">Ay_uda</property>
                 <property name="use_underline">True</property>
@@ -87,7 +117,7 @@
                   <object class="GtkMenu" id="menu3">
                     <property name="visible">True</property>
                     <child>
-                      <object class="GtkImageMenuItem" id="imagemenuitem10">
+                      <object class="GtkImageMenuItem" id="m_help_about">
                         <property name="label">gtk-about</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
@@ -126,7 +156,7 @@
                         <child>
                           <object class="GtkTable" id="table1">
                             <property name="visible">True</property>
-                            <property name="n_rows">6</property>
+                            <property name="n_rows">7</property>
                             <property name="n_columns">2</property>
                             <property name="column_spacing">4</property>
                             <child>
@@ -168,7 +198,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_add_uny_connective_clicked"/>
+                                    <signal name="clicked" handler="on_b_add_ucon_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">0</property>
@@ -180,7 +210,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_del_uny_connective_clicked"/>
+                                    <signal name="clicked" handler="on_b_del_ucon_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">1</property>
@@ -204,7 +234,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_add_bin_connective_clicked"/>
+                                    <signal name="clicked" handler="on_b_add_bcon_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">0</property>
@@ -216,7 +246,7 @@
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <signal name="clicked" handler="on_b_del_bin_connective_clicked"/>
+                                    <signal name="clicked" handler="on_b_del_bcon_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="position">1</property>
@@ -239,22 +269,6 @@
                                 <property name="ellipsize">start</property>
                               </object>
                               <packing>
-                                <property name="top_attach">5</property>
-                                <property name="bottom_attach">6</property>
-                                <property name="y_options">GTK_FILL</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="b_new_formula">
-                                <property name="label" translatable="yes">Nueva f&#xF3;rmula</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <signal name="clicked" handler="on_b_new_formula_clicked"/>
-                              </object>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
                                 <property name="top_attach">5</property>
                                 <property name="bottom_attach">6</property>
                                 <property name="y_options">GTK_FILL</property>
@@ -369,6 +383,39 @@
                             </child>
                             <child>
                               <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="b_new_formula">
+                                <property name="label" translatable="yes">Nueva f&#xF3;rmula</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <signal name="clicked" handler="on_b_new_formula_clicked"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">6</property>
+                                <property name="bottom_attach">7</property>
+                                <property name="y_options">GTK_FILL</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkEntry" id="entry_formula">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="invisible_char">&#x25CF;</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="right_attach">2</property>
+                                <property name="top_attach">5</property>
+                                <property name="bottom_attach">6</property>
+                                <property name="y_options">GTK_FILL</property>
+                              </packing>
                             </child>
                           </object>
                         </child>
