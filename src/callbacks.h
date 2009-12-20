@@ -26,6 +26,9 @@
 #include <ctype.h>
 #include <gtk/gtk.h>
 #include "MaTest.h"
+/* For testing propose use the local (not installed) ui file */
+/* #define UI_FILE PACKAGE_DATA_DIR"/matest/ui/matest.ui" */
+#define UI_FILE "src/matest.ui"
 
 /* store the widgets which may need to be accessed in a typedef struct */
 typedef struct
@@ -58,8 +61,8 @@ void on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui);
 
 gchar* show_matrices_gui (Logic logic);
 gint add_ucon_gui (MaTestGUI *gui);
-gint add_bcon_gui (Logic logic);
-void edit_bcon_gui (Logic logic, char name);
+gint add_bcon_gui (MaTestGUI *gui);
+gint edit_bcon_gui (MaTestGUI *gui, char symb);
 void add_formula_gui (MaTestGUI *gui);
 void on_spin_value_changed (GtkObject *object, gpointer *value);
 gchar* evaluation_gui (MaTestGUI *gui);

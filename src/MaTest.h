@@ -45,10 +45,6 @@
 #define VERSION "1.2"
 #define MAX_FORMULA_LENGHT BUFSIZ
 
-/* For testing propose use the local (not installed) ui file */
-/* #define UI_FILE PACKAGE_DATA_DIR"/matest/ui/matest.ui" */
-#define UI_FILE "src/matest.ui"
-
 
 /*
 ***	Definición de tipos de datos

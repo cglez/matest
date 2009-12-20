@@ -2,7 +2,7 @@
 
 ## Created by Anjuta
 
-uidir = $(datadir)/matest/ui
+uidir = $(datadir)/matest/
 ui_DATA = matest.ui
 
 AM_CPPFLAGS = \

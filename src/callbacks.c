@@ -86,23 +86,47 @@ on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui)
 
 
 void
+on_entry_formula_activate (GtkObject *object, MaTestGUI *gui)
+{
+	if (is_wff_pn ((char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)), gui->work->logic))
+		{
+			strcpy (gui->work->formula_pn, (char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)));
+			
+			if (gui->work->logic->Vars)
+				del_var_list (&gui->work->logic->Vars);
+			register_vars (gui->work->logic, gui->work->formula_pn);
+			
+			if (gui->work->wff)
+				del_wff (&gui->work->wff);
+			parse_polish (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
+		}
+	gtk_entry_set_text (GTK_ENTRY (gui->entry_formula), "");
+	gtk_label_set_text (GTK_LABEL (gui->label_formula),
+	                    g_strdup_printf ("Fórmula: %s", gui->work->formula_pn));
+}
+
+
+void
 on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	gchar *symb;
+	gchar *label;
+	char  symb;
 
-	symb = gtk_button_get_label (GTK_BUTTON (object));
-	printf ("Conectiva %c\n", symb[0]);
-	edit_ucon_gui (gui, (char) symb[0]);
+	label = gtk_button_get_label (GTK_BUTTON (object));
+	symb = (char) label[0];
+	edit_ucon_gui (gui, symb);
 }
 
 
 void
 on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	char *name;
+	gchar *label;
+	char symb;
 	
-	name = gtk_button_get_label (GTK_BUTTON (object));
-	edit_bcon_gui (gui->work->logic, (char) *name);
+	label = gtk_button_get_label (GTK_BUTTON (object));
+	symb = (char) label[0];
+	edit_bcon_gui (gui, symb);
 }
 
 
@@ -123,7 +147,7 @@ on_b_del_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_b_add_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	add_bcon_gui (gui->work->logic);
+	add_bcon_gui (gui);
 }
 
 
