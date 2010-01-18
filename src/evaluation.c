@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -44,72 +44,72 @@
  * @return true: si tiene éxito, false: en caso contrario.
  */
 bool
-set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
+logics_wff_add_node (LogicsWFF *wff, LogicsSymbolType symbol_type, char symbol, int *value)
 {
-	LogicAtom father = NULL;
-	LogicAtom node = *tree;
+	LogicsWFFNode *father = NULL;
+	LogicsWFFNode *node = *wff;
 	
 	while (node)
 		{
 			/* Las conectivas unarias tienen un sólo argumento: trivial */
-			if (node->kind == UCON)
+			if (node->type == LOGICS_WFF_NODE_U_CON)
 				{
 					father = node;
 					node = node->postarg;
 				}
 			/* Con las conectivas binarias buscamos recursivamente */
-			else if (node->kind == BCON)
+			else if (node->type == LOGICS_WFF_NODE_B_CON)
 				{
-					if (set_atom (&node->prearg, kind, name, value))
+					if (logics_wff_add_node (&node->prearg, symbol_type, symbol, value))
 						return true;
-					else if (set_atom (&node->postarg, kind, name, value))
+					else if (logics_wff_add_node (&node->postarg, symbol_type, symbol, value))
 						return true;
 					else
 						return false;
 				}
 			/* Las variables carecen de argumentos */
-			else if (node->kind == VAR)
+			else if (node->type == LOGICS_WFF_NODE_VAR)
 				return false;
 		}
 
 	/* Si el árbol está vacío, reservamos memoria y establecemos los valores */
 	if (father == NULL)
 		{
-			(*tree) = (LogicWFF) malloc (sizeof (LogicWFFtype));
-			(*tree)->kind = kind;
-			(*tree)->name = name;
-			(*tree)->value = value;
-			(*tree)->prearg = (*tree)->postarg = NULL;
+			(*wff) = (LogicsWFF) malloc (sizeof (LogicsWFFNode));
+			(*wff)->type = symbol_type;
+			(*wff)->symbol = symbol;
+			(*wff)->value = value;
+			(*wff)->prearg = (*wff)->postarg = NULL;
 			return true;
 		}
-	else if (father->kind == UCON)
+	else if (father->type == LOGICS_WFF_NODE_U_CON)
 		{
-			node = (LogicAtom) malloc (sizeof (LogicWFFtype));
+			node = (LogicsWFFNode*) malloc (sizeof (LogicsWFFNode));
 			father->postarg = node;
-			node->kind = kind;
-			node->name = name;
+			node->type = symbol_type;
+			node->symbol = symbol;
 			node->value = value;
 			node->prearg = node->postarg = NULL;
 			return true;
 		}
-	else if (father->kind == BCON)
+	else if (father->type == LOGICS_WFF_NODE_B_CON)
 		{
 			if (!father->prearg)
 				{
-					node = (LogicAtom) malloc (sizeof (LogicWFFtype));
+					node = (LogicsWFFNode*) malloc (sizeof (LogicsWFFNode));
 					father->prearg = node;
-					node->kind = kind;
-					node->name = name;
+					node->type = symbol_type;
+					node->symbol = symbol;
 					node->value = value;
 					node->prearg = node->postarg = NULL;
 					return true;
 				}
 			else
 				{
-					node = (LogicAtom) malloc (sizeof (LogicWFFtype));
+					node = (LogicsWFFNode*) malloc (sizeof (LogicsWFFNode));
 					father->postarg = node;
-					node->kind = kind;
-					node->name = name;
+					node->type = symbol_type;
+					node->symbol = symbol;
 					node->value = value;
 					node->prearg = node->postarg = NULL;
 					return true;
@@ -128,7 +128,7 @@ set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value)
  * memoria.
  */
 void
-del_wff (LogicWFF *wff)
+del_wff (LogicsWFF *wff)
 {
 	if (!(*wff))
 		return;
@@ -149,26 +149,26 @@ del_wff (LogicWFF *wff)
  *             -2: error inesperado.
  */
 int
-eval_formula (LogicWFF wff, Logic logic)
+eval_formula (LogicsWFF wff, LogicsLogic* logic)
 {
-	LogicUCon ucon;
-	LogicBCon bcon;
+	LogicsUCon* ucon;
+	LogicsBCon* bcon;
 	
 	if (!wff)
 		{
 			perror ("El árbol de la fbf está vacío.\n");
 			return -1;
 		}
-	else if (wff->kind == VAR)
+	else if (wff->type == LOGICS_WFF_NODE_VAR)
 		return *wff->value;
-	else if (wff->kind == UCON)
+	else if (wff->type == LOGICS_WFF_NODE_U_CON)
 		{
-			ucon = (LogicUCon) search_UCon (logic->UCons, wff->name);
+			ucon = (LogicsUCon*) logics_ucon_list_get_ucon_by_symbol (logic->ucons, wff->symbol);
 			return ucon->matrix[eval_formula (wff->postarg, logic)];
 		}
-	else if (wff->kind == BCON)
+	else if (wff->type == LOGICS_WFF_NODE_B_CON)
 		{
-			bcon = (LogicBCon) search_BCon (logic->BCons, wff->name);
+			bcon = (LogicsBCon*) logics_bcon_list_get_bcon_by_symbol (logic->bcons, wff->symbol);
 			return bcon->matrix[eval_formula (wff->prearg, logic)][eval_formula(wff->postarg, logic)];
 		}
 	else
@@ -184,7 +184,7 @@ eval_formula (LogicWFF wff, Logic logic)
  * en notación polaca cambiando las variables por los valores que correspondan.
  */
 char*
-print_current_evaluating_formula_pn (char formula[], Logic logic)
+print_current_evaluating_formula_pn (char formula[], LogicsLogic* logic)
 {
 	int i;
 	static char *str;
@@ -193,8 +193,8 @@ print_current_evaluating_formula_pn (char formula[], Logic logic)
 	
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
-			if (symbol_kind_pn (formula[i], logic) == VAR)
-				str[i] = (char) var_value (search_var (logic->Vars, formula[i]));
+			if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_VAR)
+				str[i] = (char) logics_var_get_value (logics_var_list_get_var_by_symbol (logic->vars, formula[i]));
 			else
 				str[i] = formula[i];
 		}
@@ -205,10 +205,10 @@ print_current_evaluating_formula_pn (char formula[], Logic logic)
 
 
 void
-evaluation (FILE *output, Work work)
+evaluation (FILE *output, Work* work)
 {
 	int i, all = 0, desig = 0;
-	LogicVar var;
+	LogicsVar *var;
 	
 	/* Imprime una cabecera con la fórmula en notación polaca */
 	fprintf (output, " %s\n ", work->formula_pn);
@@ -219,7 +219,7 @@ evaluation (FILE *output, Work work)
 	/*
 	 * El algoritmo contador
 	 */
-	void action (Work work, int *all, int *desig)
+	void action (Work* work, int *all, int *desig)
 		{
 			int i;
 			
@@ -231,7 +231,7 @@ evaluation (FILE *output, Work work)
 			if (i >= work->MDV)
 				{
 					(*desig)++;
-					if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+					if (work->evaluation_style == ALL || work->evaluation_style == DESIGNATED)
 						{
 							 fprintf (output, " ");
 							 //print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
@@ -240,7 +240,7 @@ evaluation (FILE *output, Work work)
 				 }
 			else
 				{
-					if (work->eval_values == ALL || work->eval_values == NOTDESIGNATED)
+					if (work->evaluation_style == ALL || work->evaluation_style == NOT_DESIGNATED)
 						{
 							fprintf (output, " ");
 							//print_current_evaluating_formula_pn (output, work->formula_pn, work->logic);
@@ -250,7 +250,7 @@ evaluation (FILE *output, Work work)
 		}
 	
 	/* Condición inicial: todos los valores inicializados a 0 */
-	var = work->logic->Vars;
+	var = work->logic->vars;
 	while (var)
 		{
 			var->value = 0;
@@ -259,18 +259,18 @@ evaluation (FILE *output, Work work)
 	/* Primera acción con la primera de las condiciones */
 	action (work, &all, &desig);
 	/* El contador */
-	var = work->logic->Vars;
+	var = work->logic->vars;
 	do
 		{
-			if (var_value (var) < work->DIM - 1)
+			if (logics_var_get_value (var) < work->MAXV)
 				{
-					set_var_value (var, var_value (var) + 1);
-					var = work->logic->Vars;
+					logics_var_set_value (var, logics_var_get_value (var) + 1);
+					var = work->logic->vars;
 					action (work, &all, &desig);
 				}
 			else
 				{
-					set_var_value (var, 0);
+					logics_var_set_value (var, 0);
 					var = var->next;
 				}
 		}
@@ -278,7 +278,7 @@ evaluation (FILE *output, Work work)
 	
 	/* Imprime las estadísticas */
 	fprintf (output, "\n %i posibilidades evaluadas.\n", all);
-	if (work->eval_values == ALL || work->eval_values == DESIGNATED)
+	if (work->evaluation_style == ALL || work->evaluation_style == DESIGNATED)
 		fprintf (output, " %i valores designados.\n", desig);
 	else
 		fprintf (output, " %i valores no designados.\n", all - desig);

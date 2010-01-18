@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -21,50 +21,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#ifndef __CALLBACKS_H__
+#define __CALLBACKS_H__
+
 #include <gtk/gtk.h>
 #include "MaTest.h"
 /* For testing propose use the local (not installed) ui file */
 /* #define UI_FILE PACKAGE_DATA_DIR"/matest/ui/matest.ui" */
 #define UI_FILE "src/matest.ui"
 
-/* store the widgets which may need to be accessed in a typedef struct */
-typedef struct
-	{
-		GtkWidget      *window;
-		GtkWidget      *statusbar;
-		GtkWidget      *text_view;
-		GtkWidget      *progressbar;
-		GtkWidget      *spin_mdv;
-		GtkWidget      *entry_formula;
-		GtkWidget      *hb_ucons;
-		GtkWidget      *hb_bcons;
-		GtkTextBuffer  *textbuffer;
-		GtkLabel       *label_dimmension;
-		GtkLabel       *label_formula;
-		Work           work;
-	}
-	MaTestGUI;
-
-
-gboolean init_app (MaTestGUI *gui);
 void on_window_destroy (GtkObject *object, MaTestGUI *gui);
-void error_message (const gchar *message);
 void on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui);
-void on_b_show_matrices_activate (GtkObject *object, MaTestGUI *gui);
+void on_b_print_matrices_activate (GtkObject *object, MaTestGUI *gui);
 void on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui);
+void on_b_ucon_del_clicked (GtkObject *object, MaTestGUI *gui);
 void on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui);
 void on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui);
-//void on_b_new_formula_ok_clicked (GtkObject *object, NewFormulaGUI *formulagui);
-
-gchar* show_matrices_gui (Logic logic);
-gint add_ucon_gui (MaTestGUI *gui);
-gint add_bcon_gui (MaTestGUI *gui);
-gint edit_bcon_gui (MaTestGUI *gui, char symb);
-void add_formula_gui (MaTestGUI *gui);
+void on_m_view_all_toggled (GtkObject *object, MaTestGUI *gui);
+void on_m_view_desig_toggled (GtkObject *object, MaTestGUI *gui);
+void on_m_view_notdesig_toggled (GtkObject *object, MaTestGUI *gui);
 void on_spin_value_changed (GtkObject *object, gpointer *value);
-gchar* evaluation_gui (MaTestGUI *gui);
-
 void destroy (GtkWidget *widget, gpointer data);
+
+#endif /* __CALLBACKS_H__ */

@@ -29,7 +29,7 @@ matest_SOURCES = \
 	variables.c \
 	wffs_pn.c \
 	MaTest.h \
-	connectives.c
+	connectives.c 
 
 matest_LDFLAGS = \
 	-Wl,--export-dynamic

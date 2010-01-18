@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -30,8 +30,8 @@
  * prototipos de las funciones.
  */
 
-#ifndef _MATEST_H_
-#define _MATEST_H_
+#ifndef __MATEST_H__
+#define __MATEST_H__
 
 
 /*
@@ -40,6 +40,7 @@
 
 #include <stdbool.h>
 #include <libintl.h>
+#include <gtk/gtk.h>
 #include "logics.h"
 
 #define VERSION "1.2"
@@ -53,99 +54,110 @@
 /**
  * Enumeración con los tipos de evaluación.
  */
-typedef enum _evaluation_style
+typedef enum
 	{
-		ALL,           /**< Se muestran todos los valores. */
-		DESIGNATED,    /**< Se muestran sólo los valores designados. */
-		NOTDESIGNATED  /**< Se muestran sólo los valores no designados. */
+		ALL,            /**< Se muestran todos los valores. */
+		DESIGNATED,     /**< Se muestran sólo los valores designados. */
+		NOT_DESIGNATED  /**< Se muestran sólo los valores no designados. */
 	}
-	EvalStyle;
-
-
-/*
-typedef struct
-	{
-		int position;
-		int *vector;
-	}
-	LIFO;
-*/
+	EvaluationStyle;
 
 
 /**
  * Estructura general con todos los datos necesarios para la evaluación, esto
  * es, contiene el trabajo definido actualmente tal y como se evaluará.
  */
-typedef struct _work
+typedef struct _Work Work;
+struct _Work
 	{
-		Logic logic;                          /**< Una lógica definida como se quiera. */
-		char formula_pn[MAX_FORMULA_LENGHT];  /**< Fórmula en notación polaca. */
-		LogicWFF wff;                         /**< Una fórmula bien formada como estructura en árbol. */
-		EvalStyle eval_values;                /**< El tipo de evaluación a realizar. */
-	}
-	workType;
+		LogicsLogic* logic;                     /**< Una lógica definida como se quiera. */
+		char formula_pn[MAX_FORMULA_LENGHT];    /**< Fórmula en notación polaca. */
+		LogicsWFF wff;                          /**< Una fórmula bien formada como estructura en árbol. */
+		EvaluationStyle evaluation_style;       /**< El tipo de evaluación a realizar. */
+		bool logic_modified;
+	};
 
-typedef workType *Work;
+
+/*
+ * Registro con los widgets y demás datos de la interfaz gráfica a los que se
+ * necesita acceder.
+ */
+typedef struct
+	{
+		GtkWidget      *window;
+		GtkWidget      *statusbar;
+		GtkWidget      *text_view;
+		GtkWidget      *progressbar;
+		GtkWidget      *spin_dimension;
+		GtkWidget      *spin_mdv;
+		GtkWidget      *entry_formula;
+		GtkWidget      *hb_ucons;
+		GtkWidget      *hb_bcons;
+		GtkTextBuffer  *textbuffer;
+		GtkLabel       *label_formula;
+		Work           *work;
+	}
+	MaTestGUI;
 
 
 /*
 ***	Prototipos de las funciones
  */
 
-int mode_text (Work work);
-int mode_gui (int argc, char *argv[], Work work);
+/* Modos interactivos */
+int mode_text (Work* work);
+int mode_gui (int argc, char *argv[], Work* work);
 
-/* Prototipos de las funciones relacionadas con el manejo de conectivas.
- * Funciones presentes en el archivo connectives.c */
-void add_custom_UCon (LogicUConList *list, char name, int dimension);
-void add_custom_BCon (Logic logic, char name);
-void set_default_UCons (Logic logic);
-void set_default_BCons (Logic logic);
-void print_uny_matrix (LogicUCon connective, Logic logic);
-void print_bin_matrix (LogicBCon connective, Logic logic);
-void show_matrices (Logic logic);
-int write_uny_matrix (FILE *file, LogicUCon connective, int dimension);
-int write_bin_matrix (FILE *file, LogicBCon connective, int dimension);
-int write_matrices (FILE *file, Logic logic);
+/* Manejo de conectivas */
+void text_ucon_add_custom (LogicsLogic* logic, char symbol);
+void text_bcon_add_custom (LogicsLogic* logic, char symbol);
+void print_ucon_matrix (LogicsUCon* ucon, LogicsLogic* logic);
+void print_bcon_matrix (LogicsBCon* bcon, LogicsLogic* logic);
+void print_matrices (LogicsLogic* logic);
+int write_ucon_matrix (FILE *file, LogicsUCon* ucon, int dimension);
+int write_bcon_matrix (FILE *file, LogicsBCon* bcon, int dimension);
+int write_matrices (FILE *file, LogicsLogic* logic);
 
+/* Manejo de variables */
+void register_vars (LogicsLogic* logic, char formula[]);
 
-/* Prototipos de las funciones relacionadas con el manejo de variables.
- * Funciones presentes en el archivo variables.c */
-void register_vars (Logic logic, char formula[]);
-
-
-/* Prototipos de las funciones relacionadas con las fórmulas en notación polaca.
- * Funciones presentes en el archivo wffs_pn.c */
-LogicSymbKind symbol_kind_pn (char symbol, Logic logic);
+/* Funciones relacionadas con las fórmulas en notación polaca */
+//LogicsSymbolType logics_symbol_pn_get_type (char symbol, LogicsLogic* logic);
 bool check_string (char formula[]);
 
+/* Funciones relacionadas con la evaluación */
+bool logics_wff_add_node (LogicsWFF *wff, LogicsSymbolType type, char name, int* value);
+void logics_wff_parse_formula_pn (LogicsWFF *wff, char formula[], LogicsLogic* logic);
+void del_wff (LogicsWFF *wff);
+int eval_formula (LogicsWFF wff, LogicsLogic* logic);
+void print_eval_formula (char formula[], LogicsLogic* logic);
+char* print_current_evaluating_formula_pn (char formula_pn[], LogicsLogic* logic);
+void evaluation (FILE *output, Work* work);
 
-/* Prototipos de las funciones relacionadas con la evaluación.
- * Funciones presentes en el archivo evaluation.c */
-bool set_atom (LogicWFF *tree, LogicSymbKind kind, char name, int *value);
-void parse_polish (LogicWFF *tree, char formula[], Logic logic);
-void del_wff (LogicWFF *wff);
-int eval_formula (LogicWFF wff, Logic logic);
-void print_eval_formula (char formula[], Logic logic);
-char* print_current_evaluating_formula_pn (char formula[], Logic logic);
-void evaluation (FILE *output, Work work);
-
-
-/* Prototipos de las funciones que interactúan con el usuario.
- * Funciones presentes en el archivo user.c */
+/* Funciones del modo texto */
 char readin (char str[], char pattern[]);
-void clear_scr (void);
+void screen_clear (void);
 void make_pause (void);
 void menu_usage (void);
 void menu_version (void);
 void menu_header (void);
-void menu_info (Work work);
+void menu_info (Work* work);
 void menu_options (void);
 void menu_init (void);
 void menu_dimension (void);
 void menu_about (void);
 void menu_help (void);
-void menu_index (Work work);
+void menu_index (Work* work);
+
+/* Funciones del modo gráfico. */
+gboolean init_gui (MaTestGUI *gui);
+void dialog_error (const gchar *message);
+gchar* show_matrices_gui (LogicsLogic* logic);
+gchar* evaluation_gui (MaTestGUI *gui);
+gint dialog_ucon_new (MaTestGUI *gui);
+gint dialog_ucon_edit (MaTestGUI *gui, char symb);
+gint dialog_bcon_new (MaTestGUI *gui);
+gint dialog_bcon_edit (MaTestGUI *gui, char symb);
 
 
-#endif
+#endif /* __MATEST_H__ */

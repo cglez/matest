@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -68,7 +68,7 @@ char readin (char str[], char pattern[])
  * para Windows/DOS se llama a la función 'cls', por defecto se imprime una
  * serie de 24 saltos de línea.
  */
-void clear_scr (void)
+void screen_clear (void)
 {
 #ifdef POSIX
   if (system ("clear"))
@@ -117,7 +117,7 @@ void menu_version (void)
  */
 void menu_header (void)
 {
-	clear_scr();
+	screen_clear();
 	printf ("\n"
 	        "                            --- MaTest %s ---\n"
 	        "                     Matrix Tester for logical matrices\n"

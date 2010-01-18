@@ -24,6 +24,7 @@ DISTCLEANFILES = intltool-extract \
 	intltool-update \
 	po/.intltool-merge-cache
 
+AM_CPPFLAGS = 
 
 # Remove doc directory on uninstall
 uninstall-local:

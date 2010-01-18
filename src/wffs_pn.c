@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -28,7 +28,7 @@
  * Este archivo contiene el código que se encarga de manejar las fórmulas en
  * notación polaca. Contiene las funciones necesarias para determinar si una
  * fórmula dada es una fórmula bien formada en esta notación, detección de
- * caracteres errones, errores de sintaxis... Contiene a su vez el parser que
+ * caracteres erróneos, errores de sintaxis... Contiene a su vez el parser que
  * transforma una fbf en NP a la estructura en árbol propia de una fbf.
  * 
  * Para las fórmulas en notación polaca se emplea la siguiente convención: las
@@ -39,7 +39,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
-
 #include "MaTest.h"
 
 
@@ -47,23 +46,23 @@
  * Categoriza el símbolo dado según una lógica de contexto (según las conectivas
  * definidas) y según la convención para las fórmulas en notación polaca.
  */
-LogicSymbKind
-symbol_kind_pn (char symbol, Logic logic)
+LogicsSymbolType
+logics_symbol_pn_get_type (char symbol, LogicsLogic* logic)
 {
 	if (islower (symbol))
-		return VAR;
-	else if (search_UCon (logic->UCons, symbol))
-		return UCON;
-	else if (search_BCon (logic->BCons, symbol))
-		return BCON;
+		return LOGICS_SYMBOL_VAR;
+	else if (logics_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
+		return LOGICS_SYMBOL_U_CON;
+	else if (logics_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
+		return LOGICS_SYMBOL_B_CON;
 	else
-		return NONE;
+		return LOGICS_SYMBOL_NONE;
 }
 
 
 /**
  * Comprueba que la fórmula dada sea una fórmula bien formada en notación
- * polaca, dada una lógica de contexto. Los símbolos admitidos son sólo letras
+ * polaca, según una lógica de contexto. Los símbolos admitidos son sólo letras
  * mayúsculas o minúsculas. Aquí se sigue una convención, en una fbf en notación
  * polaca toda letra mayúscula es una conectiva y toda letra minúscula es una
  * variable; se comprueba que las conectivas estén en efecto definidas en la
@@ -72,7 +71,7 @@ symbol_kind_pn (char symbol, Logic logic)
  * @return true: si es una fbf en notación polaca, false en caso contrario.
  */
 bool
-is_wff_pn (char formula[], Logic logic)
+logics_formula_is_wff_pn (char formula[], LogicsLogic* logic)
 {
 	int i, deep = 1;
 	
@@ -81,7 +80,7 @@ is_wff_pn (char formula[], Logic logic)
 		{
 			if (!isalpha (formula[i]))
 				{
-					perror (" La fórmula dada contiene caracteres no válidos.\n");
+					perror ("* La fórmula dada contiene caracteres no válidos.\n");
 					return false;
 				}
 		}
@@ -89,18 +88,18 @@ is_wff_pn (char formula[], Logic logic)
 	for (i = 0; i < (int) strlen (formula); i++)
 		{ 
 			/* Las variables disminuyen la profundidad de la fórmula */
-			if (symbol_kind_pn (formula[i], logic) == VAR)
+			if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_VAR)
 				deep--;
 			/* Las conectivas unarias dejan la profundidad inalterada */
-			else if (symbol_kind_pn (formula[i], logic) == UCON)
+			else if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_U_CON)
 				deep = deep;
 			/* Las conectivas binarias aumentan la profundidad de la fórmula */
-			else if (symbol_kind_pn (formula[i], logic) == BCON)
+			else if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_B_CON)
 				deep++;
 			/* Sino la conectiva no está definida */
-			else if (symbol_kind_pn (formula[i], logic) == NONE)
+			else if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_NONE)
 				{
-					printf (" La conectiva %c no está definida.\n", formula[i]);
+					fprintf (stderr, "* La conectiva %c no está definida.\n", formula[i]);
 					return false;
 				}
 		
@@ -109,20 +108,19 @@ is_wff_pn (char formula[], Logic logic)
 		if (deep == 0 && formula[i + 1] != 0)
 			{
 				/* Demasiadas variables */
-				if (symbol_kind_pn (formula[i + 1], logic) == VAR)
-					perror (" Profundidad excedida; demasiadas variables. Revise la fórmula.\n");
+				if (logics_symbol_pn_get_type (formula[i + 1], logic) == LOGICS_SYMBOL_VAR)
+					perror ("* Profundidad excedida; demasiadas variables. Revise la fórmula.\n");
 				/* o empieza una nueva fórmula */
-				else if (symbol_kind_pn (formula[i + 1], logic) == UCON ||
-								 symbol_kind_pn (formula[i + 1], logic) == BCON)
-					perror (" Hay varias fórmulas juntas.\n");
+				else if (logics_symbol_pn_get_type (formula[i + 1], logic) == LOGICS_SYMBOL_U_CON ||
+				         logics_symbol_pn_get_type (formula[i + 1], logic) == LOGICS_SYMBOL_B_CON)
+					perror ("* Hay varias fórmulas juntas.\n");
 				return false;
 			}
 		}
-	
 	/* Si después de recorrer la fórmula aún restan argumentos, faltan variables */
 	if (deep != 0)
 		{
-			perror (" Profundidad insuficiente; muy pocas variables. Revise la fórmula.\n");
+			perror ("* Profundidad insuficiente; muy pocas variables. Revise la fórmula.\n");
 			return false;
 		}
 	else
@@ -137,25 +135,26 @@ is_wff_pn (char formula[], Logic logic)
  * un árbol de fórmula bien formada correcto, como es propio de la notación
  * polaca.
  */
-void parse_polish (LogicWFF *tree, char formula[], Logic logic)
+void
+logics_wff_parse_formula_pn (LogicsWFF* tree, char formula_pn[], LogicsLogic* logic)
 {
-	LogicVar var;
-	int i;
+	LogicsVar  *var;
+	int        i;
 	
-	for (i = 0; i < (int) strlen (formula); i++)
+	for (i = 0; i < (int) strlen (formula_pn); i++)
 		{
-			if (symbol_kind_pn (formula[i], logic) == VAR)
+			if (logics_symbol_pn_get_type (formula_pn[i], logic) == LOGICS_SYMBOL_VAR)
 				{
-					var = (LogicVar) search_var (logic->Vars, formula[i]);
-					set_atom (tree, VAR, formula[i], &var->value);
+					var = logics_var_list_get_var_by_symbol (logic->vars, formula_pn[i]);
+					logics_wff_add_node (tree, LOGICS_WFF_NODE_VAR, formula_pn[i], &var->value);
 				}
-			else if (symbol_kind_pn (formula[i], logic) == UCON)
-				set_atom (tree, UCON, formula[i], NULL);
-			else if (symbol_kind_pn (formula[i], logic) == BCON)
-				set_atom (tree, BCON, formula[i], NULL);
+			else if (logics_symbol_pn_get_type (formula_pn[i], logic) == LOGICS_SYMBOL_U_CON)
+				logics_wff_add_node (tree, LOGICS_WFF_NODE_U_CON, formula_pn[i], NULL);
+			else if (logics_symbol_pn_get_type (formula_pn[i], logic) == LOGICS_SYMBOL_B_CON)
+				logics_wff_add_node (tree, LOGICS_WFF_NODE_B_CON, formula_pn[i], NULL);
 			else
 				{
-					perror ("Parsing... Unexpected error!\n");
+					perror ("* Parsing... Error inesperado\n");
 					return;
 				}
 		}

@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -129,7 +129,7 @@ int
 main (int argc, char *argv[])
 {
 	int c, index, initdim = 0, initmdv = 0;
-	Work work;
+	Work* work;
 
 #ifdef ENABLE_NLS
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -139,10 +139,12 @@ main (int argc, char *argv[])
 	
 	opterr = 0;
 	
-	work = (Work) malloc (sizeof (workType));
-	work->logic = (Logic) malloc (sizeof (LogicType));
+	work = (Work*) malloc (sizeof (Work));
+	work->logic = (LogicsLogic*) malloc (sizeof (LogicsLogic));
 	work->DIM = 0;
-	work->formula_pn[0] = 0;
+	work->logic->ucons = NULL;
+	work->logic->bcons = NULL;
+	work->formula_pn[0] = NULL;
 	work->wff = NULL;
 	
 	while ((c = getopt (argc, argv, "d:m:f:s:hv")) != -1)
@@ -161,16 +163,16 @@ main (int argc, char *argv[])
 					initmdv = atoi (optarg);
 					break;
 				case 'f':
-					/* if (is_wff_pn (optarg, work->logic)) */
+					/* if (logics_formula_is_wff_pn (optarg, work->logic)) */
 					strcpy (work->formula_pn, optarg);
 					break;
 				case 's':
 					if (strcmp (optarg, "a"))  /* || strcmp (optarg, "all") == 0) */
-						work->eval_values = ALL;
+						work->evaluation_style = ALL;
 					else if (strcmp (optarg, "d") ) /* || strcmp (optarg, "designated") == 0) */
-						work->eval_values = DESIGNATED;
+						work->evaluation_style = DESIGNATED;
 					else if (strcmp (optarg, "n")) /* || strcmp (optarg, "not-designated") == 0) */
-						work->eval_values = NOTDESIGNATED;
+						work->evaluation_style = NOT_DESIGNATED;
 					break;
 				case '?':
 					if (optopt == c)

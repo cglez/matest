@@ -5,12 +5,12 @@
  * 
  * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
  *
- * This program is free software; you can redistribute it and/or modify
+ * This library is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
  * GNU General Public License for more details.
@@ -21,9 +21,8 @@
  * Boston, MA 02111-1307, USA. 
  */
 
-
-#ifndef _LOGICS_H_
-#define _LOGICS_H_
+#ifndef __LOGICS_H__
+#define __LOGICS_H__
 
 
 /*
@@ -33,9 +32,9 @@
 /* Algunas abreviaciones útiles */
 #define MAX(a, b)	(((a) > (b)) ? (a) : (b))
 #define MIN(a, b)	(((a) < (b)) ? (a) : (b))
-#define DIM logic->dim
+#define DIM logic->dimension
 #define MDV logic->mdv
-#define MAXV logic->dim - 1
+#define MAXV logic->dimension - 1
 
 
 /*
@@ -43,47 +42,46 @@
  */
 
 /** Enumeración con los tipos de símbolos de una fórmula */
-typedef enum _logic_symbol_kind
+typedef enum
 	{
-		VARIABLE,  /**< Variable. */
-		UNYCON,    /**< Conectiva unaria. */
-		BINCON,    /**< Conectiva binaria. */
-		OPENAUX,   /**< Símbolo auxiliar de apertura. */
-		CLOSEAUX,  /**< Símbolo auxiliar de cierre. */
-		NONE       /**< Tipo nulo, para el control de errores. */
+		LOGICS_SYMBOL_VAR,         /**< Variable. */
+		LOGICS_SYMBOL_U_CON,       /**< Conectiva unaria. */
+		LOGICS_SYMBOL_B_CON,       /**< Conectiva binaria. */
+		LOGICS_SYMBOL_AUX_OPEN,    /**< Símbolo auxiliar de apertura. */
+		LOGICS_SYMBOL_AUX_CLOSE,   /**< Símbolo auxiliar de cierre. */
+		LOGICS_SYMBOL_NONE         /**< Tipo nulo, para el control de errores. */
 	}
-	LogicSymbKind;
+	LogicsSymbolType;
 
 
-/** Enumeración con los tipos de elementos de una fórmula bien formada */
-typedef enum _logic_atom_kind
+/** Enumeración con los tipos de nodos de una fórmula bien formada */
+typedef enum
 	{
-		VAR,       /**< Variable. */
-		UCON,      /**< Conectiva unaria. */
-		BCON       /**< Conectiva binaria. */
+		LOGICS_WFF_NODE_VAR,     /**< Variable. */
+		LOGICS_WFF_NODE_U_CON,   /**< Conectiva unaria. */
+		LOGICS_WFF_NODE_B_CON    /**< Conectiva binaria. */
 	}
-	LogicAtomKind;
+	LogicsWFFNodeType;
 
 
 /**
  * Nodo variable proposicional.
  * 
  * Entendemos aquí por variable proposicional a un tipo de dato que tiene
- * asignado un símbolo que la identifica, que puede tomar distintos valores
+ * asociado un símbolo que la identifica, que puede tomar distintos valores
  * numéricos y que forma un grupo, una lista, con los otros elementos de la
  * misma clase que se hayan en uso. Este tipo de dato está implementado como una
  * lista enlazada simple.
  */
-typedef struct _logic_var_node
+typedef struct _LogicsVar LogicsVar;
+struct _LogicsVar
 	{
-		char name;                     /**< Nombre de la variable o letra que la designa. */
-		int value;                     /**< Valor de la variable. */
-		struct _logic_var_node *next;  /**< Puntero al siguiente elemento de la lista. */
-	}
-	LogicVarType;
+		char       symbol;   /**< Nombre de la variable o letra que la designa. */
+		int        value;    /**< Valor de la variable. */
+		LogicsVar  *next;    /**< Puntero al siguiente elemento de la lista. */
+	};
 
-typedef LogicVarType *LogicVar;      /**< Declaración de una variable proposicional. */
-typedef LogicVarType *LogicVarList;  /**< Declaración de una lista de variables. */
+typedef LogicsVar *LogicsVarList;  /**< Declaración de listas de variables. */
 
 
 /**
@@ -99,16 +97,18 @@ typedef LogicVarType *LogicVarList;  /**< Declaración de una lista de variables
  * Las conectivas así definidas están implementadas a su vez como una lista
  * enlazada simple para su mejor manejo.
  */
-typedef struct _logic_uny_con_node
+typedef struct _LogicsUCon LogicsUCon;
+struct _LogicsUCon
 	{
-		char name;     /**< Símbolo que representa la conectiva (una letra mayúscula en la notación polaca) */
-		int *matrix;   /**< Matriz de la conectiva: un vector de enteros que define la semántica de la conectiva; contiene los valores que ésta asignará a una variable. */
-		struct _logic_uny_con_node *next;	 /**< Puntero al siguiente elemento de la lista. */
-	}
-	LogicUConType;
+		char        symbol;    /**< Símbolo que representa la conectiva (una letra 
+		                            mayúscula en la notación polaca) */
+		int         *matrix;   /**< Matriz de la conectiva: un vector de enteros
+		                            que define la semántica de la conectiva; contiene
+		                            los valores que ésta asignará a una variable. */
+		LogicsUCon  *next;     /**< Puntero al siguiente elemento de la lista. */
+	};
 
-typedef LogicUConType *LogicUCon;      /**< Declaración de conectivas unarias. */
-typedef LogicUConType *LogicUConList;  /**< Declaración de listas de conectivas unarias. */
+typedef LogicsUCon *LogicsUConList;  /**< Declaración de listas de conectivas unarias. */
 
 
 /**
@@ -125,16 +125,18 @@ typedef LogicUConType *LogicUConList;  /**< Declaración de listas de conectivas
  * Las conectivas así definidas están implementadas a su vez como una lista
  * enlazada simple para su mejor manejo.
  */
-typedef struct _logic_bin_con_node
+typedef struct _LogicsBCon LogicsBCon;
+struct _LogicsBCon
 	{
-		char name;     /**< Símbolo que representa la conectiva (una letra mayúscula en la notación polaca) */
-		int **matrix;  /**< Matriz de la conectiva: una matriz de enteros que define la semántica de la conectiva; contiene los valores que ésta asignará a un par de variables. */
-		struct _logic_bin_con_node *next;  /**< Puntero al siguiente elemento de la lista. */
-	}
-	LogicBConType;
+		char       symbol;   /**< Símbolo que representa la conectiva (una letra
+		                          mayúscula en la notación polaca) */
+		int**      matrix;   /**< Matriz de la conectiva: una matriz de enteros que
+		                          define la semántica de la conectiva; contiene los
+		                          valores que ésta asignará a un par de variables. */
+		LogicsBCon *next;    /**< Puntero al siguiente elemento de la lista. */
+	};
 
-typedef LogicBConType *LogicBCon;      /**< Declaración de conectivas binarias. */
-typedef LogicBConType *LogicBConList;  /**< Declaración de listas de conectivas binarias. */
+typedef LogicsBCon *LogicsBConList;  /**< Declaración de listas de conectivas binarias. */
 
 
 /**
@@ -146,70 +148,74 @@ typedef LogicBConType *LogicBConList;  /**< Declaración de listas de conectivas
  * caso de que sea una variable proposicional.
  *
  * Cada nodo está bien formado si, o bien
- * - el tipo de nodo es una conectiva binaria y tanto el preargumento como el
+ * - el tipo de nodo es de conectiva binaria y tanto el preargumento como el
  *   postargumento apuntan a sendos nodos, o bien
- * - el tipo de nodo es una conectiva unaria, el postargumento apunta a otro
+ * - el tipo de nodo es de conectiva unaria, el postargumento apunta a otro
  *   nodo y el preargumento es el puntero nulo, o bien
- * - el tipo de nodo es una variable y ambos argumentos son el puntero nulo.
+ * - el tipo de nodo es de variable y ambos argumentos son el puntero nulo.
  */
-typedef struct _logic_wff_node
+typedef struct _LogicsWFFNode LogicsWFFNode;
+struct _LogicsWFFNode
 	{
-		LogicAtomKind kind;               /**< Tipo del elemento. */
-		char name;                        /**< Símbolo que lo representa. */
-		int *value;                       /**< Puntero a su valor. */
-		struct _logic_wff_node *prearg;   /**< Puntero al argumento precedente. */
-		struct _logic_wff_node *postarg;  /**< Puntero al argumento posterior. */
-	}
-	LogicWFFtype;
+		LogicsWFFNodeType type;      /**< Tipo del elemento. */
+		char symbol;                 /**< Símbolo que lo representa. */
+		int *value;                  /**< Puntero a su valor. */
+		LogicsWFFNode *prearg;       /**< Puntero al argumento precedente. */
+		LogicsWFFNode *postarg;      /**< Puntero al argumento posterior. */
+	};
 
-typedef LogicWFFtype *LogicAtom;  /**< Declaración de un elemento de una fbf. */
-typedef LogicWFFtype *LogicWFF;   /**< Declaración de una fórmula bien formada. */
+typedef LogicsWFFNode *LogicsWFF;   /**< Declaración de una fórmula bien formada. */
 
 
 /**
- * Struct with all data that defines one logic
+ * Registro con todos los datos que definen una lógica. Una lógica, aquí, es
+ * un conjunto de elementos consistentes entre sí. Consta de una dimensión para
+ * las matrices, un mínimo valor designado, que será mayor que 0 y menor que
+ * la dimensión, una lista de variables que pueden tomar valores entre 0 y la
+ * dimensión menos 1, y sendas listas de conectivas unarias y binarias donde sus
+ * matrices son de dimensión igual a la dimensión general y cada uno de sus
+ * elementos toman valores entre 0 y la dimensión menos 1.
  */
-typedef struct _logic
+typedef struct
 	{
-		int dim;              /**< Dimensión de las matrices. */
-		int mdv;              /**< Mínimo Valor Designado. */
-		LogicVarList Vars;    /**< Lista de variables proposicionales. */
-		LogicUConList UCons;  /**< Lista de conectivas unarias. */
-		LogicBConList BCons;  /**< Lista de conectivas binarias. */
+		int             dimension;   /**< Dimensión de las matrices. */
+		int             mdv;         /**< Mínimo Valor Designado. */
+		LogicsVarList   vars;        /**< Lista de variables proposicionales. */
+		LogicsUConList  ucons;       /**< Lista de conectivas unarias. */
+		LogicsBConList  bcons;       /**< Lista de conectivas binarias. */
 	}
-	LogicType;
-
-typedef LogicType *Logic;
+	LogicsLogic;
 
 
 /*
-***	Function prototypes
+***	Prototipos de funciones
  */
 
-/* Connective related function prototypes.
- * Functions present in file connectives.c */
-LogicUCon search_UCon (LogicUConList list, char name);
-LogicBCon search_BCon (LogicBConList list, char name);
-int add_UCon (LogicUConList *list, char name, int *mtx, int dimension);
-int add_BCon (LogicBConList *list, char name, int **mtx, int dimension);
-void del_connective (Logic logic, char name);
+/* Funciones sobre variables */
+LogicsVar* logics_var_new (char symbol, int value);
+void logics_var_set_value (LogicsVar* var, int value);
+int logics_var_get_value (LogicsVar* var);
+bool logics_var_list_is_empty (LogicsVarList var_list);
+void logics_var_list_free (LogicsVarList *var_list);
+LogicsVar* logics_var_list_get_var_by_symbol (LogicsVarList var_list, char symbol);
+unsigned int logics_var_list_length (LogicsVarList var_list);
+void logics_var_list_add_var (LogicsVarList *var_list, LogicsVar* var);
 
+/* Funciones sobre conectivas */
+LogicsUCon* logics_ucon_list_get_ucon_by_symbol (LogicsUConList ucon_list, char symbol);
+LogicsBCon* logics_bcon_list_get_bcon_by_symbol (LogicsBConList bcon_list, char symbol);
+int logics_ucon_list_append_ucon (LogicsUConList *ucon_list, LogicsUCon* ucon);
+int logics_bcon_list_append_bcon (LogicsBConList *bcon_list, LogicsBCon* bcon);
+void logics_con_delete_by_symbol (LogicsLogic* logic, char symbol);
+void logics_logic_set_default_ucons_lukasiewicz (LogicsLogic* logic);
+void logics_logic_set_default_bcons_lukasiewicz (LogicsLogic* logic);
+void logics_ucon_list_free (LogicsUConList *ucon_list);
+void logics_bcon_list_free (LogicsBConList *bcon_list, int dimension);
 
-/* Variable related function prototypes.
- * Functions present in file variables.c */
-bool is_empty_var_list (LogicVarList list);
-void del_var_list (LogicVarList *list);
-LogicVar search_var (LogicVarList list, char variable);
-void add_var (LogicVarList *list, char variable);
-void set_var_value (LogicVar var, int value);
-int var_value (LogicVar var);
-
-
-/* Well formed formulas in polish notation related function prototypes.
- * Functions present in file wffs_pn.c */
-LogicSymbKind symbol_kind_pn (char symbol, Logic logic);
+/* Funciones para fórmulas bien formadas en notación polaca */
+LogicsSymbolType logics_symbol_pn_get_type (char symbol, LogicsLogic* logic);
 bool check_string (char formula[]);
-bool is_wff_pn (char formula[], Logic logic);
+bool logics_formula_is_wff_pn (char formula[], LogicsLogic* logic);
 
 
-#endif
+#endif /* __LOGICS_H__ */

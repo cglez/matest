@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -34,7 +34,7 @@ destroy (GtkWidget *widget, gpointer data)
 	gtk_main_quit ();
 }
 
-void 
+void
 on_window_destroy (GtkObject *object, MaTestGUI *gui)
 {
 	gtk_main_quit ();
@@ -57,27 +57,27 @@ on_b_evaluate_clicked (GtkObject *object, MaTestGUI *gui)
 
 
 void
-on_b_show_matrices_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_print_matrices_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	gtk_text_buffer_set_text (GTK_TEXT_BUFFER (gui->textbuffer),
-	                          show_matrices_gui (gui->work->logic), -1);
+	                          print_matrices_gui (gui->work->logic), -1);
 }
 
 
 void
 on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	if (is_wff_pn ((char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)), gui->work->logic))
+	if (logics_formula_is_wff_pn ((char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)), gui->work->logic))
 		{
 			strcpy (gui->work->formula_pn, (char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)));
 			
-			if (gui->work->logic->Vars)
-				del_var_list (&gui->work->logic->Vars);
+			if (gui->work->logic->vars)
+				logics_var_list_free (&gui->work->logic->vars);
 			register_vars (gui->work->logic, gui->work->formula_pn);
 			
 			if (gui->work->wff)
 				del_wff (&gui->work->wff);
-			parse_polish (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
+			logics_wff_parse_formula_pn (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
 		}
 	gtk_entry_set_text (GTK_ENTRY (gui->entry_formula), "");
 	gtk_label_set_text (GTK_LABEL (gui->label_formula),
@@ -88,17 +88,17 @@ on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_entry_formula_activate (GtkObject *object, MaTestGUI *gui)
 {
-	if (is_wff_pn ((char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)), gui->work->logic))
+	if (logics_formula_is_wff_pn ((char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)), gui->work->logic))
 		{
 			strcpy (gui->work->formula_pn, (char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)));
 			
-			if (gui->work->logic->Vars)
-				del_var_list (&gui->work->logic->Vars);
+			if (gui->work->logic->vars)
+				logics_var_list_free (&gui->work->logic->vars);
 			register_vars (gui->work->logic, gui->work->formula_pn);
 			
 			if (gui->work->wff)
 				del_wff (&gui->work->wff);
-			parse_polish (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
+			logics_wff_parse_formula_pn (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
 		}
 	gtk_entry_set_text (GTK_ENTRY (gui->entry_formula), "");
 	gtk_label_set_text (GTK_LABEL (gui->label_formula),
@@ -114,7 +114,7 @@ on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 
 	label = gtk_button_get_label (GTK_BUTTON (object));
 	symb = (char) label[0];
-	edit_ucon_gui (gui, symb);
+	dialog_ucon_edit (gui, symb);
 }
 
 
@@ -126,19 +126,19 @@ on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 	
 	label = gtk_button_get_label (GTK_BUTTON (object));
 	symb = (char) label[0];
-	edit_bcon_gui (gui, symb);
+	dialog_bcon_edit (gui, symb);
 }
 
 
 void
 on_b_add_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	add_ucon_gui (gui);
+	dialog_ucon_new (gui);
 }
 
 
 void
-on_b_del_ucon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_ucon_del_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	
 }
@@ -147,7 +147,7 @@ on_b_del_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_b_add_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	add_bcon_gui (gui);
+	dialog_bcon_new (gui);
 }
 
 
@@ -159,39 +159,47 @@ on_b_del_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 
 
 void
+on_spin_dimension_value_changed (GtkObject *object, MaTestGUI *gui)
+{
+	logics_ucon_list_free (&gui->work->logic->ucons);
+	logics_bcon_list_free (&gui->work->logic->bcons, gui->work->DIM);
+	gui->work->logic->dimension = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (gui->spin_dimension));
+	logics_logic_set_default_ucons_lukasiewicz (gui->work->logic);
+	logics_logic_set_default_bcons_lukasiewicz (gui->work->logic);
+	gtk_spin_button_set_range (GTK_SPIN_BUTTON (gui->spin_mdv),
+	                           1, gui->work->MAXV);
+	gtk_spin_button_set_value (GTK_SPIN_BUTTON (gui->spin_mdv), gui->work->MAXV);
+}
+
+
+void
 on_spin_mdv_value_changed (GtkObject *object, MaTestGUI *gui)
 {
 	gui->work->logic->mdv = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (gui->spin_mdv));
 }
 
 
-/*
 void
-on_spin_value_changed (GtkObject *object, gpointer *value)
+on_m_file_save_activate (GtkObject *object, MaTestGUI *gui)
 {
-	value = (gint) gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (object));
+	write_matrices_gui (gui);
 }
-*/
 
 
-/*
 void
-on_b_new_formula_ok_clicked (GtkObject *object, NewFormulaGUI *formulagui)
+on_m_view_all_toggled (GtkObject *object, MaTestGUI *gui)
 {
-	Work work = *formulagui->work;
-		if (is_wff_pn ((char *) gtk_entry_get_text (formulagui->entry),
-		               work->logic))
-			{
-				if (work->logic->Vars)
-					del_var_list (&work->logic->Vars);
-				register_vars (work->logic, work->formula_pn);
-				
-				if (work->wff)
-					del_wff (&work->wff);
-				parse_polish (&work->wff,
-				              work->formula_pn,
-				              work->logic);
-			}
-	gtk_widget_destroy (formulagui->win);
+	gui->work->evaluation_style = ALL;
 }
-*/
+
+void
+on_m_view_desig_toggled (GtkObject *object, MaTestGUI *gui)
+{
+	gui->work->evaluation_style = DESIGNATED;
+}
+
+void
+on_m_view_notdesig_toggled (GtkObject *object, MaTestGUI *gui)
+{
+	gui->work->evaluation_style = NOT_DESIGNATED;
+}

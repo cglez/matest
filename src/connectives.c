@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -43,28 +43,71 @@
 #include "MaTest.h"
 
 
+/*
+ * Crea una conectiva unaria nueva.
+ */
+LogicsUCon*
+logics_ucon_new (char symbol, int *matrix, int dimension)
+{
+	LogicsUCon  *ucon;
+	int         i;
+
+	ucon = (LogicsUCon*) malloc (sizeof (LogicsUCon));
+	ucon->matrix = (int*) calloc (dimension, sizeof (int));
+
+	ucon->symbol = symbol;
+	for (i = 0; i < dimension; i++)
+		ucon->matrix[i] = matrix[i];
+
+	return ucon;
+}
+
+
+/*
+ * Crea una conectiva binaria nueva.
+ */
+LogicsBCon*
+logics_bcon_new (char symbol, int **matrix, int dimension)
+{
+	LogicsBCon  *bcon;
+	int         i, j;
+
+	bcon = (LogicsBCon*) malloc (sizeof (LogicsBCon));
+	bcon->matrix = (int**) calloc (dimension, sizeof (int*));
+	for (i = 0; i < dimension; i++)
+		bcon->matrix[i] = (int*) calloc (dimension, sizeof (int));
+
+	bcon->symbol = symbol;
+	for (i = 0; i < dimension; i++)
+		for (j = 0; j < dimension; j++)
+			bcon->matrix[i][j] = matrix[i][j];
+	
+	return bcon;
+}
+
+
 /**
  * Busca una conectiva unaria dada por su nombre dentro de una lista de
  * conectivas unarias.
  *
  * @return Devuelve un puntero a la conectiva, si existe, o el puntero nulo en
- *				 caso contrario.
+ *         caso contrario.
  */
-LogicUCon
-search_UCon (LogicUConList list, char name)
+LogicsUCon*
+logics_ucon_list_get_ucon_by_symbol (LogicsUConList ucon_list, char symbol)
 {
-	LogicUCon aux;
-	aux = list;
-
-	while (aux)
+	LogicsUCon  *ucon;
+	
+	ucon = ucon_list;
+	while (ucon)
 		{
-			if (aux->name == name)
-				return aux;
+			if (ucon->symbol == symbol)
+				return ucon;
 			else
-				aux = aux->next;
+				ucon = ucon->next;
 		}
 
-	return aux;
+	return ucon;
 }
 
 
@@ -73,130 +116,141 @@ search_UCon (LogicUConList list, char name)
  * conectivas binarias.
  *
  * @return Devuelve un puntero a la conectiva, si existe, o el puntero nulo en
- *				 caso contrario.
+ *         caso contrario.
  */
-LogicBCon
-search_BCon (LogicBConList list, char name)
+LogicsBCon*
+logics_bcon_list_get_bcon_by_symbol (LogicsBConList bcon_list, char symbol)
 {
-	LogicBCon aux;
-	aux = list;
-
-	while (aux)
+	LogicsBCon* bcon;
+	
+	bcon = bcon_list;
+	while (bcon)
 		{
-			if (aux->name == name)
-				return aux;
+			if (bcon->symbol == symbol)
+				return bcon;
 			else
-				aux = aux->next;
+				bcon = bcon->next;
 		}
 
-	return aux;
+	return bcon;
 }
 
 
-/**
- * Añade una conectiva unaria dentro de una lista de conectivas unarias,
- * especificando el nombre de la conectiva, su matriz y la dimensión de ésta.
- *
- * @param list Lista de conectivas unarias.
- * @param name Nombre de la conectiva.
- * @param mtx Al ser una conectiva unaria, la matriz es un vector de enteros con
- *				los valores de la conectiva.
- * @param dimension Dimensión de la matriz (del vector).
- *
- * @return 0: éxito.\n
- *				 1: error, la conectiva ya está en la lista.
+/*
+ * Borra una lista de conectivas unarias.
+ */
+void
+logics_ucon_list_free (LogicsUConList *ucon_list)
+{
+	LogicsUCon  *ucon, *ucon_next;
+	
+	ucon = *ucon_list;
+	while (ucon)
+		{
+			ucon_next = ucon->next;
+			free (ucon->matrix);
+			free (ucon);
+			ucon = ucon_next;
+		}
+	*ucon_list = NULL;
+}
+
+
+/*
+ * Borra una lista de conectivas binarias.
+ */
+void
+logics_bcon_list_free (LogicsBConList *bcon_list, int dimension)
+{
+	LogicsBCon  *bcon, *bcon_next;
+	int         i;
+
+	bcon = *bcon_list;
+	while (bcon)
+		{
+			bcon_next = bcon->next;
+			for (i = 0; i < dimension; i++)
+				free (bcon->matrix[i]);
+			free (bcon->matrix);
+			free (bcon);
+			bcon = bcon_next;
+		}
+	*bcon_list = NULL;
+}
+
+
+/*
+ * Añade una conectiva unaria al final de una lista de conectivas unarias
+ * siempre y cuando no exista ya una con el mismo símbolo.
  */
 int
-add_UCon (LogicUConList *list, char name, int *mtx, int dimension)
+logics_ucon_list_append_ucon (LogicsUConList *ucon_list, LogicsUCon* ucon)
 {
-	int i;
-	LogicUCon new, aux;
-
-	new = (LogicUCon) malloc (sizeof (LogicUConType));
-
+	LogicsUCon  *aux;
+	
 	/* Si la lista está vacía, el nuevo nodo es el primer elemento */
-	if (*list == NULL)
+	if (*ucon_list == NULL)
 		{
-			new->next = *list;
-			*list = new;
+			ucon->next = *ucon_list;
+			*ucon_list = ucon;
 		}
 	else
 		{
-			aux = *list;
+			aux = *ucon_list;
 			/* Buscamos el último elemento */
 			while (aux->next)
 				{
 					/* Descartamos los elementos que ya se encuentran en la lista */
-					if (aux->name == name || aux->next->name == name)
-						return 1;
+					if (aux->symbol == ucon->symbol || aux->next->symbol == ucon->symbol)
+						{
+							fprintf (stderr, "* Ya hay una conectiva definida como %c.\n", ucon->symbol);
+							return 1;
+						}
 					else
 						aux = aux->next;
 				}
-				new->next = aux->next;
-				aux->next = new;
+				ucon->next = aux->next;
+				aux->next = ucon;
 		}
-
-	/* Definimos los elementos de la conectiva */
-	new->name = name;
-	new->matrix = (int*) calloc (dimension, sizeof (int));
-	for (i = 0; i < dimension; i++)
-		new->matrix[i] = mtx[i];
+	
 	return 0;
 }
 
 
-/**
- * Añade una conectiva binaria dentro de una lista de conectivas binarias,
- * especificando el nombre de la conectiva, su matriz y la dimensión de ésta.
- *
- * @param list Lista de conectivas binarias.
- * @param name Nombre de la conectiva.
- * @param mtx Matriz de enteros con los valores de la conectiva.
- * @param dimension Dimensión de la matriz.
- *
- * @return 0: éxito.\n
- *				 1: error, la conectiva ya está en la lista.
+/*
+ * Añade una conectiva binaria al final de una lista de conectivas binarias
+ * siempre y cuando no exista ya una con el mismo símbolo.
  */
 int
-add_BCon (LogicBConList *list, char name, int **mtx, int dimension)
+logics_bcon_list_append_bcon (LogicsBConList *bcon_list, LogicsBCon* bcon)
 {
-	int i, j;
-	LogicBCon new, aux;
-
-	new = (LogicBCon) malloc (sizeof (LogicBConType));
-
+	LogicsBCon  *aux;
+	
 	/* Si la lista está vacía, el nuevo nodo es el primer elemento */
-	if (*list == NULL)
+	if (*bcon_list == NULL)
 		{
-			new->next = *list;
-			*list = new;
+			bcon->next = *bcon_list;
+			*bcon_list = bcon;
 		}
 	else
 		{
-			aux = *list;
+			aux = *bcon_list;
 			/* Buscamos el último elemento */
 			while (aux->next)
 				{
 					/* Descartamos los elementos que ya se encuentran en la lista */
-					if (aux->name == name || aux->next->name == name)
-						return 1;
+					if (aux->symbol == bcon->symbol || aux->next->symbol == bcon->symbol)
+						{
+							fprintf (stderr, "* Ya hay una conectiva definida como %c.\n", bcon->symbol);
+							return 1;
+						}
 					else
 						aux = aux->next;
 				}
-				new->next = aux->next;
-				aux->next = new;
+				bcon->next = aux->next;
+				aux->next = bcon;
 		}
-
-	/* Definimos los elementos de la conectiva */
-	new->name = name;
-	new->matrix = (int**) calloc (dimension, sizeof (int*));
-	for (i = 0; i < dimension; i++)
-		new->matrix[i] = (int*) calloc (dimension, sizeof (int));
-	for (i = 0; i < dimension; i++)
-		{
-			for (j = 0; j < dimension; j++)
-				new->matrix[i][j] = mtx[i][j];
-		}
+	
 	return 0;
 }
 
@@ -207,20 +261,22 @@ add_BCon (LogicBConList *list, char name, int **mtx, int dimension)
  * la negación (N), de este modo: \f$ \neg x =_{def} ( 1 - x ) \f$.
  */
 void
-set_default_UCons (Logic logic)
+logics_logic_set_default_ucons_lukasiewicz (LogicsLogic* logic)
 {
-	int i;
-	int *mtx;
+	LogicsUCon  *ucon;
+	int         *matrix;
+	int         i;
 
-	mtx = (int*) calloc (DIM, sizeof (int));
+	matrix = (int*) calloc (DIM, sizeof (int));
 
 	/* Negación (N):
 	 *  Nx [¬x]	=df	(1 - x)	 */
 	for (i = 0; i < DIM; i++)
-		mtx[i] = logic->dim - 1 - i;
-	add_UCon (&logic->UCons, 'N', mtx, logic->dim);
+		matrix[i] = MAXV - i;
+	ucon = logics_ucon_new ('N', matrix, DIM);
+	logics_ucon_list_append_ucon (&logic->ucons, ucon);
 
-	free (mtx);
+	free (matrix);
 }
 
 
@@ -234,10 +290,11 @@ set_default_UCons (Logic logic)
  *	 - Bicondicional (E): \f$ x \leftrightarrow y =_{def} n - | x - y | \f$.
  */
 void
-set_default_BCons (Logic logic)
+logics_logic_set_default_bcons_lukasiewicz (LogicsLogic* logic)
 {
-	int i, j;
-	int **mtx;
+	LogicsBCon  *bcon;
+	int         **mtx;
+	int         i, j;
 
 	mtx = (int**) calloc (DIM, sizeof (int*));
 	for (i = 0; i < DIM; i++)
@@ -246,38 +303,34 @@ set_default_BCons (Logic logic)
 	/* Implicación (C):
 	 *  Cxy [x -> y]  =df  min {n, n - x + y}  */
 	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				mtx[i][j] = MIN ((DIM - 1), (DIM - 1 - i + j));
-		}
-	add_BCon (&logic->BCons, 'C', mtx, logic->dim);
+		for (j = 0; j < DIM; j++)
+			mtx[i][j] = MIN (MAXV, (MAXV - i + j));
+	bcon = logics_bcon_new ('C', mtx, DIM);
+	logics_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	/* Conjunción (K):
 	 *  Kxy [x & y]  =df  min {x, y}  */
 	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				mtx[i][j] = MIN (i, j);
-		}
-	add_BCon (&logic->BCons, 'K', mtx, logic->dim);
+		for (j = 0; j < DIM; j++)
+			mtx[i][j] = MIN (i, j);
+	bcon = logics_bcon_new ('K', mtx, DIM);
+	logics_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	/* Disyunción (A):
 	 *  Axy [x v y]  =df  Max {x, y}  */
 	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				mtx[i][j] = MAX (i, j);
-		}
-	add_BCon (&logic->BCons, 'A', mtx, logic->dim);
+		for (j = 0; j < DIM; j++)
+			mtx[i][j] = MAX (i, j);
+	bcon = logics_bcon_new ('A', mtx, DIM);
+	logics_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	/* Bicondicional (E):
 	 *  Exy [x <-> y]  =df  n - |x - y|  */
 	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				mtx[i][j] = DIM - 1 - abs (i - j);
-		}
-	add_BCon (&logic->BCons, 'E', mtx, logic->dim);
+		for (j = 0; j < DIM; j++)
+			mtx[i][j] = MAXV - abs (i - j);
+	bcon = logics_bcon_new ('E', mtx, DIM);
+	logics_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	free (mtx);
 }
@@ -288,31 +341,31 @@ set_default_BCons (Logic logic)
  * por su nombre, liberando su memoria.
  */
 void
-del_connective (Logic logic, char connective)
+logics_con_delete_by_symbol (LogicsLogic* logic, char symbol)
 {
 	int i;
-	LogicUCon unyprev, unyaux;
-	LogicBCon binprev, binaux;
+	LogicsUCon *unyprev, *unyaux;
+	LogicsBCon *binprev, *binaux;
 
-	if (search_UCon (logic->UCons, connective))
+	if (logics_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
 		{
 			unyprev = NULL;
-			unyaux = logic->UCons;
+			unyaux = logic->ucons;
 
-			while (unyaux && unyaux->name != connective)
+			while (unyaux && unyaux->symbol != symbol)
 				{
 					unyprev = unyaux;
 					unyaux = unyaux->next;
 				}
-			if (!unyaux || unyaux->name != connective)
+			if (!unyaux || unyaux->symbol != symbol)
 				{
-					perror ("¡Error inesperado!\n");
+					perror ("* ¡Error inesperado!\n");
 					return;
 				}
 			else
 				{
 					if (!unyprev)
-						logic->UCons = unyaux->next;
+						logic->ucons = unyaux->next;
 					else
 						unyprev->next = unyaux->next;
 
@@ -321,25 +374,25 @@ del_connective (Logic logic, char connective)
 				}
 		}
 
-	else if (search_BCon (logic->BCons, connective))
+	else if (logics_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
 		{
 			binprev = NULL;
-			binaux = logic->BCons;
+			binaux = logic->bcons;
 
-			while (binaux && binaux->name != connective)
+			while (binaux && binaux->symbol != symbol)
 				{
 					binprev = binaux;
 					binaux = binaux->next;
 				}
-			if (!binaux || binaux->name != connective)
+			if (!binaux || binaux->symbol != symbol)
 				{
-					perror ("¡Error inesperado!\n");
+					perror ("* Error inesperado\n");
 					return;
 				}
 			else
 				{
 					if (!binprev)
-						logic->BCons = binaux->next;
+						logic->bcons = binaux->next;
 					else
 						binprev->next = binaux->next;
 
@@ -350,7 +403,7 @@ del_connective (Logic logic, char connective)
 				}
 		}
 	else
-		fprintf (stderr, " La conectiva %c no existe.\n", connective);
+		fprintf (stderr, "* La conectiva %c no existe.\n", symbol);
 }
 
 
@@ -363,15 +416,15 @@ del_connective (Logic logic, char connective)
  *				 1: error, archivo inválido.
  */
 int
-write_uny_matrix (FILE *file, LogicUCon connective, int dimension)
+write_ucon_matrix (FILE *file, LogicsUCon* ucon, int dimension)
 {
 	int i;
 
 	if (file)
 		{
-			fprintf (file, "%c\n", connective->name);
+			fprintf (file, "%c\n", ucon->symbol);
 			for (i = 0; i < dimension; i++)
-				fprintf (file, "%i ", connective->matrix[i]);
+				fprintf (file, "%i ", ucon->matrix[i]);
 			fprintf (file, "\n\n");
 
 			return 0;
@@ -390,17 +443,17 @@ write_uny_matrix (FILE *file, LogicUCon connective, int dimension)
  *				 1: error, archivo inválido.
  */
 int
-write_bin_matrix (FILE *file, LogicBCon connective, int dimension)
+write_bcon_matrix (FILE *file, LogicsBCon* bcon, int dimension)
 {
 	int i, j;
 
 	if (file)
 		{
-			fprintf (file, "%c\n", connective->name);
+			fprintf (file, "%c\n", bcon->symbol);
 			for (i = 0; i < dimension; i++)
 				{
 					for (j = 0; j < dimension; j++)
-						fprintf (file, "%i ", connective->matrix[i][j]);
+						fprintf (file, "%i ", bcon->matrix[i][j]);
 					fprintf (file, "\n");
 				}
 			fprintf (file, "\n");
@@ -423,25 +476,25 @@ write_bin_matrix (FILE *file, LogicBCon connective, int dimension)
  *				 1: error, archivo inválido.
  */
 int
-write_matrices (FILE *file, Logic logic)
+write_matrices (FILE *file, LogicsLogic* logic)
 {
-	LogicUCon unyaux;
-	LogicBCon binaux;
+	LogicsUCon  *ucon;
+	LogicsBCon  *bcon;
 
 	if (file)
 		{
-			unyaux = logic->UCons;
-			while (unyaux)
+			ucon = logic->ucons;
+			while (ucon)
 				{
-					write_uny_matrix (file, unyaux, DIM);
-					unyaux = unyaux->next;
+					write_ucon_matrix (file, ucon, DIM);
+					ucon = ucon->next;
 				}
 
-			binaux = logic->BCons;
-			while (binaux)
+			bcon = logic->bcons;
+			while (bcon)
 				{
-					write_bin_matrix (file, binaux, DIM);
-					binaux = binaux->next;
+					write_bcon_matrix (file, bcon, DIM);
+					bcon = bcon->next;
 				}
 
 			return 0;

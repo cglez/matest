@@ -7,7 +7,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -38,9 +38,9 @@
 
 
 bool
-is_empty_var_list (LogicVarList list)
+logics_var_list_is_empty (LogicsVarList var_list)
 {
-	return (list == NULL);
+	return (var_list == NULL);
 }
 
 
@@ -49,38 +49,37 @@ is_empty_var_list (LogicVarList list)
  * memoria reservada.
  */
 void
-del_var_list (LogicVarList *list)
+logics_var_list_free (LogicsVarList *var_list)
 {
-	LogicVar aux;
+	LogicsVar *var;
 	
-	while (*list)
+	while (*var_list)
 		{
-			aux = *list;
-			*list = aux->next;
-			free (aux);
+			var = *var_list;
+			*var_list = var->next;
+			free (var);
 		}
 }
 
 
 /**
- * Busca una variable dada por su nombre en una lista de variables.
+ * Busca una variable dada por su símbolo en una lista de variables.
  *
  * @return Puntero a la variable si existe, o el puntero nulo en caso contrario.
  */
-LogicVar
-search_var (LogicVarList list, char variable)
+LogicsVar*
+logics_var_list_get_var_by_symbol (LogicsVarList var_list, char symbol)
 {
-	LogicVar aux = list;
+	LogicsVar *var = var_list;
 	
-	while (aux)
+	while (var)
 		{
-			if (aux->name == variable)
-				return aux;
+			if (var->symbol == symbol)
+				return var;
 			else
-				aux = aux->next;
+				var = var->next;
 		}
-	
-	return aux;
+	return var;
 }
 
 
@@ -89,40 +88,111 @@ search_var (LogicVarList list, char variable)
  * nombre, y la sitúa por orden alfabético, con lo que la lista queda ordenada.
  */
 void
-add_var (LogicVarList *list, char variable)
+logics_var_list_add_var (LogicsVarList *var_list, LogicsVar* var)
 {
-	LogicVar new, aux;
-	
-	/* Descarta los elementos que ya están en la lista */
-	if (search_var (*list, variable))
-		return;
+	LogicsVar *aux;
+
+	if (logics_var_list_get_var_by_symbol (*var_list, var->symbol))
+		{
+			fprintf (stderr, "La variable ya estaba en la lista.\n");
+			return;
+		}
 	else
 		{
-			/* Crea el nuevo nodo */
-			new = (LogicVar) malloc (sizeof (LogicVarType));
-			new->name = variable;
-			new->value = 0;
-			
 			/* Si la lista está vacía o la letra es previa a la primera de la lista,
 			 * el nuevo nodo es ahora el primer elemento */
-			if ((*list == NULL) || (variable < (*list)->name))
+			if ((*var_list == NULL) || (var->symbol < (*var_list)->symbol))
 				{
 					/* Añade la lista después del nodo */
-					new->next = *list;
+					var->next = *var_list;
 					/* Ahora la lista empieza con este nodo */
-					*list = new;
+					*var_list = var;
 				}
 			/* Sino, busca una variable de letra posterior para situarla antes o al
 			 * final de la lista. */
 			else
 				{
-					aux = *list;
-					while (aux->next && aux->name < variable)
+					aux = *var_list;
+					while (aux->next && aux->symbol < var->symbol)
 						aux = aux->next;
-					
-					new->next = aux->next;
-					aux->next = new;
+					var->next = aux->next;
+					aux->next = var;
 				}
+		}
+}
+
+
+LogicsVar*
+logics_var_new (char symbol, int value)
+{
+	LogicsVar *var;
+	
+	var = (LogicsVar*) malloc (sizeof (LogicsVar));
+	if (!var)
+		{
+			perror ("* Error al reservar memoria para una variable proposicional.\n");
+			return NULL;
+		}
+	else
+		{
+			var->value = value;
+			var->symbol = symbol;
+			return var;
+		}
+}
+
+
+/**
+ * Devuelve el número de elementos que contiene una lista de variables.
+ */
+unsigned int
+logics_var_list_length (LogicsVarList var_list)
+{
+	unsigned int  length = 0;
+	LogicsVar     *var = var_list;
+	
+	if (logics_var_list_is_empty (var_list))
+		return 0;
+	else
+		{
+			while (var)
+				{
+					length++;
+					var = var->next;
+				}
+		}
+	return length;
+}
+
+
+/**
+ * Establece el valor dado en una variable proposicional.
+ */
+void
+logics_var_set_value (LogicsVar *var, int value)
+{
+	if (var)
+		var->value = value;
+	else
+    perror ("La variable no existe.\n");
+}
+
+
+/**
+ * Devuelve el valor de una variable proposicional.
+ *
+ * @return \f$n \geq 0\f$ : el valor de la variable.\n
+ *         -1: error, la variable no existe.
+ */
+int
+logics_var_get_value (LogicsVar *var)
+{
+	if (var)
+		return var->value;
+	else
+		{
+			perror ("La variable no existe.\n");
+			return -1;
 		}
 }
 
@@ -136,68 +206,17 @@ add_var (LogicVarList *list, char variable)
  * @param formula Fórmula dada como cadena de caracteres.
  */
 void
-register_vars (Logic logic, char formula[])
+register_vars (LogicsLogic* logic, char formula[])
 {
-	int i;
+	LogicsVar *var;
+	int       i;
 	
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
-			if (symbol_kind_pn (formula[i], logic) == VAR)
-				add_var (&logic->Vars, formula[i]);
-		}
-}
-
-
-/**
- * Devuelve el número de elementos que contiene una lista de variables.
- */
-int
-num_vars (LogicVarList list)
-{
-	int count = 0;
-	LogicVarList aux = list;
-	
-	if (is_empty_var_list (list))
-		return count;
-	else
-		{
-			while (aux)
+			if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_VAR)
 				{
-					count++;
-					aux = aux->next;
+					var = logics_var_new (formula[i], 0);
+			    logics_var_list_add_var (&logic->vars, var);
 				}
-		}
-	return count;
-}
-
-
-/**
- * Establece el valor dado en una variable proposicional.
- */
-void
-set_var_value (LogicVar var, int n)
-{
-	if (var)
-		var->value = n;
-	else
-    perror ("La variable no está en la lista.\n");
-}
-
-
-/**
- * Devuelve el valor de una variable proposicional.
- *
- * @return \f$n \geq 0\f$ : el valor de la variable.\n
- *         -1: error, la variable no existe.
- */
-int
-var_value (LogicVar var)
-{
-	if (var)
-		return var->value;
-	else
-		{
-			perror ("La variable no existe.\n");
-			return -1;
 		}
 }
