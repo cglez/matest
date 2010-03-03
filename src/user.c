@@ -3,7 +3,7 @@
  * user.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,11 @@
 #include "MaTest.h"
 
 
-/**
- * Esta función busca el primer caracter que coincida con un patrón dado por
- * una cadena de caracteres. Está pensada para recoger una opción dada por el
- * usuario por teclado. Esta función hace la entrada insensible a mayúsculas,
- * devuelve siempre minúsculas.
+/*
+ * Busca el primer caracter que coincida con un patrón dado por una cadena de
+ * caracteres. Está pensada para recoger una opción dada por el usuario por
+ * teclado. Esta función hace la entrada insensible a mayúsculas, devuelve
+ * siempre minúsculas.
  * 
  * @param str Cadena en la que buscar.
  * @param pattern Patrón dado como cadena de caracteres.
@@ -61,7 +61,7 @@ char readin (char str[], char pattern[])
 }
 
 
-/**
+/*
  * Procedimiento para limpiar la pantalla. Pretende ser multiplataforma,
  * utiliza según qué método dependiendo del parámetro que se le pase al
  * preprocesador. Para sistemas tipo Unix se llama a la función 'clear',
@@ -70,7 +70,7 @@ char readin (char str[], char pattern[])
  */
 void screen_clear (void)
 {
-#ifdef POSIX
+#ifdef UNIX
   if (system ("clear"))
 		return;
 #elif WIN32
@@ -112,16 +112,25 @@ void menu_version (void)
 
 
 /*
- * Imprime una cabecera con el nombre del programa, versión y una descripción
- * breve.
+ * Imprime el uso del programa
  */
-void menu_header (void)
+void menu_usage (void)
 {
-	screen_clear();
-	printf ("\n"
-	        "                            --- MaTest %s ---\n"
-	        "                     Matrix Tester for logical matrices\n"
-	        "\n", VERSION);
+	printf (_("Uso:\n"
+						"        matest <opciones>\n"
+						"\n"
+						"Opciones:\n"
+						"        -h, --help                           muestra esta ayuda y termina\n"
+						"        -v, --version                        muestra la versión y termina\n"
+						"        -g, --gui                            con interfaz gráfica (por defecto)\n"
+						"        -t, --text                           modo interactivo en modo texto\n"
+						"        -d, --dimmension  <entero>           dimensión de las matrices\n"
+						"        -m, --mdv         <entero>           mínimo valor designado\n"
+						"        -f, --formula     <formula>          fórmula que se evaluará\n"
+						"        -e, --evaluate                       valores que se evaluarán:\n"
+						"                          a, all             - todos\n"
+						"                          d, designated      - designados\n"
+						"                          n, not-designated  - no designados\n"));
 }
 
 

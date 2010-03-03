@@ -3,7 +3,7 @@
  * MaTest.h
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,9 +70,9 @@ typedef enum
 typedef struct _Work Work;
 struct _Work
 	{
-		LogicsLogic* logic;                     /**< Una lógica definida como se quiera. */
+		LlLogic* logic;                         /**< Una lógica definida como se quiera. */
 		char formula_pn[MAX_FORMULA_LENGHT];    /**< Fórmula en notación polaca. */
-		LogicsWFF wff;                          /**< Una fórmula bien formada como estructura en árbol. */
+		LlWFF wff;                              /**< Una fórmula bien formada como estructura en árbol. */
 		EvaluationStyle evaluation_style;       /**< El tipo de evaluación a realizar. */
 		bool logic_modified;
 	};
@@ -84,15 +84,18 @@ struct _Work
  */
 typedef struct
 	{
-		GtkWidget      *window;
-		GtkWidget      *statusbar;
-		GtkWidget      *text_view;
-		GtkWidget      *progressbar;
-		GtkWidget      *spin_dimension;
-		GtkWidget      *spin_mdv;
-		GtkWidget      *entry_formula;
-		GtkWidget      *hb_ucons;
-		GtkWidget      *hb_bcons;
+		GtkWidget      *window,
+		               *statusbar,
+		               *text_view,
+		               *progressbar,
+		               *spin_dimension,
+		               *spin_mdv,
+		               *entry_formula,
+		               *hb_ucons,
+		               *hb_bcons,
+		               *m_view_all,
+		               *m_view_desig,
+		               *m_view_notdesig;
 		GtkTextBuffer  *textbuffer;
 		GtkLabel       *label_formula;
 		Work           *work;
@@ -109,29 +112,20 @@ int mode_text (Work* work);
 int mode_gui (int argc, char *argv[], Work* work);
 
 /* Manejo de conectivas */
-void text_ucon_add_custom (LogicsLogic* logic, char symbol);
-void text_bcon_add_custom (LogicsLogic* logic, char symbol);
-void print_ucon_matrix (LogicsUCon* ucon, LogicsLogic* logic);
-void print_bcon_matrix (LogicsBCon* bcon, LogicsLogic* logic);
-void print_matrices (LogicsLogic* logic);
-int write_ucon_matrix (FILE *file, LogicsUCon* ucon, int dimension);
-int write_bcon_matrix (FILE *file, LogicsBCon* bcon, int dimension);
-int write_matrices (FILE *file, LogicsLogic* logic);
+void text_ucon_add_custom (LlLogic* logic, char symbol);
+void text_bcon_add_custom (LlLogic* logic, char symbol);
+void print_ucon_matrix (LlUCon* ucon, LlLogic* logic);
+void print_bcon_matrix (LlBCon* bcon, LlLogic* logic);
+void print_matrices (LlLogic* logic);
+int write_ucon_matrix (FILE *file, LlUCon* ucon, int dimension);
+int write_bcon_matrix (FILE *file, LlBCon* bcon, int dimension);
+int write_matrices (FILE *file, LlLogic* logic);
 
 /* Manejo de variables */
-void register_vars (LogicsLogic* logic, char formula[]);
-
-/* Funciones relacionadas con las fórmulas en notación polaca */
-//LogicsSymbolType logics_symbol_pn_get_type (char symbol, LogicsLogic* logic);
-bool check_string (char formula[]);
+void ll_logic_add_formula_vars (LlLogic* logic, char formula[]);
 
 /* Funciones relacionadas con la evaluación */
-bool logics_wff_add_node (LogicsWFF *wff, LogicsSymbolType type, char name, int* value);
-void logics_wff_parse_formula_pn (LogicsWFF *wff, char formula[], LogicsLogic* logic);
-void del_wff (LogicsWFF *wff);
-int eval_formula (LogicsWFF wff, LogicsLogic* logic);
-void print_eval_formula (char formula[], LogicsLogic* logic);
-char* print_current_evaluating_formula_pn (char formula_pn[], LogicsLogic* logic);
+void print_ll_wff_get_value (char formula[], LlLogic* logic);
 void evaluation (FILE *output, Work* work);
 
 /* Funciones del modo texto */
@@ -152,7 +146,7 @@ void menu_index (Work* work);
 /* Funciones del modo gráfico. */
 gboolean init_gui (MaTestGUI *gui);
 void dialog_error (const gchar *message);
-gchar* show_matrices_gui (LogicsLogic* logic);
+gchar* show_matrices_gui (LlLogic* logic);
 gchar* evaluation_gui (MaTestGUI *gui);
 gint dialog_ucon_new (MaTestGUI *gui);
 gint dialog_ucon_edit (MaTestGUI *gui, char symb);

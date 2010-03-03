@@ -1,6 +1,6 @@
 ACERCA DE MaTest
 
- MaTest (Matrix Tester) es un téster de matrices lógicas útil en la
+ MaTest (Matrix Tester) es un tester de matrices lógicas útil en la
  investigación en lógica matemática y lógica filosófica.
 
  Definidas unas matrices para unas conectivas, definido un mínimo valor
@@ -9,10 +9,8 @@ ACERCA DE MaTest
  designado o no.
 
  MaTest es software libre, se distribuye bajo licencia GPLv3+, para más detalles
- véase la sección Copyright. Es multiplataforma, está programado en C estándar,
- no utiliza en su código funciones dependientes de sistema operativo; debería
- funcionar por tanto en cualquier sistema operativo para el que exista un
- compilador de C.
+ véase la sección Copyright. Es multiplataforma, programado en C con extensiones
+ GNU y utiliza las librerías GTK+ para la interfaz gráfica.
 
 
 AUTOR
@@ -22,8 +20,8 @@ AUTOR
 
 HISTORIA
 
- MaTest es el sucesor de Matrigüity, creado por José Manuel Méndez Rodríguez y
- Benito García Noriega en 1982. Para más detalles léase el archivo History.txt.
+ MaTest es sucesor de Matrigüity, creado por José Manuel Méndez Rodríguez y
+ Benito García Noriega en 1982. Para más detalles véase el archivo History.txt.
 
 
 DESCARGAS
@@ -40,8 +38,8 @@ INSTALACIÓN
  similar (MaTest) y otro para Windows (MaTest.exe). Basta con ejecutar el
  binario.
  
- Para compilarlo desde el código fuente puede usarse el comando make con alguno
- de los archivos Makefile preparados o editar éstos.
+ Para compilarlo desde el código fuente use cmake, cree los archivos de proyecto
+ que desee y use después el compilador correspondiente.
 
 
 DOCUMENTACIÓN

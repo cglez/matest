@@ -3,7 +3,7 @@
  * MaTest.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,23 +29,15 @@
  * interactivo.
  */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <getopt.h>
-
-#include <config.h>
-
 #include <gtk/gtk.h>
 
 #include "MaTest.h"
-#include "callbacks.h"
 
 
 /*
@@ -71,65 +63,34 @@
 #endif
 
 
-GtkWidget*
-create_window (void)
-{
-	GtkWidget *window;
-	GtkBuilder *builder;
-	GError* error = NULL;
-
-	builder = gtk_builder_new ();
-	if (!gtk_builder_add_from_file (builder, UI_FILE, &error))
-	{
-		g_warning ("Couldn't load builder file: %s", error->message);
-		g_error_free (error);
-	}
-
-	/* This is important */
-	gtk_builder_connect_signals (builder, NULL);
-	window = GTK_WIDGET (gtk_builder_get_object (builder, "window"));
-
-	g_object_unref (builder);
-	
-	return window;
-}
-
-
 /*
-int
-main (int argc, char *argv[])
-{
- 	GtkWidget *window;
-
-
-#ifdef ENABLE_NLS
-	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
-	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
-	textdomain (GETTEXT_PACKAGE);
-#endif
-
-	
-	gtk_set_locale ();
-	gtk_init (&argc, &argv);
-
-	window = create_window ();
-	gtk_widget_show (window);
-
-	gtk_main ();
-	return 0;
-}
-*/
-
-
-/**
- * Fución principal main. Define los elementos principales y pasa al modo
- * interactivo.
+ * Fución principal main. Define las opciones de línea de comandos, establece
+ * los valores por defecto y pasa al modo seleccionado.
  */
 int
 main (int argc, char *argv[])
 {
-	int c, index, initdim = 0, initmdv = 0;
-	Work* work;
+	int     c,
+	        index,
+	        initdim = 0,
+	        initmdv = 0,
+	        option_index = 0;
+	bool    use_gui = false,
+	        use_text = false;
+	Work*   work;
+	static struct option long_options[] =
+		{
+			{"version",    no_argument,       0, 'v'},
+			{"help",       no_argument,       0, 'h'},
+			{"dimension",  required_argument, 0, 'd'},
+			{"mdv",        required_argument, 0, 'm'},
+			{"formula",    required_argument, 0, 'f'},
+			{"evaluate",   required_argument, 0, 'e'},
+			{"gui",        no_argument,       0, 'g'},
+			{"text",       no_argument,       0, 't'},
+			{"batch",      no_argument,       0, 'b'},
+			{0, 0, 0, 0}
+		};
 
 #ifdef ENABLE_NLS
 	bindtextdomain (GETTEXT_PACKAGE, PACKAGE_LOCALE_DIR);
@@ -137,17 +98,17 @@ main (int argc, char *argv[])
 	textdomain (GETTEXT_PACKAGE);
 #endif
 	
-	opterr = 0;
-	
 	work = (Work*) malloc (sizeof (Work));
-	work->logic = (LogicsLogic*) malloc (sizeof (LogicsLogic));
+	work->logic = (LlLogic*) malloc (sizeof (LlLogic));
 	work->DIM = 0;
 	work->logic->ucons = NULL;
 	work->logic->bcons = NULL;
-	work->formula_pn[0] = NULL;
+	work->formula_pn[0] = '\0';
 	work->wff = NULL;
+	/* Muestra todos los valores evaluados por defecto */
+	work->evaluation_style = ALL;
 	
-	while ((c = getopt (argc, argv, "d:m:f:s:hv")) != -1)
+	while ((c = getopt_long (argc, argv, "d:m:f:s:tghv", long_options, &option_index)) != -1)
 		switch (c)
 			{
 				case 'h':
@@ -163,36 +124,66 @@ main (int argc, char *argv[])
 					initmdv = atoi (optarg);
 					break;
 				case 'f':
-					/* if (logics_formula_is_wff_pn (optarg, work->logic)) */
 					strcpy (work->formula_pn, optarg);
 					break;
-				case 's':
-					if (strcmp (optarg, "a"))  /* || strcmp (optarg, "all") == 0) */
+				case 'e':
+					if (strcmp (optarg, "a") == 0 || strcmp (optarg, "all") == 0)
 						work->evaluation_style = ALL;
-					else if (strcmp (optarg, "d") ) /* || strcmp (optarg, "designated") == 0) */
+					else if (strcmp (optarg, "d") == 0 || strcmp (optarg, "designated") == 0)
 						work->evaluation_style = DESIGNATED;
-					else if (strcmp (optarg, "n")) /* || strcmp (optarg, "not-designated") == 0) */
+					else if (strcmp (optarg, "n") == 0 || strcmp (optarg, "not-designated") == 0)
 						work->evaluation_style = NOT_DESIGNATED;
 					break;
+				case 't':
+					use_text = true;
+					break;
+				case 'g':
+					use_gui = true;
+					break;
 				case '?':
-					if (optopt == c)
-						fprintf (stderr, "Option -%c requires an argument.\n", optopt);
-					else if (isprint (optopt))
-						fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-					else
-						fprintf (stderr, "Unknown option character `\\x%x'.\n", optopt);
-					return 1;
+					if (long_options[option_index].flag != 0)
+						break;
+					printf ("option %s", long_options[option_index].name);
+					if (optarg)
+						printf (" with arg %s", optarg);
+					printf ("\n");
+					break;
 			}
-	
-	for (index = optind; index < argc; index++)
-		printf ("Non-option argument %s\n", argv[index]);
-	
+
+	/* Establecemos la dimensión de las matrices */
 	if (initdim >= 2)
 		work->DIM = initdim;
-	if (initmdv >= 0 && initmdv <= work->DIM)
-		work->MDV = initmdv;
+	else
+		work->DIM = 2;  /* Dimensión 2 por defecto */
 	
-	mode_gui (argc, argv, work);
-	//mode_text (work);
+	/* Establecemos el mínimo valor designado */
+	if (initmdv > 0 && initmdv <= work->DIM)
+		work->MDV = initmdv;
+	else
+		work->MDV = work->MAXV;  /* Máximo valor del conjunto por defecto */
+
+	/* Definimos las conectivas por defecto */
+	ll_logic_set_default_ucons_lukasiewicz (work->logic);
+	ll_logic_set_default_bcons_lukasiewicz (work->logic);
+	
+	/* Establecemos la fórmula si está bien formada */
+	if (work->formula_pn[0])
+		if (ll_formula_is_wff_pn (work->formula_pn, work->logic))
+			{
+				ll_logic_add_formula_vars (work->logic, work->formula_pn);
+				ll_wff_parse_formula_pn (&work->wff, work->formula_pn, work->logic);
+			}
+		else
+			work->formula_pn[0] = '\0';  /* si no, la dejamos sin definir */
+	
+	/* Pasamos al modo seleccionado, interfaz gráfica por defecto */
+	if (use_text)
+		if (use_gui)
+			mode_gui (argc, argv, work);
+		else
+			mode_text (work);
+	else
+		mode_gui (argc, argv, work);
+
 	return (0);
 }

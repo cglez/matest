@@ -1,13 +1,49 @@
- MaTest-1.1
+ MaTest-1.2 (03/03/10)
+
+ *  La capa base del programa se ha movido a una librería llamada liblogics.
+
+ *  Las funciones y tipos de datos de liblogics se pueden usar como una API, su
+    interfaz es similar a la API de GTK+. El prefijo de las funciones es 'll_',
+    de los tipos de datos 'Ll' y de las constantes 'LL_'.
+
+ *  Lenguaje natural principal: Español.
+
+ *  Cambio dinámico de la dimensión de las matrices.
+
+ *  El bicondicional (E) se define por defecto.
+
+ *  Añadidas opciones de línea de comandos con getopt, se detectan opciones
+    tanto en forma corta como en forma larga.
+
+ *  Dos modos de funcionamiento a elegir: modo interactivo en modo texto y modo
+    con interfaz gráfica (opción por defecto).
+
+ *  Interfaz gráfica basada en GTK+. Dispone de una serie de Widgets para la
+    definición de los elementos para la evaluación y un área de texto para
+    mostrar la salida.
+    Cuenta con dos botones ajustables para definir la Dimensión de las matrices
+    y el Mínimo Valor Designado; al cambiar la dimensión se redefinen las matri-
+    ces y el mvd según el modelo de la lógicas multivaluadas de Łukasiewicz. En
+    el modo con interfaz gráfica la dimensión está limitada a 16.
+    Cada conectiva cuenta con un botón para su edición el cual muestra un diálo-
+    go con una matriz de botones ajustables para definir individualmente cada
+    uno de los valores de la matriz.
+    Hay dos botones para definir conectivas nuevas, unarias o binarias, con
+    dialogos similares a los de edición.
+    Las matrices se imprimen con sus valores en hexadecimal.
+    Hay una entrada para introducir fórmulas en notación polaca.
+    En la barra de menús se puede seleccionar el tipo de evaluación. En el menú
+    Archivo hay una opción para guardar las matrices.
+    La evaluación se realiza pulsando Evaluar.
 
 
  MaTest-1.0a (08/12/08)
 
- * Historia del programa.
+ *  Historia del programa.
  
- * Mejoras en las estadísticas de la evaluación.
+ *  Mejoras en las estadísticas de la evaluación.
  
- * Pequeña reestructuración del código.
+ *  Pequeña reestructuración del código.
 
 
  MaTest-1.0 (25/11/08)

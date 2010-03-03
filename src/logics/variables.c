@@ -3,7 +3,7 @@
  * variables.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,13 +32,70 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
-#include "MaTest.h"
+#include "logics.h"
+
+
+/**
+ * Crea una variable proposicional nueva.
+ *
+ * @param symbol Letra o símbolo que representa la variable.
+ * @param value Valor asignado a la variable.
+ */
+LlVar*
+ll_var_new (char symbol, int value)
+{
+	LlVar *var;
+	
+	var = (LlVar*) malloc (sizeof (LlVar));
+	if (!var)
+		{
+			perror ("liblogics: Error al reservar memoria para una variable proposicional.\n");
+			return NULL;
+		}
+	else
+		{
+			var->value = value;
+			var->symbol = symbol;
+			return var;
+		}
+}
+
+
+/**
+ * Establece el valor dado en una variable proposicional.
+ */
+void
+ll_var_set_value (LlVar *var, int value)
+{
+	if (var)
+		var->value = value;
+	else
+    perror ("liblogics: La variable no existe.\n");
+}
+
+
+/**
+ * Devuelve el valor de una variable proposicional.
+ *
+ * @return \f$n \geq 0\f$ : el valor de la variable.\n
+ *         -1: error, la variable no existe.
+ */
+int
+ll_var_get_value (LlVar *var)
+{
+	if (var)
+		return var->value;
+	else
+		{
+			perror ("liblogics: La variable no existe.\n");
+			return -1;
+		}
+}
 
 
 bool
-logics_var_list_is_empty (LogicsVarList var_list)
+ll_var_list_is_empty (LlVarList var_list)
 {
 	return (var_list == NULL);
 }
@@ -49,9 +106,9 @@ logics_var_list_is_empty (LogicsVarList var_list)
  * memoria reservada.
  */
 void
-logics_var_list_free (LogicsVarList *var_list)
+ll_var_list_free (LlVarList *var_list)
 {
-	LogicsVar *var;
+	LlVar *var;
 	
 	while (*var_list)
 		{
@@ -67,10 +124,10 @@ logics_var_list_free (LogicsVarList *var_list)
  *
  * @return Puntero a la variable si existe, o el puntero nulo en caso contrario.
  */
-LogicsVar*
-logics_var_list_get_var_by_symbol (LogicsVarList var_list, char symbol)
+LlVar*
+ll_var_list_get_var_by_symbol (LlVarList var_list, char symbol)
 {
-	LogicsVar *var = var_list;
+	LlVar *var = var_list;
 	
 	while (var)
 		{
@@ -88,16 +145,12 @@ logics_var_list_get_var_by_symbol (LogicsVarList var_list, char symbol)
  * nombre, y la sitúa por orden alfabético, con lo que la lista queda ordenada.
  */
 void
-logics_var_list_add_var (LogicsVarList *var_list, LogicsVar* var)
+ll_var_list_add_var (LlVarList *var_list, LlVar* var)
 {
-	LogicsVar *aux;
+	LlVar *aux;
 
-	if (logics_var_list_get_var_by_symbol (*var_list, var->symbol))
-		{
-			fprintf (stderr, "La variable ya estaba en la lista.\n");
-			return;
-		}
-	else
+	/* No duplicamos las variables que ya existen */
+	if (!ll_var_list_get_var_by_symbol (*var_list, var->symbol))
 		{
 			/* Si la lista está vacía o la letra es previa a la primera de la lista,
 			 * el nuevo nodo es ahora el primer elemento */
@@ -122,36 +175,16 @@ logics_var_list_add_var (LogicsVarList *var_list, LogicsVar* var)
 }
 
 
-LogicsVar*
-logics_var_new (char symbol, int value)
-{
-	LogicsVar *var;
-	
-	var = (LogicsVar*) malloc (sizeof (LogicsVar));
-	if (!var)
-		{
-			perror ("* Error al reservar memoria para una variable proposicional.\n");
-			return NULL;
-		}
-	else
-		{
-			var->value = value;
-			var->symbol = symbol;
-			return var;
-		}
-}
-
-
 /**
  * Devuelve el número de elementos que contiene una lista de variables.
  */
 unsigned int
-logics_var_list_length (LogicsVarList var_list)
+ll_var_list_length (LlVarList var_list)
 {
 	unsigned int  length = 0;
-	LogicsVar     *var = var_list;
+	LlVar     *var = var_list;
 	
-	if (logics_var_list_is_empty (var_list))
+	if (ll_var_list_is_empty (var_list))
 		return 0;
 	else
 		{
@@ -166,38 +199,6 @@ logics_var_list_length (LogicsVarList var_list)
 
 
 /**
- * Establece el valor dado en una variable proposicional.
- */
-void
-logics_var_set_value (LogicsVar *var, int value)
-{
-	if (var)
-		var->value = value;
-	else
-    perror ("La variable no existe.\n");
-}
-
-
-/**
- * Devuelve el valor de una variable proposicional.
- *
- * @return \f$n \geq 0\f$ : el valor de la variable.\n
- *         -1: error, la variable no existe.
- */
-int
-logics_var_get_value (LogicsVar *var)
-{
-	if (var)
-		return var->value;
-	else
-		{
-			perror ("La variable no existe.\n");
-			return -1;
-		}
-}
-
-
-/**
  * Procedimiento para registrar las variables de una fórmula. Añade todas las
  * variables presentes en una fórmula en la lista de variables de una lógica.
  *
@@ -206,17 +207,17 @@ logics_var_get_value (LogicsVar *var)
  * @param formula Fórmula dada como cadena de caracteres.
  */
 void
-register_vars (LogicsLogic* logic, char formula[])
+ll_logic_add_formula_vars (LlLogic* logic, char formula[])
 {
-	LogicsVar *var;
+	LlVar     *var;
 	int       i;
 	
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
-			if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_VAR)
+			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
 				{
-					var = logics_var_new (formula[i], 0);
-			    logics_var_list_add_var (&logic->vars, var);
+					var = ll_var_new (formula[i], 0);
+			    ll_var_list_add_var (&logic->vars, var);
 				}
 		}
 }

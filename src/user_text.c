@@ -3,7 +3,7 @@
  * user_text.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
 /**
  * @file user.c
- * 
+ *
  * Este fichero contiene las funciones que se encargan de interactuar con el
  * usuario. Aquí se encuentran funciones para la entrada de datos (selección de
  * opciones principalmente) y para la salida de información: menús, mensajes,
@@ -42,6 +42,20 @@
 #include "MaTest.h"
 
 
+/*
+ * Imprime una cabecera con el nombre del programa, versión y una descripción
+ * breve.
+ */
+void menu_header (void)
+{
+	screen_clear();
+	printf ("\n"
+	        "                            --- MaTest %s ---\n"
+	        "                     Matrix Tester for logical matrices\n"
+	        "\n", VERSION);
+}
+
+
 /**
  * Procedimiento para definir de manera interactiva una conectiva unaria nueva
  * dada por su nombre en una lista de conectivas unarias. Se pregunta al usuario
@@ -51,9 +65,9 @@
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
-text_ucon_add_custom (LogicsLogic* logic, char symbol)
+text_ucon_add_custom (LlLogic* logic, char symbol)
 {
-	LogicsUCon  *ucon;
+	LlUCon      *ucon;
 	char        value[10];
 	int         *matrix;
 	int         i;
@@ -89,8 +103,8 @@ text_ucon_add_custom (LogicsLogic* logic, char symbol)
 			while (matrix[i] < 0 || matrix[i] >= DIM);
 		}
 
-	ucon = logics_ucon_new (symbol, matrix, DIM);
-	logics_ucon_list_append_ucon (&logic->ucons, ucon);
+	ucon = ll_ucon_new (symbol, matrix, DIM);
+	ll_ucon_list_append_ucon (&logic->ucons, ucon);
 	free (matrix);
 }
 
@@ -104,9 +118,9 @@ text_ucon_add_custom (LogicsLogic* logic, char symbol)
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
-text_bcon_add_custom (LogicsLogic* logic, char symbol)
+text_bcon_add_custom (LlLogic* logic, char symbol)
 {
-	LogicsBCon  *bcon;
+	LlBCon      *bcon;
 	char        value[10];
 	int         **matrix;
 	int         i, j;
@@ -155,8 +169,8 @@ text_bcon_add_custom (LogicsLogic* logic, char symbol)
 				}
 		}
 
-	bcon = logics_bcon_new (symbol, matrix, DIM);
-	logics_bcon_list_append_bcon (&logic->bcons, bcon);
+	bcon = ll_bcon_new (symbol, matrix, DIM);
+	ll_bcon_list_append_bcon (&logic->bcons, bcon);
 	free (matrix);
 }
 
@@ -166,7 +180,7 @@ text_bcon_add_custom (LogicsLogic* logic, char symbol)
  * valores designados con asterisco.
  */
 void
-print_ucon_matrix (LogicsUCon* ucon, LogicsLogic* logic)
+print_ucon_matrix (LlUCon* ucon, LlLogic* logic)
 {
 	int i;
 
@@ -202,7 +216,7 @@ print_ucon_matrix (LogicsUCon* ucon, LogicsLogic* logic)
  * valores designados con asterisco.
  */
 void
-print_bcon_matrix (LogicsBCon* bcon, LogicsLogic* logic)
+print_bcon_matrix (LlBCon* bcon, LlLogic* logic)
 {
 	int i, j;
 
@@ -246,10 +260,10 @@ print_bcon_matrix (LogicsBCon* bcon, LogicsLogic* logic)
  * luego las binarias, en el orden en que se hayen definidas.
  */
 void
-print_matrices (LogicsLogic* logic)
+print_matrices (LlLogic* logic)
 {
-	LogicsUCon* ucon;
-	LogicsBCon* bcon;
+	LlUCon* ucon;
+	LlBCon* bcon;
 
 	ucon = logic->ucons;
 	while (ucon)
@@ -267,7 +281,7 @@ print_matrices (LogicsLogic* logic)
 }
 
 
-/**
+/*
  * Función que imprime la información del trabajo actual, con los siguientes
  * elementos:
  *   - tamaño de las matrices
@@ -276,26 +290,26 @@ print_matrices (LogicsLogic* logic)
  *   - conectivas binarias definidas, idem
  *   - fórmula que se evaluará
  *   - tipo de evaluación
- * 
+ *
  * @param work La función recibe como argumento un registro de tipo Work.
  */
 void menu_info (Work* work)
 {
-	LogicsUCon  *ucon;
-	LogicsBCon  *bcon;
-	
+	LlUCon  *ucon;
+	LlBCon  *bcon;
+
 	printf (_("  Dimensión de las matrices:  "));
 	if (work->DIM)
 		printf ("%ix%i", work->DIM, work->DIM);
 	else
 		printf (_("Sin definir"));
-	
+
 	printf (_("\n  Mínimo Valor Designado:     "));
 	if (work->MDV)
 		printf ("%i", work->MDV);
 	else
 		printf (_("Sin definir"));
-	
+
 	printf (_("\n  Conectivas unarias:         "));
 	ucon = work->logic->ucons;
 	while (ucon)
@@ -303,7 +317,7 @@ void menu_info (Work* work)
 			printf ("%c ", ucon->symbol);
 			ucon = ucon->next;
 		}
-	
+
 	printf (_("\n  Conectivas binarias:        "));
 	bcon = work->logic->bcons;
 	while (bcon)
@@ -311,42 +325,22 @@ void menu_info (Work* work)
 			printf ("%c ", bcon->symbol);
 			bcon = bcon->next;
 		}
-	
+
 	if (work->formula_pn[0])
 		printf (_("\n  Fórmula:                    %s"), work->formula_pn);
 	else
 		printf (_("\n  Fórmula:                    Sin definir"));
-	
+
 	if (work->evaluation_style == ALL)
 		printf (_("\n  Evaluar valores:            [Todos]  Designados  No designados"));
 	if (work->evaluation_style == DESIGNATED)
 		printf (_("\n  Evaluar valores:            Todos  [Designados]  No designados"));
 	if (work->evaluation_style == NOT_DESIGNATED)
 		printf (_("\n  Evaluar valores:            Todos  Designados  [No designados]"));
-	
+
 	printf ("\n\n");
 }
 
-
-/*
- * Imprime el uso del programa
- */
-void menu_usage (void)
-{
-	printf (_("Uso:\n"
-						"        matest <opciones>\n"
-						"\n"
-						"Opciones:\n"
-						"        -h                                   muestra esta ayuda\n"
-						"        -v                                   muestra la version\n"
-						"        -d, --dimmension  <entero>           dimensión de las matrices\n"
-						"        -m, --mdv         <entero>           mínimo valor designado\n"
-						"        -f, --formula     <formula>          fórmula que se evaluará\n"
-						"        -s, --show                           valores que se mostrarán:\n"
-						"                          a, all             - todos\n"
-						"                          d, designated      - designados\n"
-						"                          n, not-designated  - no designados\n"));
-}
 
 /*
  * Procedimiento que imprime el menú de opciones.
@@ -395,33 +389,22 @@ void menu_about (void)
 	          "\n"
 	          " DESCRIPCIÓN: MaTest (Matrix Tester) es un tester de matrices lógicas, libre\n"
 	          "  y multiplataforma. Definidas unas conectivas como matrices, un mínimo valor\n"
-	          "  designado y dada una fórmula, calcula todos los posibles valores de dicha\n"
-	          "  fórmula y evalúa en cada caso si se trata de un valor designado o no.\n"
+	          "  designado y dada una fórmula bien formada, calcula todas las valoraciones de\n"
+	          "  dicha fórmula y evalúa en cada caso si se trata de un valor designado o no.\n"
 	          "  Sucesor de Matrigüity, creado por J.M. Méndez y B. García Noriega en 1982.\n"
-	          "\n"), VERSION);
-	printf (_(" COPYRIGHT (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>.\n"
-	          "  MaTest is free software: you can redistribute it and/or modify\n"
-	          "  it under the terms of the GNU General Public License as published by\n"
-	          "  the Free Software Foundation, either version 3 of the License, or\n"
-	          "  (at your option) any later version.\n"
-	          "\n"));
-	printf (_("  MaTest is distributed in the hope that it will be useful, but\n"
-	          "  without any warranty; without even the implied warranty of\n"
-	          "  merchantability or fitness for a particular purpose.\n"
-	          "  See the GNU General Public License for more details:\n"
-	          "  <http://gnu.org/licenses/gpl.html>.\n"));
-}
-
-
-/*
- * Ayuda en línea. No implementado por ahora.
- */
-void menu_help (void)
-{
-	menu_header();
-	printf (_("\n"
-	          "There isn't inline help available by now.\n"
-	          "See the Readme.txt file that come with this program.\n"));
+	          "\n"
+	          " COPYRIGHT (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>.\n"
+	          "  MaTest es software libre: usted puede redistribuirlo y/o modificarlo\n"
+            "  bajo los términos de la Licencia Pública General GNU publicada\n"
+            "  por la Fundación para el Software Libre, ya sea la versión 3\n"
+            "  de la Licencia, o (a su elección) cualquier versión posterior.\n"
+            "\n"
+            "  MaTest se distribuye con la esperanza de que sea útil, pero\n"
+            "  SIN GARANTÍA ALGUNA; ni siquiera la garantía implícita\n"
+            "  MERCANTIL o de APTITUD PARA UN PROPÓSITO DETERMINADO.\n"
+            "  Consulte los detalles de la Licencia Pública General GNU para obtener\n"
+            "  una información más detallada.\n"
+            "\n"), VERSION);
 }
 
 
@@ -436,48 +419,22 @@ void menu_index (Work* work)
 }
 
 
-/**
+/*
  * Modo interactivo en modo texto.
  */
 int
 mode_text (Work* work)
 {
-	char opt, symbol, answer[BUFSIZ], namefile[BUFSIZ];
+	char opt, symbol, answer[BUFSIZ], formula[BUFSIZ], namefile[BUFSIZ];
+	int  newdim;
 	FILE *outfile;
-	
-	menu_init();
-	
-	if (work->DIM == 0)
-		{
-			/* Preguntamos por la dimensión de las matrices */
-			menu_dimension();
-			do
-				{
-					printf (_(" Dimensión de las matrices ( <1 ): "));
-					fgets (answer, BUFSIZ, stdin);
-					sscanf (answer, "%i", &work->DIM);
-				}
-			while (work->DIM < 2);
-		}
-	
-	/* Define el Mínimo Valor Designado como en el modelo de Łukasiewicz */
-	if (work->logic->mdv == 0)
-		work->MDV = work->DIM - 1;
-	
-	/* Define las conectivas por defecto */
-	logics_logic_set_default_ucons_lukasiewicz (work->logic);
-	logics_logic_set_default_bcons_lukasiewicz (work->logic);
-	//work->logic_modified = false;
-	
-	/* Muestra todos los valores evaluados por defecto */
-	work->evaluation_style = ALL;
-	
+
 	/* Manejador de opciones interactivo */
 	for (;;)
 		{
 			menu_index (work);
 			opt = readin (answer, "dmvpwnkfeahq");
-			
+
 			switch (opt)
 				{
 					/* Redefinir la dimensión de las matrices */
@@ -486,14 +443,15 @@ mode_text (Work* work)
 							{
 								printf (_(" Nueva dimensión de las matrices ( <1 ): "));
 								fgets (answer, BUFSIZ, stdin);
-								sscanf (answer, "%i", &work->DIM);
+								sscanf (answer, "%i", &newdim);
 							}
-						while (work->DIM < 2);
-						logics_ucon_list_free (&work->logic->ucons);
-						logics_bcon_list_free (&work->logic->bcons, work->DIM);
-						logics_logic_set_default_ucons_lukasiewicz (work->logic);
-				    logics_logic_set_default_bcons_lukasiewicz (work->logic);
+						while (newdim < 2);
+						ll_ucon_list_free (&work->logic->ucons);
+						ll_bcon_list_free (&work->logic->bcons, work->DIM);
+						work->DIM = newdim;
 						work->MDV = work->MAXV;
+						ll_logic_set_default_ucons_lukasiewicz (work->logic);
+				    ll_logic_set_default_bcons_lukasiewicz (work->logic);
 						/*
 						if (work->logic_modified)
 							{
@@ -508,7 +466,7 @@ mode_text (Work* work)
 										case 'n':
 							*/
 				    break;
-					
+
 					/* Cambia los valores mostrados en la evaluación */
 					case 'v':
 						screen_clear ();
@@ -532,8 +490,8 @@ mode_text (Work* work)
 									break;
 							}
 						break;
-					
-					
+
+
 					/* Cambiar el Mínimo Valor Designado */
 					case 'm':
 						screen_clear ();
@@ -547,16 +505,16 @@ mode_text (Work* work)
 							}
 						while ((work->MDV < 1) || ((work->MDV) > (work->DIM - 1)));
 						break;
-					
-					
+
+
 					/* Imprimir las matrices por pantalla */
 					case 'p':
 						screen_clear ();
 						print_matrices (work->logic);
 						make_pause ();
 						break;
-					
-					
+
+
 					/* Escribir las matrices en un archivo externo */
 					case 'w':
 						screen_clear ();
@@ -565,7 +523,7 @@ mode_text (Work* work)
 						printf (_(" Escriba el nombre del archivo donde escribir: "));
 						fgets (answer, BUFSIZ, stdin);
 						sscanf (answer, "%s", namefile);
-						
+
 						/* Comprueba que el archivo existe */
 						outfile = fopen (namefile, "r");
 						if (outfile)
@@ -607,32 +565,36 @@ mode_text (Work* work)
 									}
 							}
 						break;
-					
-					
+
+
 					/* Definir una conectiva nueva personalizada o editar una existente */
 					case 'n':
 						screen_clear ();
 						menu_header ();
 						menu_info (work);
 
-						printf (_(" Nombre de la conectiva: "));
-						symbol = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz"));
-						if (logics_ucon_list_get_ucon_by_symbol (work->logic->ucons, symbol))
+						printf (_(" Símbolo para la conectiva: "));
+						symbol = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
+						if (symbol == '\n')
+							break;
+						else if (ll_ucon_list_get_ucon_by_symbol (work->logic->ucons, symbol))
 							{
 								printf (_(" Ya hay una conectiva unaria con el mismo símbolo, ¿desea redefinirla? (s/N): "));
 								opt = readin (answer, "ys\n");
 								if (opt == 's' || opt == 'y')
 									{
+										ll_con_delete_by_symbol (work->logic, symbol);
 										text_ucon_add_custom (work->logic, symbol);
 										work->logic_modified = true;
 									}
 							}
-						else if (logics_bcon_list_get_bcon_by_symbol (work->logic->bcons, symbol))
+						else if (ll_bcon_list_get_bcon_by_symbol (work->logic->bcons, symbol))
 							{
 								printf (_(" Ya hay una conectiva binaria con el mismo símbolo, ¿desea redefinirla? (s/N): "));
 								opt = readin (answer, "ys\n");
 								if (opt == 's' || opt == 'y')
 									{
+										ll_con_delete_by_symbol (work->logic, symbol);
 										text_bcon_add_custom (work->logic, symbol);
 										work->logic_modified = true;
 									}
@@ -644,32 +606,30 @@ mode_text (Work* work)
 								switch (opt)
 									{
 										case 'u':
-											logics_con_delete_by_symbol (work->logic, symbol);
 											text_ucon_add_custom (work->logic, symbol);
 											work->logic_modified = true;
 											break;
 										case 'b':
-											logics_con_delete_by_symbol (work->logic, symbol);
 											text_bcon_add_custom (work->logic, symbol);
 											work->logic_modified = true;
 											break;
 									}
 							}
 						break;
-					
-					
+
+
 					/* Eliminar una conectiva existente */
 					case 'k':
 						screen_clear ();
 						menu_header ();
 						menu_info (work);
-						
-						printf (_(" Borrar conectiva: "));
+
+						printf (_(" Símbolo de la conectiva a borrar: "));
 						opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
-						logics_con_delete_by_symbol (work->logic, opt);
+						ll_con_delete_by_symbol (work->logic, opt);
 						break;
-					
-					
+
+
 					/* Pedir una fórmula bien formada y pasársela al parser */
 					case 'f':
 						screen_clear();
@@ -679,21 +639,28 @@ mode_text (Work* work)
 							{
 								printf (_("\n Escriba una fórmula en notación polaca: "));
 								fgets (answer, BUFSIZ, stdin);
-								sscanf (answer, "%s", work->formula_pn);
+								sscanf (answer, "%s", formula);
 							}
-						while (!logics_formula_is_wff_pn (work->formula_pn, work->logic));
-						
+						while (formula[0] &&
+						       !ll_formula_is_wff_pn (formula, work->logic));
+
+						if (!formula[0])
+							break;
+						else
+							strcpy (work->formula_pn, formula);
+
 						if (work->logic->vars)
-							logics_var_list_free (&work->logic->vars);
-						register_vars (work->logic, work->formula_pn);
-						
+							ll_var_list_free (&work->logic->vars);
+						ll_logic_add_formula_vars (work->logic, work->formula_pn);
+
 						if (work->wff)
-							del_wff (&work->wff);
-						logics_wff_parse_formula_pn (&work->wff, work->formula_pn, work->logic);
-						
+							ll_wff_free (&work->wff);
+						ll_wff_parse_formula_pn (&work->wff, work->formula_pn, work->logic);
+
+						formula[0] = '\0';
 						break;
-					
-					
+
+
 					/* Hacer la evaluación */
 					case 'e':
 						if (work->formula_pn[0] == 0)
@@ -705,16 +672,16 @@ mode_text (Work* work)
 							}
 						make_pause ();
 						break;
-					
-					
+
+
 					/* Mostrar la página "Acerca de" */
 					case 'a':
 						menu_about ();
 						make_pause ();
 						break;
 
-					
-					/* Salir preguntado por confirmación */
+
+					/* Salir pidiendo confirmación */
 					case 'q':
 						printf (_(" ¿Está seguro? (s/N): "));
 						fgets (answer, BUFSIZ, stdin);

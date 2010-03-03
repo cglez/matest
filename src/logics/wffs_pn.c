@@ -3,7 +3,7 @@
  * wffs_pn.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,34 +29,38 @@
  * notación polaca. Contiene las funciones necesarias para determinar si una
  * fórmula dada es una fórmula bien formada en esta notación, detección de
  * caracteres erróneos, errores de sintaxis... Contiene a su vez el parser que
- * transforma una fbf en NP a la estructura en árbol propia de una fbf.
+ * transforma una fbf en NP en un árbol de fbf.
  * 
  * Para las fórmulas en notación polaca se emplea la siguiente convención: las
- * letras minúsculas son variables, las letras mayúsculas son conectivas.
+ * letras minúsculas son variables, las letras mayúsculas son conectivas,
+ * cualquier otro caracter se considera erroneo.
  */
 
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include <ctype.h>
-#include "MaTest.h"
+#include "logics.h"
 
 
 /**
  * Categoriza el símbolo dado según una lógica de contexto (según las conectivas
- * definidas) y según la convención para las fórmulas en notación polaca.
+ * definidas) y según la siguiente convención: toda letra minúscula se considera
+ * una variable, toda letra mayúscula se considera una conectiva.
+ *
+ * @param symbol símbolo a categorizar
+ * @param logic lógica de contexto
  */
-LogicsSymbolType
-logics_symbol_pn_get_type (char symbol, LogicsLogic* logic)
+LlSymbolType
+ll_symbol_pn_get_type (char symbol, LlLogic* logic)
 {
 	if (islower (symbol))
-		return LOGICS_SYMBOL_VAR;
-	else if (logics_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
-		return LOGICS_SYMBOL_U_CON;
-	else if (logics_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
-		return LOGICS_SYMBOL_B_CON;
+		return LL_SYMBOL_VAR;
+	else if (ll_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
+		return LL_SYMBOL_U_CON;
+	else if (ll_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
+		return LL_SYMBOL_B_CON;
 	else
-		return LOGICS_SYMBOL_NONE;
+		return LL_SYMBOL_NONE;
 }
 
 
@@ -71,7 +75,7 @@ logics_symbol_pn_get_type (char symbol, LogicsLogic* logic)
  * @return true: si es una fbf en notación polaca, false en caso contrario.
  */
 bool
-logics_formula_is_wff_pn (char formula[], LogicsLogic* logic)
+ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 {
 	int i, deep = 1;
 	
@@ -88,16 +92,16 @@ logics_formula_is_wff_pn (char formula[], LogicsLogic* logic)
 	for (i = 0; i < (int) strlen (formula); i++)
 		{ 
 			/* Las variables disminuyen la profundidad de la fórmula */
-			if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_VAR)
+			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
 				deep--;
 			/* Las conectivas unarias dejan la profundidad inalterada */
-			else if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_U_CON)
+			else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_U_CON)
 				deep = deep;
 			/* Las conectivas binarias aumentan la profundidad de la fórmula */
-			else if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_B_CON)
+			else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_B_CON)
 				deep++;
 			/* Sino la conectiva no está definida */
-			else if (logics_symbol_pn_get_type (formula[i], logic) == LOGICS_SYMBOL_NONE)
+			else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_NONE)
 				{
 					fprintf (stderr, "* La conectiva %c no está definida.\n", formula[i]);
 					return false;
@@ -108,11 +112,11 @@ logics_formula_is_wff_pn (char formula[], LogicsLogic* logic)
 		if (deep == 0 && formula[i + 1] != 0)
 			{
 				/* Demasiadas variables */
-				if (logics_symbol_pn_get_type (formula[i + 1], logic) == LOGICS_SYMBOL_VAR)
+				if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_VAR)
 					perror ("* Profundidad excedida; demasiadas variables. Revise la fórmula.\n");
 				/* o empieza una nueva fórmula */
-				else if (logics_symbol_pn_get_type (formula[i + 1], logic) == LOGICS_SYMBOL_U_CON ||
-				         logics_symbol_pn_get_type (formula[i + 1], logic) == LOGICS_SYMBOL_B_CON)
+				else if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_U_CON ||
+				         ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_B_CON)
 					perror ("* Hay varias fórmulas juntas.\n");
 				return false;
 			}
@@ -136,22 +140,22 @@ logics_formula_is_wff_pn (char formula[], LogicsLogic* logic)
  * polaca.
  */
 void
-logics_wff_parse_formula_pn (LogicsWFF* tree, char formula_pn[], LogicsLogic* logic)
+ll_wff_parse_formula_pn (LlWFF* tree, char formula_pn[], LlLogic* logic)
 {
-	LogicsVar  *var;
+	LlVar  *var;
 	int        i;
 	
 	for (i = 0; i < (int) strlen (formula_pn); i++)
 		{
-			if (logics_symbol_pn_get_type (formula_pn[i], logic) == LOGICS_SYMBOL_VAR)
+			if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_VAR)
 				{
-					var = logics_var_list_get_var_by_symbol (logic->vars, formula_pn[i]);
-					logics_wff_add_node (tree, LOGICS_WFF_NODE_VAR, formula_pn[i], &var->value);
+					var = ll_var_list_get_var_by_symbol (logic->vars, formula_pn[i]);
+					ll_wff_add_node (tree, LL_WFF_NODE_VAR, formula_pn[i], &var->value);
 				}
-			else if (logics_symbol_pn_get_type (formula_pn[i], logic) == LOGICS_SYMBOL_U_CON)
-				logics_wff_add_node (tree, LOGICS_WFF_NODE_U_CON, formula_pn[i], NULL);
-			else if (logics_symbol_pn_get_type (formula_pn[i], logic) == LOGICS_SYMBOL_B_CON)
-				logics_wff_add_node (tree, LOGICS_WFF_NODE_B_CON, formula_pn[i], NULL);
+			else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_U_CON)
+				ll_wff_add_node (tree, LL_WFF_NODE_U_CON, formula_pn[i], NULL);
+			else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_B_CON)
+				ll_wff_add_node (tree, LL_WFF_NODE_B_CON, formula_pn[i], NULL);
 			else
 				{
 					perror ("* Parsing... Error inesperado\n");

@@ -3,7 +3,7 @@
  * callbacks.h
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+
 #ifndef __CALLBACKS_H__
 #define __CALLBACKS_H__
 
@@ -28,7 +29,8 @@
 #include "MaTest.h"
 /* For testing propose use the local (not installed) ui file */
 /* #define UI_FILE PACKAGE_DATA_DIR"/matest/ui/matest.ui" */
-#define UI_FILE "src/matest.ui"
+#define UI_FILE "matest.ui"
+#define ABOUT_DIALOG_FILE "about.ui"
 
 void on_window_destroy (GtkObject *object, MaTestGUI *gui);
 void on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui);

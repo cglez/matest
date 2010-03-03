@@ -3,7 +3,7 @@
  * connectives.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008, 2009 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,24 +35,25 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <ctype.h>
 
-#include <libintl.h>
-#define _(String) gettext (String)
-#include "MaTest.h"
+#include "logics.h"
 
 
-/*
+/**
  * Crea una conectiva unaria nueva.
+ *
+ * @param symbol Símbolo asociado a la conectiva.
+ * @param matrix Matriz de la conectiva.
+ * @param dimension Dimensión de contexto para la matriz.
  */
-LogicsUCon*
-logics_ucon_new (char symbol, int *matrix, int dimension)
+LlUCon*
+ll_ucon_new (char symbol, int *matrix, int dimension)
 {
-	LogicsUCon  *ucon;
+	LlUCon  *ucon;
 	int         i;
 
-	ucon = (LogicsUCon*) malloc (sizeof (LogicsUCon));
+	ucon = (LlUCon*) malloc (sizeof (LlUCon));
 	ucon->matrix = (int*) calloc (dimension, sizeof (int));
 
 	ucon->symbol = symbol;
@@ -63,16 +64,20 @@ logics_ucon_new (char symbol, int *matrix, int dimension)
 }
 
 
-/*
+/**
  * Crea una conectiva binaria nueva.
+ *
+ * @param symbol Símbolo asociado a la conectiva.
+ * @param matrix Matriz de la conectiva.
+ * @param dimension Dimensión de contexto para la matriz.
  */
-LogicsBCon*
-logics_bcon_new (char symbol, int **matrix, int dimension)
+LlBCon*
+ll_bcon_new (char symbol, int **matrix, int dimension)
 {
-	LogicsBCon  *bcon;
+	LlBCon  *bcon;
 	int         i, j;
 
-	bcon = (LogicsBCon*) malloc (sizeof (LogicsBCon));
+	bcon = (LlBCon*) malloc (sizeof (LlBCon));
 	bcon->matrix = (int**) calloc (dimension, sizeof (int*));
 	for (i = 0; i < dimension; i++)
 		bcon->matrix[i] = (int*) calloc (dimension, sizeof (int));
@@ -93,10 +98,10 @@ logics_bcon_new (char symbol, int **matrix, int dimension)
  * @return Devuelve un puntero a la conectiva, si existe, o el puntero nulo en
  *         caso contrario.
  */
-LogicsUCon*
-logics_ucon_list_get_ucon_by_symbol (LogicsUConList ucon_list, char symbol)
+LlUCon*
+ll_ucon_list_get_ucon_by_symbol (LlUConList ucon_list, char symbol)
 {
-	LogicsUCon  *ucon;
+	LlUCon  *ucon;
 	
 	ucon = ucon_list;
 	while (ucon)
@@ -118,10 +123,10 @@ logics_ucon_list_get_ucon_by_symbol (LogicsUConList ucon_list, char symbol)
  * @return Devuelve un puntero a la conectiva, si existe, o el puntero nulo en
  *         caso contrario.
  */
-LogicsBCon*
-logics_bcon_list_get_bcon_by_symbol (LogicsBConList bcon_list, char symbol)
+LlBCon*
+ll_bcon_list_get_bcon_by_symbol (LlBConList bcon_list, char symbol)
 {
-	LogicsBCon* bcon;
+	LlBCon* bcon;
 	
 	bcon = bcon_list;
 	while (bcon)
@@ -136,13 +141,13 @@ logics_bcon_list_get_bcon_by_symbol (LogicsBConList bcon_list, char symbol)
 }
 
 
-/*
+/**
  * Borra una lista de conectivas unarias.
  */
 void
-logics_ucon_list_free (LogicsUConList *ucon_list)
+ll_ucon_list_free (LlUConList *ucon_list)
 {
-	LogicsUCon  *ucon, *ucon_next;
+	LlUCon  *ucon, *ucon_next;
 	
 	ucon = *ucon_list;
 	while (ucon)
@@ -156,13 +161,13 @@ logics_ucon_list_free (LogicsUConList *ucon_list)
 }
 
 
-/*
+/**
  * Borra una lista de conectivas binarias.
  */
 void
-logics_bcon_list_free (LogicsBConList *bcon_list, int dimension)
+ll_bcon_list_free (LlBConList *bcon_list, int dimension)
 {
-	LogicsBCon  *bcon, *bcon_next;
+	LlBCon  *bcon, *bcon_next;
 	int         i;
 
 	bcon = *bcon_list;
@@ -179,14 +184,14 @@ logics_bcon_list_free (LogicsBConList *bcon_list, int dimension)
 }
 
 
-/*
+/**
  * Añade una conectiva unaria al final de una lista de conectivas unarias
  * siempre y cuando no exista ya una con el mismo símbolo.
  */
 int
-logics_ucon_list_append_ucon (LogicsUConList *ucon_list, LogicsUCon* ucon)
+ll_ucon_list_append_ucon (LlUConList *ucon_list, LlUCon* ucon)
 {
-	LogicsUCon  *aux;
+	LlUCon  *aux;
 	
 	/* Si la lista está vacía, el nuevo nodo es el primer elemento */
 	if (*ucon_list == NULL)
@@ -217,14 +222,14 @@ logics_ucon_list_append_ucon (LogicsUConList *ucon_list, LogicsUCon* ucon)
 }
 
 
-/*
+/**
  * Añade una conectiva binaria al final de una lista de conectivas binarias
  * siempre y cuando no exista ya una con el mismo símbolo.
  */
 int
-logics_bcon_list_append_bcon (LogicsBConList *bcon_list, LogicsBCon* bcon)
+ll_bcon_list_append_bcon (LlBConList *bcon_list, LlBCon* bcon)
 {
-	LogicsBCon  *aux;
+	LlBCon  *aux;
 	
 	/* Si la lista está vacía, el nuevo nodo es el primer elemento */
 	if (*bcon_list == NULL)
@@ -256,14 +261,14 @@ logics_bcon_list_append_bcon (LogicsBConList *bcon_list, LogicsBCon* bcon)
 
 
 /**
- * Define las conectivas unarias por defecto, esto es, como en el modelo de las
- * lógicas multivaluadas de Łukasiewicz. Sólo se define una conectiva unaria,
- * la negación (N), de este modo: \f$ \neg x =_{def} ( 1 - x ) \f$.
+ * Define las conectivas unarias según el modelo de las lógicas multivaluadas de
+ * Łukasiewicz. Sólo se define una conectiva unaria, la negación (N), del
+ * siguiente modo: \f$ \neg x =_{def} ( 1 - x ) \f$.
  */
 void
-logics_logic_set_default_ucons_lukasiewicz (LogicsLogic* logic)
+ll_logic_set_default_ucons_lukasiewicz (LlLogic* logic)
 {
-	LogicsUCon  *ucon;
+	LlUCon  *ucon;
 	int         *matrix;
 	int         i;
 
@@ -273,26 +278,25 @@ logics_logic_set_default_ucons_lukasiewicz (LogicsLogic* logic)
 	 *  Nx [¬x]	=df	(1 - x)	 */
 	for (i = 0; i < DIM; i++)
 		matrix[i] = MAXV - i;
-	ucon = logics_ucon_new ('N', matrix, DIM);
-	logics_ucon_list_append_ucon (&logic->ucons, ucon);
+	ucon = ll_ucon_new ('N', matrix, DIM);
+	ll_ucon_list_append_ucon (&logic->ucons, ucon);
 
 	free (matrix);
 }
 
 
 /**
- * Define las conectivas binarias por defecto, esto es, como en el modelo de las
- * lógicas multivaluadas de Łukasiewicz. Las conectivas binarias que se definen
- * son las siguientes:
+ * Define las conectivas binarias segñun el modelo de las lógicas multivaluadas
+ * de Łukasiewicz. Las conectivas binarias que se definen son las siguientes:
  *	 - Implicación (C): \f$ x \rightarrow y =_{def} \min \{n, n - x + y\} \f$.
  *	 - Conjunción	(K): \f$ x \wedge y =_{def} \min \{x, y\} \f$.
  *	 - Disyunción	(A): \f$ x \vee y =_{def} \max \{x, y\} \f$.
  *	 - Bicondicional (E): \f$ x \leftrightarrow y =_{def} n - | x - y | \f$.
  */
 void
-logics_logic_set_default_bcons_lukasiewicz (LogicsLogic* logic)
+ll_logic_set_default_bcons_lukasiewicz (LlLogic* logic)
 {
-	LogicsBCon  *bcon;
+	LlBCon  *bcon;
 	int         **mtx;
 	int         i, j;
 
@@ -305,32 +309,32 @@ logics_logic_set_default_bcons_lukasiewicz (LogicsLogic* logic)
 	for (i = 0; i < DIM; i++)
 		for (j = 0; j < DIM; j++)
 			mtx[i][j] = MIN (MAXV, (MAXV - i + j));
-	bcon = logics_bcon_new ('C', mtx, DIM);
-	logics_bcon_list_append_bcon (&logic->bcons, bcon);
+	bcon = ll_bcon_new ('C', mtx, DIM);
+	ll_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	/* Conjunción (K):
 	 *  Kxy [x & y]  =df  min {x, y}  */
 	for (i = 0; i < DIM; i++)
 		for (j = 0; j < DIM; j++)
 			mtx[i][j] = MIN (i, j);
-	bcon = logics_bcon_new ('K', mtx, DIM);
-	logics_bcon_list_append_bcon (&logic->bcons, bcon);
+	bcon = ll_bcon_new ('K', mtx, DIM);
+	ll_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	/* Disyunción (A):
 	 *  Axy [x v y]  =df  Max {x, y}  */
 	for (i = 0; i < DIM; i++)
 		for (j = 0; j < DIM; j++)
 			mtx[i][j] = MAX (i, j);
-	bcon = logics_bcon_new ('A', mtx, DIM);
-	logics_bcon_list_append_bcon (&logic->bcons, bcon);
+	bcon = ll_bcon_new ('A', mtx, DIM);
+	ll_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	/* Bicondicional (E):
 	 *  Exy [x <-> y]  =df  n - |x - y|  */
 	for (i = 0; i < DIM; i++)
 		for (j = 0; j < DIM; j++)
 			mtx[i][j] = MAXV - abs (i - j);
-	bcon = logics_bcon_new ('E', mtx, DIM);
-	logics_bcon_list_append_bcon (&logic->bcons, bcon);
+	bcon = ll_bcon_new ('E', mtx, DIM);
+	ll_bcon_list_append_bcon (&logic->bcons, bcon);
 
 	free (mtx);
 }
@@ -341,13 +345,13 @@ logics_logic_set_default_bcons_lukasiewicz (LogicsLogic* logic)
  * por su nombre, liberando su memoria.
  */
 void
-logics_con_delete_by_symbol (LogicsLogic* logic, char symbol)
+ll_con_delete_by_symbol (LlLogic* logic, char symbol)
 {
 	int i;
-	LogicsUCon *unyprev, *unyaux;
-	LogicsBCon *binprev, *binaux;
+	LlUCon *unyprev, *unyaux;
+	LlBCon *binprev, *binaux;
 
-	if (logics_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
+	if (ll_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
 		{
 			unyprev = NULL;
 			unyaux = logic->ucons;
@@ -374,7 +378,7 @@ logics_con_delete_by_symbol (LogicsLogic* logic, char symbol)
 				}
 		}
 
-	else if (logics_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
+	else if (ll_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
 		{
 			binprev = NULL;
 			binaux = logic->bcons;
@@ -409,14 +413,14 @@ logics_con_delete_by_symbol (LogicsLogic* logic, char symbol)
 
 /**
  * Escribe en un archivo externo la matriz de una conectiva unaria en forma de
- * tabla simple. El formato pretende ser legible tanto por un humano como por
- * una máquina, editable como texto plano e importable por el programa.
+ * tabla simple. El formato pretende ser legible tanto por una persona como por
+ * el ordenador, editable como texto plano e importable por el programa.
  *
  * @return 0: éxito.\n
  *				 1: error, archivo inválido.
  */
 int
-write_ucon_matrix (FILE *file, LogicsUCon* ucon, int dimension)
+write_ucon_matrix (FILE *file, LlUCon* ucon, int dimension)
 {
 	int i;
 
@@ -436,14 +440,14 @@ write_ucon_matrix (FILE *file, LogicsUCon* ucon, int dimension)
 
 /**
  * Escribe en un archivo externo la matriz de una conectiva binaria en forma de
- * tabla simple. El formato pretende ser legible tanto por un humano como por
- * una máquina, editable como texto plano e importable por el programa.
+ * tabla simple. El formato pretende ser legible tanto por una persona como por
+ * el ordenador, editable como texto plano e importable por el programa.
  *
  * @return 0: éxito.\n
  *				 1: error, archivo inválido.
  */
 int
-write_bcon_matrix (FILE *file, LogicsBCon* bcon, int dimension)
+write_bcon_matrix (FILE *file, LlBCon* bcon, int dimension)
 {
 	int i, j;
 
@@ -469,17 +473,17 @@ write_bcon_matrix (FILE *file, LogicsBCon* bcon, int dimension)
  * Escribe todas las matrices de todas las conectivas en un archivo externo en
  * forma de tabla simple. Primero se escriben las conectivas unarias y luego las
  * binarias, en el orden en que hayan sido definidas. El formato pretende ser
- * legible tanto por un humano como por una máquina, editable como texto plano
- * e importable por el programa.
+ * legible tanto por una persona como por el ordenador, editable como texto
+ * clano e importable por el programa.
  *
  * @return 0: éxito.\n
  *				 1: error, archivo inválido.
  */
 int
-write_matrices (FILE *file, LogicsLogic* logic)
+write_matrices (FILE *file, LlLogic* logic)
 {
-	LogicsUCon  *ucon;
-	LogicsBCon  *bcon;
+	LlUCon  *ucon;
+	LlBCon  *bcon;
 
 	if (file)
 		{
