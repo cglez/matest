@@ -50,7 +50,7 @@
  * contiene las referencias a los widgets que necesitaremos. Esto se lleva a
  * cabo usando GtkBuilder para leer el archivo XML.
  */
-gboolean 
+gboolean
 init_gui (MaTestGUI *gui)
 {
 	GtkBuilder            *builder;
@@ -140,7 +140,7 @@ mode_gui (int argc, char *argv[], Work* work)
 	gui = g_slice_new (MaTestGUI);
 
 	gui->work = work;
-	
+
 	/* inicializamos las librerías GTK+ */
 	gtk_init (&argc, &argv);
 
@@ -182,7 +182,7 @@ mode_gui (int argc, char *argv[], Work* work)
 	ucon = gui->work->logic->ucons;
 	while (ucon)
 		{
-			b_con = gtk_button_new_with_label (g_strdup_printf ("%c", ucon->symbol));
+			b_con = gtk_button_new_with_label (g_strdup_printf ("%s", ucon->symbol));
 			g_signal_connect (b_con, "clicked",
 		                    G_CALLBACK (on_b_ucon_clicked), gui);
 		  gtk_container_add (GTK_CONTAINER (gui->hb_ucons), b_con);
@@ -192,14 +192,14 @@ mode_gui (int argc, char *argv[], Work* work)
 	bcon = gui->work->logic->bcons;
 	while (bcon)
 		{
-			b_con = gtk_button_new_with_label (g_strdup_printf ("%c", bcon->symbol));
+			b_con = gtk_button_new_with_label (g_strdup_printf ("%s", bcon->symbol));
 			g_signal_connect (G_OBJECT (b_con), "clicked",
 		                    G_CALLBACK (on_b_bcon_clicked), gui);
 			gtk_container_add (GTK_CONTAINER (gui->hb_bcons), b_con);
 			gtk_widget_show (b_con);
 			bcon = bcon->next;
 		}
-	
+
 	/* Muestra la ventana */
 	gtk_widget_show (gui->window);
 
@@ -214,7 +214,7 @@ mode_gui (int argc, char *argv[], Work* work)
 
 
 /*
- * Mostrar diálogo Acerca de
+ * Diálogo Acerca de
  */
 gboolean
 dialog_about ()
@@ -289,7 +289,7 @@ print_matrices_gui (LlLogic* logic)
 
 	while (ucon)
 		{
-			g_string_append_printf (text, "  %c |", ucon->symbol);
+			g_string_append_printf (text, "  %s |", ucon->symbol);
 			for (i = 0; i < DIM; i++)
 				{
 					if (i >= MDV)
@@ -301,7 +301,7 @@ print_matrices_gui (LlLogic* logic)
 			g_string_append_printf (text, "\n----+");
 			for (i = 0; i < DIM; i++)
 				g_string_append_printf (text, "---");
-		
+
 			g_string_append_printf (text, "-\n" "    |");
 			for (i = 0; i < DIM; i++)
 				{
@@ -316,7 +316,7 @@ print_matrices_gui (LlLogic* logic)
 
 	while (bcon)
 		{
-			g_string_append_printf (text, "  %c |", bcon->symbol);
+			g_string_append_printf (text, "  %s |", bcon->symbol);
 			for (i = 0; i < DIM; i++)
 				{
 					if (i >= MDV)
@@ -324,11 +324,11 @@ print_matrices_gui (LlLogic* logic)
 					else
 						g_string_append_printf (text, "  %x", i);
 				}
-		
+
 			g_string_append_printf (text, "\n----+");
 			for (i = 0; i < DIM; i++)
 				g_string_append_printf (text, "---");
-		
+
 			g_string_append_printf (text, "-\n");
 			for (i = 0; i < DIM; i++)
 				{
@@ -336,7 +336,7 @@ print_matrices_gui (LlLogic* logic)
 						g_string_append_printf (text, " *%x |", i);
 					else
 						g_string_append_printf (text, "  %x |", i);
-		
+
 					for (j = 0; j < DIM; j++)
 						{
 							if (bcon->matrix[i][j] >= MDV)
@@ -355,12 +355,15 @@ print_matrices_gui (LlLogic* logic)
 
 
 void
-add_ucon_button (MaTestGUI *gui, char symb)
+add_ucon_button (MaTestGUI *gui, char symbol[])
 {
 	GtkWidget    *b_ucon;
+	gchar        *label;
 
 	/* Ponemos la etiqueta con el símbolo de la conectiva (en mayúscula) */
-	b_ucon = gtk_button_new_with_label (g_strdup_printf ("%c", toupper (symb)));
+	label = g_strdup_printf ("%s", g_ascii_strup (symbol, -1));
+	b_ucon = gtk_button_new_with_label (label);
+	g_free (label);
 	g_signal_connect (G_OBJECT (b_ucon), "clicked",
 		                G_CALLBACK (on_b_ucon_clicked), gui);
 	gtk_container_add (GTK_CONTAINER (gui->hb_ucons), b_ucon);
@@ -369,12 +372,15 @@ add_ucon_button (MaTestGUI *gui, char symb)
 
 
 void
-add_bcon_button (MaTestGUI *gui, char symb)
+add_bcon_button (MaTestGUI *gui, char symbol[])
 {
 	GtkWidget    *b_bcon;
+	gchar        *label;
 
 	/* Ponemos la etiqueta con el símbolo de la conectiva (en mayúscula) */
-	b_bcon = gtk_button_new_with_label (g_strdup_printf ("%c", toupper (symb)));
+	label = g_strdup_printf ("%s", g_ascii_strup (symbol, -1));
+	b_bcon = gtk_button_new_with_label (label);
+	g_free (label);
 	g_signal_connect (G_OBJECT (b_bcon), "clicked",
 		                G_CALLBACK (on_b_bcon_clicked), gui);
 	gtk_container_add (GTK_CONTAINER (gui->hb_bcons), b_bcon);
@@ -387,25 +393,24 @@ void
 del_bcon_button (MaTestGUI *gui, char symbol)
 {
 	GtkWidget    *b_bcon;
-	
-	gtk_button_get_by_symbol 
+
+	gtk_button_get_by_symbol
 */
 
 gint
 dialog_ucon_new (MaTestGUI *gui)
 {
 	GtkDialog       *dialog;
-	GtkWidget       *content;
-	GtkWidget       *vbox;
-	GtkWidget       *table;
-	GtkWidget       *input_name;
-	GtkWidget       *spinvalue;
+	GtkWidget       *content,
+									*table,
+									*input_symbol,
+									*label_col,
+									*spinvalue;
 	GtkAdjustment   **values;
 	LlUCon          *ucon;
 	gint            i;
 	int             *matrix;
 	const gchar     *label;
-	char            symb;
 
 	values = (GtkAdjustment**) g_new (GtkAdjustment, gui->work->DIM);
 	matrix = g_new0 (int, gui->work->DIM);
@@ -419,66 +424,68 @@ dialog_ucon_new (MaTestGUI *gui)
 	                                                  GTK_RESPONSE_REJECT,
 	                                                  NULL));
 	gtk_dialog_set_has_separator (dialog, FALSE);
-	
-	content = gtk_dialog_get_content_area (dialog);
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_container_add (GTK_CONTAINER (content), vbox);
-	input_name = gtk_entry_new ();
-	gtk_entry_set_max_length (GTK_ENTRY (input_name), 1);
-	gtk_entry_set_width_chars (GTK_ENTRY (input_name), 1);
-	gtk_container_add (GTK_CONTAINER (vbox), input_name);
 
-	table = gtk_table_new (1, gui->work->DIM, TRUE);
-	gtk_container_add (GTK_CONTAINER (vbox), table);
+	content = gtk_dialog_get_content_area (dialog);
+	table = gtk_table_new (2, gui->work->DIM + 1, FALSE);
+	gtk_container_add (GTK_CONTAINER (content), table);
+	input_symbol = gtk_entry_new ();
+	gtk_entry_set_max_length (GTK_ENTRY (input_symbol), 1);
+	gtk_entry_set_width_chars (GTK_ENTRY (input_symbol), 1);
+	gtk_table_attach_defaults (GTK_TABLE (table), input_symbol, 0, 1, 0, 1);
+
 	for (i = 0; i < gui->work->DIM; i++)
 		{
+			label_col = gtk_label_new (g_strdup_printf ("%x", i));
+			gtk_table_attach_defaults (GTK_TABLE (table), label_col,
+                                 i + 1, i + 2,
+                                 0, 1);
+
 			spinvalue = gtk_spin_button_new_with_range (0, gui->work->MAXV, 1);
 			gtk_spin_button_set_digits (GTK_SPIN_BUTTON (spinvalue), 0);
 			gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinvalue), TRUE);
 			values[i] = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (spinvalue));
 			gtk_table_attach_defaults (GTK_TABLE (table),
 			                           spinvalue,
-			                           i, i + 1,
-			                           0, 1);
+			                           i + 1, i + 2,
+			                           1, 2);
 		}
 	gtk_widget_show_all (content);
 
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
 		{
-			label = gtk_entry_get_text (GTK_ENTRY (input_name));
-			symb = label[0];
-			if (isalpha (symb))
+			label = gtk_entry_get_text (GTK_ENTRY (input_symbol));
+			if (g_ascii_isalpha (label[0]))
 				{
 					for (i = 0; i < gui->work->DIM; i++)
 						matrix[i] = (int) gtk_adjustment_get_value (values[i]);
-					ucon = ll_ucon_new (toupper (symb), matrix, gui->work->DIM);
+					ucon = ll_ucon_new (label, matrix, gui->work->DIM);
 					ll_ucon_list_append_ucon (&gui->work->logic->ucons, ucon);
-					add_ucon_button (gui, symb);
+					add_ucon_button (gui, label);
 				}
 		}
 	gtk_widget_destroy (GTK_WIDGET (dialog));
-	
+
 	return 0;
 }
 
 
 gint
-dialog_ucon_edit (MaTestGUI *gui, char symb)
+dialog_ucon_edit (MaTestGUI *gui, char symbol[])
 {
 	GtkDialog       *dialog;
-	GtkWidget       *content;
-	GtkWidget       *vbox;
-	GtkWidget       *table;
-	GtkWidget       *label_symb;
-	GtkWidget       *b_delete;
-	GtkWidget       **spinvalues;
+	GtkWidget       *content,
+	                *table,
+	                *label_symb,
+	                *label_col,
+	                *b_delete,
+	                **spinvalues;
 	LlUCon          *ucon;
 	gint            i;
 
-	ucon = ll_ucon_list_get_ucon_by_symbol (gui->work->logic->ucons, symb);
+	ucon = ll_ucon_list_get_ucon_by_symbol (gui->work->logic->ucons, symbol);
 	spinvalues = (GtkWidget**) g_new (GtkWidget, gui->work->DIM);
 
-	dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (g_strdup_printf (_("Editando %c"), symb),
+	dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (g_strdup_printf (_("Editando %s"), symbol),
 	                                                  GTK_WINDOW (gui->window),
 	                                                  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 	                                                  GTK_STOCK_OK,
@@ -487,17 +494,23 @@ dialog_ucon_edit (MaTestGUI *gui, char symb)
 	                                                  GTK_RESPONSE_REJECT,
 	                                                  NULL));
 	gtk_dialog_set_has_separator (dialog, FALSE);
-	
-	content = gtk_dialog_get_content_area (dialog);
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_container_add (GTK_CONTAINER (content), vbox);
-	label_symb = gtk_label_new (g_strdup_printf ("%c", symb));
-	gtk_container_add (GTK_CONTAINER (vbox), label_symb);
 
-	table = gtk_table_new (1, gui->work->DIM, TRUE);
-	gtk_container_add (GTK_CONTAINER (vbox), table);
+	content = gtk_dialog_get_content_area (dialog);
+	table = gtk_table_new (2, gui->work->DIM + 1, TRUE);
+	gtk_container_add (GTK_CONTAINER (content), table);
+	label_symb = gtk_label_new (g_strdup_printf ("%s", symbol));
+	gtk_label_set_markup (GTK_LABEL (label_symb),
+	                      g_strdup_printf ("<b>%s</b>", symbol));
+	gtk_table_attach_defaults (GTK_TABLE (table), label_symb, 0, 1, 0, 1);
+
+
 	for (i = 0; i < gui->work->DIM; i++)
 		{
+			label_col = gtk_label_new (g_strdup_printf ("%x", i));
+			gtk_table_attach_defaults (GTK_TABLE (table), label_col,
+                                 i + 1, i + 2,
+                                 0, 1);
+
 			spinvalues[i] = gtk_spin_button_new_with_range (0, gui->work->MAXV, 1);
 			gtk_spin_button_set_digits (GTK_SPIN_BUTTON (spinvalues[i]), 0);
 			gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinvalues[i]), TRUE);
@@ -505,8 +518,8 @@ dialog_ucon_edit (MaTestGUI *gui, char symb)
 					                       ucon->matrix[i]);
 			gtk_table_attach_defaults (GTK_TABLE (table),
 			                           spinvalues[i],
-			                           i, i + 1,
-			                           0, 1);
+			                           i + 1, i + 2,
+			                           1, 2);
 		}
 	/*
 	b_delete = gtk_button_new_with_label (_("Borrar conectiva"));
@@ -520,7 +533,7 @@ dialog_ucon_edit (MaTestGUI *gui, char symb)
 		for (i = 0; i < gui->work->DIM; i++)
 			ucon->matrix[i] = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (spinvalues[i]));
 	gtk_widget_destroy (GTK_WIDGET (dialog));
-	
+
 	return 0;
 }
 
@@ -529,17 +542,16 @@ gint
 dialog_bcon_new (MaTestGUI *gui)
 {
 	GtkDialog       *dialog;
-	GtkWidget       *content;
-	GtkWidget       *vbox;
-	GtkWidget       *table;
-	GtkWidget       *input_symbol;
-	GtkWidget       *spinvalue;
+	GtkWidget       *content,
+	                *table,
+	                *input_symbol,
+	                *label_row, *label_col,
+	                *spinvalue;
 	GtkAdjustment   ***values;
 	LlBCon          *bcon;
 	gint            i, j;
 	int             **matrix;
 	const gchar     *label;
-	char            symb;
 
 	values = (GtkAdjustment***) g_new (GtkAdjustment*, gui->work->DIM);
 	for (i = 0; i < gui->work->DIM; i++)
@@ -557,18 +569,25 @@ dialog_bcon_new (MaTestGUI *gui)
 	                                                  GTK_RESPONSE_REJECT,
 	                                                  NULL));
 	gtk_dialog_set_has_separator (dialog, FALSE);
-	
+
 	content = gtk_dialog_get_content_area (dialog);
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_container_add (GTK_CONTAINER (content), vbox);
+	table = gtk_table_new (gui->work->DIM + 1, gui->work->DIM + 1, FALSE);
+	gtk_container_add (GTK_CONTAINER (content), table);
 	input_symbol = gtk_entry_new ();
 	gtk_entry_set_max_length (GTK_ENTRY (input_symbol), 1);
 	gtk_entry_set_width_chars (GTK_ENTRY (input_symbol), 1);
-	gtk_container_add (GTK_CONTAINER (vbox), input_symbol);
+	gtk_entry_set_alignment (GTK_ENTRY (input_symbol), 1);
+	gtk_table_attach_defaults (GTK_TABLE (table), input_symbol, 0, 1, 0, 1);
 
-	table = gtk_table_new (gui->work->DIM, gui->work->DIM, TRUE);
-	gtk_container_add (GTK_CONTAINER (vbox), table);
-	for (i = 0; i < gui->work->DIM; i++)
+	for (i = 0; i < gui->work->DIM; i++) {
+		label_row = gtk_label_new (g_strdup_printf ("%x", i));
+		gtk_table_attach_defaults (GTK_TABLE (table), label_row,
+		                           0, 1,
+		                           i + 1, i + 2);
+		label_col = gtk_label_new (g_strdup_printf ("%x", i));
+		gtk_table_attach_defaults (GTK_TABLE (table), label_col,
+			                         i + 1, i + 2,
+			                         0, 1);
 		for (j = 0; j < gui->work->DIM; j++)
 			{
 				spinvalue = gtk_spin_button_new_with_range (0, gui->work->MAXV, 1);
@@ -577,49 +596,49 @@ dialog_bcon_new (MaTestGUI *gui)
 				values[i][j] = gtk_spin_button_get_adjustment (GTK_SPIN_BUTTON (spinvalue));
 				gtk_table_attach_defaults (GTK_TABLE (table),
 					                         spinvalue,
-				                           j, j + 1,
-			  		                       i, i + 1);
+				                           j + 1, j + 2,
+			  		                       i + 1, i + 2);
 			}
+	}
 	gtk_widget_show_all (content);
 
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
 		{
 			label = gtk_entry_get_text (GTK_ENTRY (input_symbol));
-			symb = label[0];
-			if (isalpha (symb))
+			if (g_ascii_isalpha (label[0]))
 				{
 					for (i = 0; i < gui->work->DIM; i++)
 						for (j = 0; j < gui->work->DIM; j++)
 							matrix[i][j] = (int) gtk_adjustment_get_value (values[i][j]);
-					bcon = ll_bcon_new (toupper (symb), matrix, gui->work->DIM);
+					bcon = ll_bcon_new (g_ascii_strup (label, -1), matrix, gui->work->DIM);
 					ll_bcon_list_append_bcon (&gui->work->logic->bcons, bcon);
-					add_bcon_button (gui, symb);
+					add_bcon_button (gui, label);
 				}
 		}
 	gtk_widget_destroy (GTK_WIDGET (dialog));
-	
+
 	return 0;
 }
 
 
 gint
-dialog_bcon_edit (MaTestGUI *gui, char symb)
+dialog_bcon_edit (MaTestGUI *gui, char symbol[])
 {
-	GtkDialog       *dialog;
-	GtkWidget       *content;
-	GtkWidget       *vbox;
-	GtkWidget       *table;
-	GtkWidget       *label_symb;
-	GtkWidget       ***spinvalues;
-	LlBCon          *bcon;
-	gint            i, j;
+	GtkDialog  *dialog;
+	GtkWidget  *content,
+	           *table,
+	           *label_symb,
+	           *label_row, *label_col,
+	           ***spinvalues;
+	LlBCon     *bcon;
+	gint       i, j;
 
-	bcon = ll_bcon_list_get_bcon_by_symbol (gui->work->logic->bcons, symb);
+	bcon = ll_bcon_list_get_bcon_by_symbol (gui->work->logic->bcons, symbol);
 	spinvalues = (GtkWidget***) g_new (GtkWidget*, gui->work->DIM);
 	for (i = 0; i < gui->work->DIM; i++)
 		spinvalues[i] = (GtkWidget**) g_new (GtkWidget, gui->work->DIM);
 
-	dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (g_strdup_printf (_("Editando %c"), symb),
+	dialog = GTK_DIALOG (gtk_dialog_new_with_buttons (g_strdup_printf (_("Editando %s"), symbol),
 	                                                  GTK_WINDOW (gui->window),
 	                                                  GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 	                                                  GTK_STOCK_OK,
@@ -628,28 +647,36 @@ dialog_bcon_edit (MaTestGUI *gui, char symb)
 	                                                  GTK_RESPONSE_REJECT,
 	                                                  NULL));
 	gtk_dialog_set_has_separator (dialog, FALSE);
-	
-	content = gtk_dialog_get_content_area (dialog);
-	vbox = gtk_vbox_new (FALSE, 0);
-	gtk_container_add (GTK_CONTAINER (content), vbox);
-	label_symb = gtk_label_new (g_strdup_printf ("%c", symb));
-	gtk_container_add (GTK_CONTAINER (vbox), label_symb);
 
-	table = gtk_table_new (gui->work->DIM, gui->work->DIM, TRUE);
-	gtk_container_add (GTK_CONTAINER (vbox), table);
-	for (i = 0; i < gui->work->DIM; i++)
-		for (j = 0; j < gui->work->DIM; j++)
-			{
-				spinvalues[i][j] = gtk_spin_button_new_with_range (0, gui->work->MAXV, 1);
-				gtk_spin_button_set_digits (GTK_SPIN_BUTTON (spinvalues[i][j]), 0);
-				gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinvalues[i][j]), TRUE);
-				gtk_spin_button_set_value (GTK_SPIN_BUTTON (spinvalues[i][j]),
-						                       bcon->matrix[i][j]);
-				gtk_table_attach_defaults (GTK_TABLE (table),
-				                           spinvalues[i][j],
-				                           j, j + 1,
-					                         i, i + 1);
-			}
+	content = gtk_dialog_get_content_area (dialog);
+	table = gtk_table_new (gui->work->DIM + 1, gui->work->DIM + 1, TRUE);
+	gtk_container_add (GTK_CONTAINER (content), table);
+	label_symb = gtk_label_new (NULL);
+	gtk_label_set_markup (GTK_LABEL (label_symb),
+	                      g_strdup_printf ("<b>%s</b>", symbol));
+	gtk_table_attach_defaults (GTK_TABLE (table), label_symb, 0, 1, 0, 1);
+
+	for (i = 0; i < gui->work->DIM; i++) {
+		label_row = gtk_label_new (g_strdup_printf ("%x", i));
+		gtk_table_attach_defaults (GTK_TABLE (table), label_row,
+		                           0, 1,
+		                           i + 1, i + 2);
+		label_col = gtk_label_new (g_strdup_printf ("%x", i));
+		gtk_table_attach_defaults (GTK_TABLE (table), label_col,
+			                         i + 1, i + 2,
+			                         0, 1);
+		for (j = 0; j < gui->work->DIM; j++) {
+			spinvalues[i][j] = gtk_spin_button_new_with_range (0, gui->work->MAXV, 1);
+			gtk_spin_button_set_digits (GTK_SPIN_BUTTON (spinvalues[i][j]), 0);
+			gtk_spin_button_set_numeric (GTK_SPIN_BUTTON (spinvalues[i][j]), TRUE);
+			gtk_spin_button_set_value (GTK_SPIN_BUTTON (spinvalues[i][j]),
+					                       bcon->matrix[i][j]);
+			gtk_table_attach_defaults (GTK_TABLE (table),
+			                           spinvalues[i][j],
+			                           j + 1, j + 2,
+				                         i + 1, i + 2);
+		}
+	}
 	gtk_widget_show_all (content);
 
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
@@ -659,7 +686,7 @@ dialog_bcon_edit (MaTestGUI *gui, char symb)
 					bcon->matrix[i][j] = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (spinvalues[i][j]));
 		}
 	gtk_widget_destroy (GTK_WIDGET (dialog));
-	
+
 	return 0;
 }
 
@@ -668,14 +695,16 @@ gchar*
 get_current_evaluating_formula_pn (char formula[], LlLogic* logic)
 {
 	int        i;
+	char       symbol[2];
 	GString    *text;
 
 	text = g_string_new ("");
 
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
+			sprintf (symbol, "%c", formula[i]);
 			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
-				g_string_append_printf (text, "%x", ll_var_get_value (ll_var_list_get_var_by_symbol (logic->vars, formula[i])));
+				g_string_append_printf (text, "%x", ll_var_get_value (ll_var_list_get_var_by_symbol (logic->vars, symbol)));
 			else
 				g_string_append_printf (text, "%c", formula[i]);
 		}
@@ -687,11 +716,12 @@ get_current_evaluating_formula_pn (char formula[], LlLogic* logic)
 gchar*
 evaluation_gui (MaTestGUI *gui)
 {
-	int        all = 0,
-	           desig = 0;
-	LlVar      *var;
-	static gchar      *straux;
-	GString    *text;
+	int           i,
+	              all = 0,
+	              desig = 0;
+	LlVar         *var;
+	static gchar  *straux;
+	GString       *text;
 
 	text = g_string_new ("");
 
@@ -700,18 +730,21 @@ evaluation_gui (MaTestGUI *gui)
 			g_string_append_printf (text, "Ninguna fórmula para evaluar,\nintroduzca una.");
 			return text->str;
 		}
-	
-	/* Imprime una cabecera con la fórmula en notación polaca */
-	g_string_append_printf (text, "%s\n\n", gui->work->formula_pn);
-	
+
+	/* Imprime una cabecera con las variables en uso y la fórmula */
+	straux = print_used_variables (gui->work->logic);
+	g_string_append_printf (text, "%s", straux);
+	g_free (straux);
+	g_string_append_printf (text, "  %s\n", gui->work->formula_pn);
+
 	/*
 	 * El algoritmo contador
 	 */
 	void action (Work* work, int *all, int *desig)
 		{
 			int i;
-			
-			i = ll_wff_get_value (gui->work->wff, gui->work->logic);
+
+			i =
 			/* Cuenta cada evaluación */
 			(*all)++;
 			/* Imprime una evaluación dependiendo del tipo de evaluación seleccionado
@@ -721,20 +754,24 @@ evaluation_gui (MaTestGUI *gui)
 					(*desig)++;
 					if (gui->work->evaluation_style == ALL || gui->work->evaluation_style == DESIGNATED)
 						{
-							g_string_append_printf (text, "%s", get_current_evaluating_formula_pn (gui->work->formula_pn, gui->work->logic));
-							g_string_append_printf (text, " *%x\n", i);
+							straux = print_varlist_values (gui->work->logic->vars);
+							g_string_append_printf (text, "%s", straux);
+							g_string_append_printf (text, " *%x\n", ll_wff_get_value (gui->work->wff, gui->work->logic));
+							g_free (straux);
 						}
 				 }
 			else
 				{
 					if (gui->work->evaluation_style == ALL || gui->work->evaluation_style == NOT_DESIGNATED)
 						{
-							g_string_append_printf (text, "%s", get_current_evaluating_formula_pn (gui->work->formula_pn, gui->work->logic));
-							g_string_append_printf (text, "  %x\n", i);
+							straux = print_varlist_values (gui->work->logic->vars);
+							g_string_append_printf (text, "%s", straux);
+							g_string_append_printf (text, "  %x\n", ll_wff_get_value (gui->work->wff, gui->work->logic));
+							g_free (straux);
 						}
 				}
 		}
-	
+
 	/* Condición inicial: todos los valores inicializados a 0 */
 	var = gui->work->logic->vars;
 	while (var)
@@ -761,7 +798,7 @@ evaluation_gui (MaTestGUI *gui)
 				}
 		}
 	while (var);
-	
+
 	/* Imprime las estadísticas */
 	if (desig == all)
 		g_string_prepend (text, "TAUTOLOGÍA.\n\n");
@@ -769,7 +806,7 @@ evaluation_gui (MaTestGUI *gui)
 		g_string_prepend (text, "CONTRADICCIÓN.\n\n");
 	else
 		g_string_prepend (text, "Se FALSA la fórmula.\n\n");
-	
+
 	if (gui->work->evaluation_style == ALL || gui->work->evaluation_style == DESIGNATED)
 		{
 			straux = g_strdup_printf ("%i/%i valores designados.\n", desig, all);
@@ -782,6 +819,6 @@ evaluation_gui (MaTestGUI *gui)
 			g_string_prepend (text, straux);
 			g_free (straux);
 		}
-	
+
 	return text->str;
 }

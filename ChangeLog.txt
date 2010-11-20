@@ -23,7 +23,7 @@
     mostrar la salida.
     Cuenta con dos botones ajustables para definir la Dimensión de las matrices
     y el Mínimo Valor Designado; al cambiar la dimensión se redefinen las matri-
-    ces y el mvd según el modelo de la lógicas multivaluadas de Łukasiewicz. En
+    ces y el mvd según el modelo de las lógicas multivaluadas de Łukasiewicz. En
     el modo con interfaz gráfica la dimensión está limitada a 16.
     Cada conectiva cuenta con un botón para su edición el cual muestra un diálo-
     go con una matriz de botones ajustables para definir individualmente cada

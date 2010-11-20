@@ -78,11 +78,11 @@ on_b_new_formula_clicked (GtkObject *object, MaTestGUI *gui)
 	                          gui->work->logic))
 		{
 			strcpy (gui->work->formula_pn, (char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)));
-			
+
 			if (gui->work->logic->vars)
 				ll_var_list_free (&gui->work->logic->vars);
 			ll_logic_add_formula_vars (gui->work->logic, gui->work->formula_pn);
-			
+
 			if (gui->work->wff)
 				ll_wff_free (&gui->work->wff);
 			ll_wff_parse_formula_pn (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
@@ -102,11 +102,11 @@ on_entry_formula_activate (GtkObject *object, MaTestGUI *gui)
 	                          gui->work->logic))
 		{
 			strcpy (gui->work->formula_pn, (char *) gtk_entry_get_text (GTK_ENTRY (gui->entry_formula)));
-			
+
 			if (gui->work->logic->vars)
 				ll_var_list_free (&gui->work->logic->vars);
 			ll_logic_add_formula_vars (gui->work->logic, gui->work->formula_pn);
-			
+
 			if (gui->work->wff)
 				ll_wff_free (&gui->work->wff);
 			ll_wff_parse_formula_pn (&gui->work->wff, gui->work->formula_pn, gui->work->logic);
@@ -122,11 +122,11 @@ void
 on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	const gchar *label;
-	char  symb;
+	//char  symb;
 
 	label = gtk_button_get_label (GTK_BUTTON (object));
-	symb = (char) label[0];
-	dialog_ucon_edit (gui, symb);
+	//symb = (char) label[0];
+	dialog_ucon_edit (gui, label);
 }
 
 
@@ -135,11 +135,11 @@ void
 on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
 	const gchar *label;
-	char symb;
-	
+	//char symb;
+
 	label = gtk_button_get_label (GTK_BUTTON (object));
-	symb = (char) label[0];
-	dialog_bcon_edit (gui, symb);
+	//symb = (char) label[0];
+	dialog_bcon_edit (gui, label);
 }
 
 
@@ -154,7 +154,7 @@ on_b_add_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_b_ucon_del_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+
 }
 
 
@@ -169,22 +169,22 @@ on_b_add_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 void
 on_b_del_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 {
-	
+
 }
 
 
 /* Cambiar el valor de la dimensión */
 void
 on_spin_dimension_value_changed (GtkObject *object, MaTestGUI *gui)
-{	
+{
 	ll_ucon_list_free (&gui->work->logic->ucons);
 	ll_bcon_list_free (&gui->work->logic->bcons, gui->work->DIM);
-	
+
 	gui->work->logic->dimension = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (gui->spin_dimension));
-	
+
 	ll_logic_set_default_ucons_lukasiewicz (gui->work->logic);
 	ll_logic_set_default_bcons_lukasiewicz (gui->work->logic);
-	
+
 	gtk_spin_button_set_range (GTK_SPIN_BUTTON (gui->spin_mdv),
 	                           1, gui->work->MAXV);
 	gtk_spin_button_set_value (GTK_SPIN_BUTTON (gui->spin_mdv), gui->work->MAXV);

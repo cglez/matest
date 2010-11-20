@@ -17,17 +17,16 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
 /**
  * @file MaTest.h
  *
- * Este archivo contiene el código común a todo el programa, esto es,
- * declaraciones del preprocesador, definición de tipos de datos y los
- * prototipos de las funciones.
+ * Este archivo contiene declaraciones del preprocesador, definición de tipos
+ * de datos y los prototipos de las funciones comunes a todo el programa.
  */
 
 #ifndef __MATEST_H__
@@ -41,9 +40,9 @@
 #include <stdbool.h>
 #include <libintl.h>
 #include <gtk/gtk.h>
-#include "logics.h"
+#include "logics/logics.h"
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 #define MAX_FORMULA_LENGHT BUFSIZ
 
 
@@ -51,9 +50,7 @@
 ***	Definición de tipos de datos
  */
 
-/**
- * Enumeración con los tipos de evaluación.
- */
+/** @enum Enumeración con los tipos de evaluación. */
 typedef enum
 	{
 		ALL,            /**< Se muestran todos los valores. */
@@ -63,9 +60,9 @@ typedef enum
 	EvaluationStyle;
 
 
-/**
- * Estructura general con todos los datos necesarios para la evaluación, esto
- * es, contiene el trabajo definido actualmente tal y como se evaluará.
+/** @struct
+ * Registro general con todos los datos necesarios para la evaluación, esto es,
+ * contiene el trabajo definido actualmente tal y como se evaluará.
  */
 typedef struct _Work Work;
 struct _Work
@@ -88,14 +85,10 @@ typedef struct
 		               *statusbar,
 		               *text_view,
 		               *progressbar,
-		               *spin_dimension,
-		               *spin_mdv,
+		               *spin_dimension, *spin_mdv,
 		               *entry_formula,
-		               *hb_ucons,
-		               *hb_bcons,
-		               *m_view_all,
-		               *m_view_desig,
-		               *m_view_notdesig;
+		               *hb_ucons, *hb_bcons,
+		               *m_view_all, *m_view_desig, *m_view_notdesig;
 		GtkTextBuffer  *textbuffer;
 		GtkLabel       *label_formula;
 		Work           *work;
@@ -108,12 +101,12 @@ typedef struct
  */
 
 /* Modos interactivos */
-int mode_text (Work* work);
+int mode_tui (Work* work);
 int mode_gui (int argc, char *argv[], Work* work);
 
 /* Manejo de conectivas */
-void text_ucon_add_custom (LlLogic* logic, char symbol);
-void text_bcon_add_custom (LlLogic* logic, char symbol);
+void tui_ucon_add_custom (LlLogic* logic, char symbol[]);
+void tui_bcon_add_custom (LlLogic* logic, char symbol[]);
 void print_ucon_matrix (LlUCon* ucon, LlLogic* logic);
 void print_bcon_matrix (LlBCon* bcon, LlLogic* logic);
 void print_matrices (LlLogic* logic);
@@ -149,9 +142,9 @@ void dialog_error (const gchar *message);
 gchar* show_matrices_gui (LlLogic* logic);
 gchar* evaluation_gui (MaTestGUI *gui);
 gint dialog_ucon_new (MaTestGUI *gui);
-gint dialog_ucon_edit (MaTestGUI *gui, char symb);
+gint dialog_ucon_edit (MaTestGUI *gui, char symbol[]);
 gint dialog_bcon_new (MaTestGUI *gui);
-gint dialog_bcon_edit (MaTestGUI *gui, char symb);
+gint dialog_bcon_edit (MaTestGUI *gui, char symbol[]);
 
 
 #endif /* __MATEST_H__ */

@@ -2,7 +2,7 @@
 /*
  * logics.h
  * Cabecera con tipos de datos y funciones para el manejo de lógicas en general.
- * 
+ *
  * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This library is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -29,6 +29,7 @@
 ***	Declaraciones del preprocesador
  */
 
+#include <string.h>
 #include <stdbool.h>
 
 /* Algunas abreviaciones útiles */
@@ -43,7 +44,7 @@
 ***	Tipos de datos
  */
 
-/** Tipos de símbolos de una fórmula */
+/** @enum Tipos de símbolos de una fórmula */
 typedef enum
 	{
 		LL_SYMBOL_VAR,         /**< Variable. */
@@ -56,7 +57,7 @@ typedef enum
 	LlSymbolType;
 
 
-/** Tipos de nodos de una fórmula bien formada */
+/** @enum Tipos de nodos de una fórmula bien formada */
 typedef enum
 	{
 		LL_WFF_NODE_VAR,     /**< Variable. */
@@ -66,9 +67,9 @@ typedef enum
 	LlWFFNodeType;
 
 
-/**
+/** @struct
  * Nodo variable proposicional.
- * 
+ *
  * Entendemos aquí por variable proposicional a un tipo de dato que tiene
  * asociado un símbolo que la identifica, que puede tomar distintos valores
  * numéricos y que forma un grupo, una lista, con los otros elementos de la
@@ -78,7 +79,7 @@ typedef enum
 typedef struct _LlVar LlVar;
 struct _LlVar
 	{
-		char       symbol;   /**< Nombre de la variable o letra que la designa. */
+		char       symbol[2];   /**< Nombre de la variable o letra que la designa. */
 		int        value;    /**< Valor de la variable. */
 		LlVar      *next;    /**< Puntero al siguiente elemento de la lista. */
 	};
@@ -86,36 +87,36 @@ struct _LlVar
 typedef LlVar *LlVarList;  /**< Declaración de listas de variables. */
 
 
-/**
+/** @struct
  * Nodo conectiva unaria.
- * 
+ *
  * Una conectiva unaria aquí es una estructura que contiene el símbolo con el
  * que designamos a dicha conectiva y un vector de valores numéricos que define
  * la semántica del operador del siguiente modo: el valor que asigna el operador
  * a su argumento cuando éste vale n, es el valor del n-ésimo subíndice, esto
  * es, \f$ v(\Delta n) = \Delta_n \f$, siendo \f$ \Delta \f$ una conectiva
  * cualquiera y \f$ n \f$ un valor cualquiera.
- * 
+ *
  * Las conectivas así definidas están implementadas a su vez como una lista
  * enlazada simple para su mejor manejo.
  */
 typedef struct _LlUCon LlUCon;
 struct _LlUCon
 	{
-		char        symbol;    /**< Símbolo que representa la conectiva (una letra 
-		                            mayúscula en la notación polaca) */
-		int         *matrix;   /**< Matriz de la conectiva: un vector de enteros
-		                            que define la semántica de la conectiva; contiene
-		                            los valores que ésta asignará a una variable. */
-		LlUCon      *next;     /**< Puntero al siguiente elemento de la lista. */
+		char       symbol[4];    /**< Símbolo que representa la conectiva (una letra
+		                           mayúscula en la notación polaca) */
+		int*       matrix;    /**< Matriz de la conectiva: un vector de enteros
+		                           que define la semántica de la conectiva; contiene
+		                           los valores que ésta asignará a una variable. */
+		LlUCon     *next;     /**< Puntero al siguiente elemento de la lista. */
 	};
 
 typedef LlUCon *LlUConList;  /**< Declaración de listas de conectivas unarias. */
 
 
-/**
+/** @struct
  * Nodo conectiva binaria.
- * 
+ *
  * Una conectiva binaria aquí es una estructura que contiene el símbolo con el
  * que designamos a dicha conectiva y una matriz de valores numéricos que define
  * la semántica del operador del siguiente modo: el valor que asigna el operador
@@ -123,14 +124,14 @@ typedef LlUCon *LlUConList;  /**< Declaración de listas de conectivas unarias. 
  * n y columna m, esto es, \f$ v(n \Delta m) = \Delta_{nm} \f$, siendo la
  * expresión en notación estándar, \f$ \Delta \f$ una conectiva cualquiera y
  * \f$ n, m \f$ dos valores cualesquiera.
- * 
+ *
  * Las conectivas así definidas están implementadas a su vez como una lista
  * enlazada simple para su mejor manejo.
  */
 typedef struct _LlBCon LlBCon;
 struct _LlBCon
 	{
-		char     symbol;   /**< Símbolo que representa la conectiva (una letra
+		char     symbol[4];   /**< Símbolo que representa la conectiva (una letra
 		                        mayúscula en la notación polaca) */
 		int**    matrix;   /**< Matriz de la conectiva: una matriz de enteros que
 		                        define la semántica de la conectiva; contiene los
@@ -141,7 +142,7 @@ struct _LlBCon
 typedef LlBCon *LlBConList;  /**< Declaración de listas de conectivas binarias. */
 
 
-/**
+/** @struct
  * Nodo Fórmula Bien Formada (WFF: Well Formed Formula).
  * Una fbf es una estructura tipo árbol en la que el nodo principal es la
  * conectiva principal, sus nodos hijos pueden ser o bien otras conectivas o
@@ -159,32 +160,32 @@ typedef LlBCon *LlBConList;  /**< Declaración de listas de conectivas binarias.
 typedef struct _LlWFFNode LlWFFNode;
 struct _LlWFFNode
 	{
-		LlWFFNodeType  type;      /**< Tipo del elemento. */
-		char           symbol;    /**< Símbolo que lo representa. */
-		int            *value;    /**< Puntero a su valor. */
-		LlWFFNode      *prearg;   /**< Puntero al argumento precedente. */
-		LlWFFNode      *postarg;  /**< Puntero al argumento posterior. */
+		LlWFFNodeType  type;         /**< Tipo del elemento. */
+		char           symbol[4];    /**< Símbolo que lo representa. */
+		int            *value;       /**< Puntero a su valor. */
+		LlWFFNode      *prearg;      /**< Puntero al argumento precedente. */
+		LlWFFNode      *postarg;     /**< Puntero al argumento posterior. */
 	};
 
 typedef LlWFFNode *LlWFF;  /**< Declaración de una fórmula bien formada. */
 
 
-/**
+/** @struct
  * Registro con todos los datos que definen una lógica.
  * Una lógica, aquí, es un conjunto de elementos consistentes entre sí, tales
  * que:
  * - hay un valor entero al que llamamos dimensión, el cual toma un valor
- *   arbitrario,
+ *   arbitrario mayor que 2,
  * - hay un valor entero que denominamos mínimo valor designado, que toma un
  *   valor entre 1 y la dimensión menos 1,
  * - se define un conjunto de variables cuyos valores pueden variar entre 0 y la
  *   dimensión menos 1,
  * - se define un conjunto de conectivas unarias cuya semántica está definida
  *   por una matriz línea de un número de elementos igual a la dimensión, con
- *   valores enteros entre 0 y la dimensión menos 1,
+ *   valores enteros comprendidos entre 0 y la dimensión menos 1,
  * - se define un conjunto de conectivas binarias cuya semántica está definida
  *   por una matriz cuadrada de orden igual a la dimensión, con valores enteros
- *   que están entre 0 y la dimensión menos 1.
+ *   comprendidos entre 0 y la dimensión menos 1.
  */
 typedef struct
 	{
@@ -202,23 +203,23 @@ typedef struct
  */
 
 /* Funciones sobre variables */
-LlVar* ll_var_new (char symbol, int value);
+LlVar* ll_var_new (char* symbol, int value);
 void ll_var_set_value (LlVar* var, int value);
 int ll_var_get_value (LlVar* var);
 bool ll_var_list_is_empty (LlVarList var_list);
 void ll_var_list_free (LlVarList *var_list);
-LlVar* ll_var_list_get_var_by_symbol (LlVarList var_list, char symbol);
+LlVar* ll_var_list_get_var_by_symbol (LlVarList var_list, char* symbol);
 unsigned int ll_var_list_length (LlVarList var_list);
 void ll_var_list_add_var (LlVarList *var_list, LlVar* var);
 
 /* Funciones sobre conectivas */
-LlUCon* ll_ucon_new (char symbol, int *matrix, int dimension);
-LlBCon* ll_bcon_new (char symbol, int **matrix, int dimension);
-LlUCon* ll_ucon_list_get_ucon_by_symbol (LlUConList ucon_list, char symbol);
-LlBCon* ll_bcon_list_get_bcon_by_symbol (LlBConList bcon_list, char symbol);
+LlUCon* ll_ucon_new (char* symbol, int *matrix, int dimension);
+LlBCon* ll_bcon_new (char* symbol, int **matrix, int dimension);
+LlUCon* ll_ucon_list_get_ucon_by_symbol (LlUConList ucon_list, char* symbol);
+LlBCon* ll_bcon_list_get_bcon_by_symbol (LlBConList bcon_list, char* symbol);
 int ll_ucon_list_append_ucon (LlUConList *ucon_list, LlUCon* ucon);
 int ll_bcon_list_append_bcon (LlBConList *bcon_list, LlBCon* bcon);
-void ll_con_delete_by_symbol (LlLogic* logic, char symbol);
+void ll_con_delete_by_symbol (LlLogic* logic, char* symbol);
 void ll_logic_set_default_ucons_lukasiewicz (LlLogic* logic);
 void ll_logic_set_default_bcons_lukasiewicz (LlLogic* logic);
 void ll_ucon_list_free (LlUConList *ucon_list);
@@ -226,7 +227,7 @@ void ll_bcon_list_free (LlBConList *bcon_list, int dimension);
 
 /* Funciones para fórmulas bien formadas en general */
 void ll_wff_free (LlWFF *wff);
-bool ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value);
+bool ll_wff_add_node (LlWFF* wff, LlSymbolType symbol_type, char* symbol, int *value);
 int ll_wff_get_value (LlWFF wff, LlLogic* logic);
 
 /* Funciones para fórmulas bien formadas en notación polaca */

@@ -56,7 +56,7 @@ void menu_header (void)
 }
 
 
-/**
+/*
  * Procedimiento para definir de manera interactiva una conectiva unaria nueva
  * dada por su nombre en una lista de conectivas unarias. Se pregunta al usuario
  * por todos los valores uno por uno, indicando el subíndice del elemento
@@ -65,7 +65,7 @@ void menu_header (void)
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
-text_ucon_add_custom (LlLogic* logic, char symbol)
+tui_ucon_add_custom (LlLogic* logic, char* symbol)
 {
 	LlUCon      *ucon;
 	char        value[10];
@@ -83,10 +83,10 @@ text_ucon_add_custom (LlLogic* logic, char symbol)
 		{
 			do
 				{
-					printf (" %c %i: ", symbol, i);
+					printf (" %s %i: ", symbol, i);
 					(void) fgets (value, 9, stdin);
 					/* si se pulsa Enter sin introducir un valor, se toma el último
-					   introducido si no es el primero */
+					   introducido, si no es el primero */
 					if (value[0] == '\n')
 						{
 							if (i == 0)
@@ -94,7 +94,7 @@ text_ucon_add_custom (LlLogic* logic, char symbol)
 							else
 								{
 									matrix[i] = matrix[i - 1];
-									printf (" %c %i: %i\n", symbol, i, matrix[i]);
+									printf (" %s %i: %i\n", symbol, i, matrix[i]);
 								}
 						}
 					else
@@ -109,7 +109,7 @@ text_ucon_add_custom (LlLogic* logic, char symbol)
 }
 
 
-/**
+/*
  * Procedimiento para definir de manera interactiva una conectiva binaria nueva
  * dada por su nombre en una lista de conectivas binarias. Se pregunta al
  * usuario por todos los valores uno por uno, indicando los subíndices del
@@ -118,7 +118,7 @@ text_ucon_add_custom (LlLogic* logic, char symbol)
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
-text_bcon_add_custom (LlLogic* logic, char symbol)
+tui_bcon_add_custom (LlLogic* logic, char* symbol)
 {
 	LlBCon      *bcon;
 	char        value[10];
@@ -143,10 +143,10 @@ text_bcon_add_custom (LlLogic* logic, char symbol)
 				{
 					do
 						{
-							printf (" %c %i %i: ", symbol, i, j);
+							printf (" %s %i %i: ", symbol, i, j);
 							(void) fgets (value, 9, stdin);
 							/* si se pulsa Enter sin introducir un valor, se toma el último
-					       introducido si no es el primero */
+					       introducido, si no es el primero */
 							if (value[0] == '\n')
 								{
 									if (j == 0 && i == 0)
@@ -154,12 +154,12 @@ text_bcon_add_custom (LlLogic* logic, char symbol)
 									else if (j == 0)
 										{
 											matrix[i][j] = matrix[i - 1][MAXV];
-											printf (" %c %i %i: %i\n", symbol, i, j, matrix[i][j]);
+											printf (" %s %i %i: %i\n", symbol, i, j, matrix[i][j]);
 										}
 									else
 										{
 											matrix[i][j] = matrix[i][j - 1];
-											printf (" %c %i %i: %i\n", symbol, i, j, matrix[i][j]);
+											printf (" %s %i %i: %i\n", symbol, i, j, matrix[i][j]);
 										}
 								}
 							else
@@ -175,7 +175,7 @@ text_bcon_add_custom (LlLogic* logic, char symbol)
 }
 
 
-/**
+/*
  * Imprime la matriz de una conectiva unaria en forma de tabla, marcando los
  * valores designados con asterisco.
  */
@@ -186,7 +186,7 @@ print_ucon_matrix (LlUCon* ucon, LlLogic* logic)
 
 	printf ("\n");
 
-	printf ("  %c |", ucon->symbol);
+	printf ("  %s |", ucon->symbol);
 	for (i = 0; i < DIM; i++)
 		{
 			if (i >= MDV)
@@ -211,7 +211,7 @@ print_ucon_matrix (LlUCon* ucon, LlLogic* logic)
 }
 
 
-/**
+/*
  * Imprime la matriz de una conectiva binaria en forma de tabla, marcando los
  * valores designados con asterisco.
  */
@@ -222,7 +222,7 @@ print_bcon_matrix (LlBCon* bcon, LlLogic* logic)
 
 	printf ("\n");
 
-	printf ("  %c |", bcon->symbol);
+	printf ("  %s |", bcon->symbol);
 	for (i = 0; i < DIM; i++)
 		{
 			if (i >= MDV)
@@ -255,7 +255,7 @@ print_bcon_matrix (LlBCon* bcon, LlLogic* logic)
 }
 
 
-/**
+/*
  * Imprime todas las matrices de todas las conectivas, primero las unarias,
  * luego las binarias, en el orden en que se hayen definidas.
  */
@@ -314,7 +314,7 @@ void menu_info (Work* work)
 	ucon = work->logic->ucons;
 	while (ucon)
 		{
-			printf ("%c ", ucon->symbol);
+			printf ("%s ", ucon->symbol);
 			ucon = ucon->next;
 		}
 
@@ -322,7 +322,7 @@ void menu_info (Work* work)
 	bcon = work->logic->bcons;
 	while (bcon)
 		{
-			printf ("%c ", bcon->symbol);
+			printf ("%s ", bcon->symbol);
 			bcon = bcon->next;
 		}
 
@@ -423,9 +423,9 @@ void menu_index (Work* work)
  * Modo interactivo en modo texto.
  */
 int
-mode_text (Work* work)
+mode_tui (Work* work)
 {
-	char opt, symbol, answer[BUFSIZ], formula[BUFSIZ], namefile[BUFSIZ];
+	char opt, symbol[4], answer[BUFSIZ], formula[BUFSIZ], namefile[BUFSIZ];
 	int  newdim;
 	FILE *outfile;
 
@@ -574,8 +574,9 @@ mode_text (Work* work)
 						menu_info (work);
 
 						printf (_(" Símbolo para la conectiva: "));
-						symbol = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
-						if (symbol == '\n')
+						opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
+						sprintf (symbol, "%c", opt);
+						if (opt == '\n')
 							break;
 						else if (ll_ucon_list_get_ucon_by_symbol (work->logic->ucons, symbol))
 							{
@@ -584,7 +585,7 @@ mode_text (Work* work)
 								if (opt == 's' || opt == 'y')
 									{
 										ll_con_delete_by_symbol (work->logic, symbol);
-										text_ucon_add_custom (work->logic, symbol);
+										tui_ucon_add_custom (work->logic, symbol);
 										work->logic_modified = true;
 									}
 							}
@@ -595,7 +596,7 @@ mode_text (Work* work)
 								if (opt == 's' || opt == 'y')
 									{
 										ll_con_delete_by_symbol (work->logic, symbol);
-										text_bcon_add_custom (work->logic, symbol);
+										tui_bcon_add_custom (work->logic, symbol);
 										work->logic_modified = true;
 									}
 							}
@@ -606,11 +607,11 @@ mode_text (Work* work)
 								switch (opt)
 									{
 										case 'u':
-											text_ucon_add_custom (work->logic, symbol);
+											tui_ucon_add_custom (work->logic, symbol);
 											work->logic_modified = true;
 											break;
 										case 'b':
-											text_bcon_add_custom (work->logic, symbol);
+											tui_bcon_add_custom (work->logic, symbol);
 											work->logic_modified = true;
 											break;
 									}
@@ -626,7 +627,7 @@ mode_text (Work* work)
 
 						printf (_(" Símbolo de la conectiva a borrar: "));
 						opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
-						ll_con_delete_by_symbol (work->logic, opt);
+						ll_con_delete_by_symbol (work->logic, &opt);
 						break;
 
 

@@ -17,8 +17,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -26,7 +26,7 @@
  * @file MaTest.c
  *
  * Este archivo contiene la función principal "main" y el manejador de opciones
- * interactivo.
+ * de línea de comandos.
  */
 
 #include <string.h>
@@ -76,7 +76,9 @@ main (int argc, char *argv[])
 	        initmdv = 0,
 	        option_index = 0;
 	bool    use_gui = false,
-	        use_text = false;
+	        use_tui = false;
+	FILE    *mfile;
+	char    filename[BUFSIZ];
 	Work*   work;
 	static struct option long_options[] =
 		{
@@ -97,17 +99,18 @@ main (int argc, char *argv[])
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 	textdomain (GETTEXT_PACKAGE);
 #endif
-	
+
 	work = (Work*) malloc (sizeof (Work));
-	work->logic = (LlLogic*) malloc (sizeof (LlLogic));
-	work->DIM = 0;
-	work->logic->ucons = NULL;
-	work->logic->bcons = NULL;
+	/* Definimos los elementos del trabajo inicial. */
+	//work->logic = (LlLogic*) malloc (sizeof (LlLogic));
+	//work->DIM = 0;
+	//work->logic->ucons = NULL;
+	//work->logic->bcons = NULL;
+	work->logic = NULL;
 	work->formula_pn[0] = '\0';
 	work->wff = NULL;
-	/* Muestra todos los valores evaluados por defecto */
-	work->evaluation_style = ALL;
-	
+	work->evaluation_style = ALL;  /* Muestra todos los valores por defecto */
+
 	while ((c = getopt_long (argc, argv, "d:m:f:s:tghv", long_options, &option_index)) != -1)
 		switch (c)
 			{
@@ -135,7 +138,7 @@ main (int argc, char *argv[])
 						work->evaluation_style = NOT_DESIGNATED;
 					break;
 				case 't':
-					use_text = true;
+					use_tui = true;
 					break;
 				case 'g':
 					use_gui = true;
@@ -150,12 +153,37 @@ main (int argc, char *argv[])
 					break;
 			}
 
+	if (optind < argc)
+		{
+			mfile = fopen (argv[optind++], "r");
+			if (mfile)
+				{
+					read_matricesfile (work, mfile);
+					fclose (mfile);
+					if (use_tui)
+						mode_tui (work);
+					else
+						mode_gui (argc, argv, work);
+					return 0;
+				}
+			else
+				{
+					perror ("No se pudo abrir el archivo de matrices.\n");
+					return 3;
+				}
+		}
+
+	if (!work->logic) {
+		work->logic = (LlLogic*) malloc (sizeof (LlLogic));
+		work->DIM = 0;
+	}
+
 	/* Establecemos la dimensión de las matrices */
 	if (initdim >= 2)
 		work->DIM = initdim;
 	else
 		work->DIM = 2;  /* Dimensión 2 por defecto */
-	
+
 	/* Establecemos el mínimo valor designado */
 	if (initmdv > 0 && initmdv <= work->DIM)
 		work->MDV = initmdv;
@@ -165,23 +193,24 @@ main (int argc, char *argv[])
 	/* Definimos las conectivas por defecto */
 	ll_logic_set_default_ucons_lukasiewicz (work->logic);
 	ll_logic_set_default_bcons_lukasiewicz (work->logic);
-	
+
 	/* Establecemos la fórmula si está bien formada */
 	if (work->formula_pn[0])
 		if (ll_formula_is_wff_pn (work->formula_pn, work->logic))
 			{
+				ll_var_list_free (&work->logic->vars);
 				ll_logic_add_formula_vars (work->logic, work->formula_pn);
 				ll_wff_parse_formula_pn (&work->wff, work->formula_pn, work->logic);
 			}
 		else
 			work->formula_pn[0] = '\0';  /* si no, la dejamos sin definir */
-	
-	/* Pasamos al modo seleccionado, interfaz gráfica por defecto */
-	if (use_text)
+
+	/* Pasamos al modo seleccionado, con interfaz gráfica por defecto */
+	if (use_tui)
 		if (use_gui)
 			mode_gui (argc, argv, work);
 		else
-			mode_text (work);
+			mode_tui (work);
 	else
 		mode_gui (argc, argv, work);
 

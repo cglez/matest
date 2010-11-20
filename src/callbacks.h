@@ -27,8 +27,6 @@
 
 #include <gtk/gtk.h>
 #include "MaTest.h"
-/* For testing propose use the local (not installed) ui file */
-/* #define UI_FILE PACKAGE_DATA_DIR"/matest/ui/matest.ui" */
 #define UI_FILE "matest.ui"
 #define ABOUT_DIALOG_FILE "about.ui"
 

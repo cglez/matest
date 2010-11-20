@@ -17,8 +17,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -31,14 +31,18 @@
  * Después establece el nombre del elemento, el tipo y el puntero al valor
  * correspondiente si se trata de una variable.
  *
+ * @param wff Árbol de fórmula bien formada.
+ * @param symbol_type Tipo de nodo.
+ * @param symbol Símbolo del nodo.
+ * @param value Valor del nodo.
  * @return true: si tiene éxito, false: en caso contrario.
  */
 bool
-ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
+ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol[], int *value)
 {
 	LlWFFNode *father = NULL;
 	LlWFFNode *node = *wff;
-	
+
 	while (node)
 		{
 			/* Las conectivas unarias tienen un sólo argumento: trivial */
@@ -67,7 +71,7 @@ ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
 		{
 			(*wff) = (LlWFF) malloc (sizeof (LlWFFNode));
 			(*wff)->type = symbol_type;
-			(*wff)->symbol = symbol;
+			strcpy ((*wff)->symbol, symbol);
 			(*wff)->value = value;
 			(*wff)->prearg = (*wff)->postarg = NULL;
 			return true;
@@ -77,7 +81,7 @@ ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
 			node = (LlWFFNode*) malloc (sizeof (LlWFFNode));
 			father->postarg = node;
 			node->type = symbol_type;
-			node->symbol = symbol;
+			strcpy (node->symbol, symbol);
 			node->value = value;
 			node->prearg = node->postarg = NULL;
 			return true;
@@ -89,7 +93,7 @@ ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
 					node = (LlWFFNode*) malloc (sizeof (LlWFFNode));
 					father->prearg = node;
 					node->type = symbol_type;
-					node->symbol = symbol;
+					strcpy (node->symbol, symbol);
 					node->value = value;
 					node->prearg = node->postarg = NULL;
 					return true;
@@ -99,7 +103,7 @@ ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
 					node = (LlWFFNode*) malloc (sizeof (LlWFFNode));
 					father->postarg = node;
 					node->type = symbol_type;
-					node->symbol = symbol;
+					strcpy (node->symbol, symbol);
 					node->value = value;
 					node->prearg = node->postarg = NULL;
 					return true;
@@ -107,7 +111,7 @@ ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
 		}
 	else
 		{
-			perror ("* Estableciendo el elemento de una fbf... Error inesperado.\n");
+			perror ("Estableciendo el elemento de una fbf... Error inesperado.\n");
 			return false;
 		}
 }
@@ -116,6 +120,8 @@ ll_wff_add_node (LlWFF *wff, LlSymbolType symbol_type, char symbol, int *value)
 /**
  * Elimina el árbol de fórmula bien formada dado como argumento liberando su
  * memoria.
+ *
+ * @param wff Un árbol de fórmula bien formada a borrar.
  */
 void
 ll_wff_free (LlWFF *wff)
@@ -144,7 +150,7 @@ ll_wff_get_value (LlWFF wff, LlLogic* logic)
 {
 	LlUCon* ucon;
 	LlBCon* bcon;
-	
+
 	if (!wff)
 		{
 			perror ("* El árbol de fbf está vacío.\n");

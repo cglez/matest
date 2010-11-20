@@ -17,20 +17,20 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
 /**
  * @file wffs_pn.c
- * 
+ *
  * Este archivo contiene el código que se encarga de manejar las fórmulas en
  * notación polaca. Contiene las funciones necesarias para determinar si una
  * fórmula dada es una fórmula bien formada en esta notación, detección de
  * caracteres erróneos, errores de sintaxis... Contiene a su vez el parser que
  * transforma una fbf en NP en un árbol de fbf.
- * 
+ *
  * Para las fórmulas en notación polaca se emplea la siguiente convención: las
  * letras minúsculas son variables, las letras mayúsculas son conectivas,
  * cualquier otro caracter se considera erroneo.
@@ -53,11 +53,14 @@
 LlSymbolType
 ll_symbol_pn_get_type (char symbol, LlLogic* logic)
 {
+	char symb[2];
+	sprintf (symb, "%c", symbol);
+
 	if (islower (symbol))
 		return LL_SYMBOL_VAR;
-	else if (ll_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
+	else if (ll_ucon_list_get_ucon_by_symbol (logic->ucons, symb))
 		return LL_SYMBOL_U_CON;
-	else if (ll_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
+	else if (ll_bcon_list_get_bcon_by_symbol (logic->bcons, symb))
 		return LL_SYMBOL_B_CON;
 	else
 		return LL_SYMBOL_NONE;
@@ -78,7 +81,7 @@ bool
 ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 {
 	int i, deep = 1;
-	
+
 	/* Comprobamos que sólo haya caracteres válidos */
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
@@ -88,9 +91,9 @@ ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 					return false;
 				}
 		}
-	 	
+
 	for (i = 0; i < (int) strlen (formula); i++)
-		{ 
+		{
 			/* Las variables disminuyen la profundidad de la fórmula */
 			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
 				deep--;
@@ -106,7 +109,7 @@ ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 					fprintf (stderr, "* La conectiva %c no está definida.\n", formula[i]);
 					return false;
 				}
-		
+
 		/* Si en este punto las conectivas tienen completos sus argumentos pero aún
 		 * resta fórmula, está mal formada por dos posibles motivos */
 		if (deep == 0 && formula[i + 1] != 0)
@@ -143,19 +146,21 @@ void
 ll_wff_parse_formula_pn (LlWFF* tree, char formula_pn[], LlLogic* logic)
 {
 	LlVar  *var;
-	int        i;
-	
+	char   symbol[2];
+	int    i;
+
 	for (i = 0; i < (int) strlen (formula_pn); i++)
 		{
+			sprintf (symbol, "%c", formula_pn[i]);
 			if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_VAR)
 				{
-					var = ll_var_list_get_var_by_symbol (logic->vars, formula_pn[i]);
-					ll_wff_add_node (tree, LL_WFF_NODE_VAR, formula_pn[i], &var->value);
+					var = ll_var_list_get_var_by_symbol (logic->vars, symbol);
+					ll_wff_add_node (tree, LL_WFF_NODE_VAR, symbol, &var->value);
 				}
 			else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_U_CON)
-				ll_wff_add_node (tree, LL_WFF_NODE_U_CON, formula_pn[i], NULL);
+				ll_wff_add_node (tree, LL_WFF_NODE_U_CON, symbol, NULL);
 			else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_B_CON)
-				ll_wff_add_node (tree, LL_WFF_NODE_B_CON, formula_pn[i], NULL);
+				ll_wff_add_node (tree, LL_WFF_NODE_B_CON, symbol, NULL);
 			else
 				{
 					perror ("* Parsing... Error inesperado\n");

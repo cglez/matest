@@ -17,8 +17,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, 
- * Boston, MA 02111-1307, USA. 
+ * Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -41,12 +41,13 @@
  *
  * @param symbol Letra o símbolo que representa la variable.
  * @param value Valor asignado a la variable.
+ * @return La nueva variable proposicional.
  */
 LlVar*
-ll_var_new (char symbol, int value)
+ll_var_new (char* symbol, int value)
 {
 	LlVar *var;
-	
+
 	var = (LlVar*) malloc (sizeof (LlVar));
 	if (!var)
 		{
@@ -56,7 +57,7 @@ ll_var_new (char symbol, int value)
 	else
 		{
 			var->value = value;
-			var->symbol = symbol;
+			strcpy (var->symbol, symbol);
 			return var;
 		}
 }
@@ -109,7 +110,7 @@ void
 ll_var_list_free (LlVarList *var_list)
 {
 	LlVar *var;
-	
+
 	while (*var_list)
 		{
 			var = *var_list;
@@ -125,13 +126,13 @@ ll_var_list_free (LlVarList *var_list)
  * @return Puntero a la variable si existe, o el puntero nulo en caso contrario.
  */
 LlVar*
-ll_var_list_get_var_by_symbol (LlVarList var_list, char symbol)
+ll_var_list_get_var_by_symbol (LlVarList var_list, char* symbol)
 {
 	LlVar *var = var_list;
-	
+
 	while (var)
 		{
-			if (var->symbol == symbol)
+			if (!strcmp (var->symbol, symbol))
 				return var;
 			else
 				var = var->next;
@@ -154,7 +155,7 @@ ll_var_list_add_var (LlVarList *var_list, LlVar* var)
 		{
 			/* Si la lista está vacía o la letra es previa a la primera de la lista,
 			 * el nuevo nodo es ahora el primer elemento */
-			if ((*var_list == NULL) || (var->symbol < (*var_list)->symbol))
+			if (ll_var_list_is_empty (*var_list) || strcmp (var->symbol, (*var_list)->symbol) < 0)
 				{
 					/* Añade la lista después del nodo */
 					var->next = *var_list;
@@ -166,7 +167,7 @@ ll_var_list_add_var (LlVarList *var_list, LlVar* var)
 			else
 				{
 					aux = *var_list;
-					while (aux->next && aux->symbol < var->symbol)
+					while (aux->next && strcmp (aux->symbol, var->symbol) < 0)
 						aux = aux->next;
 					var->next = aux->next;
 					aux->next = var;
@@ -183,7 +184,7 @@ ll_var_list_length (LlVarList var_list)
 {
 	unsigned int  length = 0;
 	LlVar     *var = var_list;
-	
+
 	if (ll_var_list_is_empty (var_list))
 		return 0;
 	else
@@ -211,12 +212,14 @@ ll_logic_add_formula_vars (LlLogic* logic, char formula[])
 {
 	LlVar     *var;
 	int       i;
-	
+	char      symbol[2];
+
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
+			sprintf (symbol, "%c", formula[i]);
 			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
 				{
-					var = ll_var_new (formula[i], 0);
+					var = ll_var_new (symbol, 0);
 			    ll_var_list_add_var (&logic->vars, var);
 				}
 		}
