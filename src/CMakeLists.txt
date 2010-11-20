@@ -12,7 +12,7 @@ SET(SRC
     evaluation.c
     user.c
     user_gui.c
-    user_text.c)
+    user_tui.c)
 SET(LIBSRC
     logics
     ${GTK_LIBRARIES})
