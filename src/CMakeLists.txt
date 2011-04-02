@@ -1,6 +1,7 @@
 find_package(PkgConfig)
 pkg_check_modules(GTK gtk+-2.0)
 include_directories(${GTK_INCLUDE_DIRS})
+include_directories(/home/cgg/Proyectos/gtk-win32)
 #find_package(GTK 2.6 REQUIRED gtk)
 #find_package(GTK2 2.6 REQUIRED gtk)
 #include_directories(${GTK_INCLUDE_DIRS})

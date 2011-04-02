@@ -1,3 +1,29 @@
+ MaTest-1.3.2 (29/03/11)
+
+ *  Lector de matrices. Se ha añadido una opción para abrir archivos de matrices
+    en la interfaz gráfica.
+
+
+
+ MaTest-1.3 (01/03/11)
+
+ *  Parser de fórmulas en notación estándar.
+
+ *  Rediseño de la interfaz gráfica.
+
+ *  Nueva representación de los resultados de la evaluación.
+
+ *  Los tipos de datos definidos y las funciones adquieren una estructura más
+    nítida al diferenciar en los tipos de datos el contenido de éstos de su
+    implementación para el manejo dentro del programa. Se relega a Glib la admi-
+    nistración de memoria y el manejo de listas. liblogics depende de Glib.
+
+ *  Manejo de texto basado en buffers.
+
+ *  El modo texto queda inhabilitado hasta adaptarlo a la notación estándar.
+
+
+
  MaTest-1.2 (03/03/10)
 
  *  La capa base del programa se ha movido a una librería llamada liblogics.
@@ -37,6 +63,7 @@
     La evaluación se realiza pulsando Evaluar.
 
 
+
  MaTest-1.0a (08/12/08)
 
  *  Historia del programa.
@@ -44,6 +71,7 @@
  *  Mejoras en las estadísticas de la evaluación.
  
  *  Pequeña reestructuración del código.
+
 
 
  MaTest-1.0 (25/11/08)
@@ -83,6 +111,7 @@
  *  Posibilidad de seleccionar los valores mostrados en la evaluación, entre:
     todos, valores designados o valores no designados.
     También se muestran estadísticas después de la evaluación.
+
 
 
  MaTest-0.1 (First release)

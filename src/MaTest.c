@@ -3,7 +3,7 @@
  * MaTest.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2011 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-/**
- * @file MaTest.c
+/** @file MaTest.c
  *
  * Este archivo contiene la función principal "main" y el manejador de opciones
  * de línea de comandos.
@@ -36,7 +34,6 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <gtk/gtk.h>
-
 #include "MaTest.h"
 
 
@@ -79,7 +76,7 @@ main (int argc, char *argv[])
 	        use_tui = false;
 	FILE    *mfile;
 	char    filename[BUFSIZ];
-	Work*   work;
+	Work    *work;
 	static struct option long_options[] =
 		{
 			{"version",    no_argument,       0, 'v'},
@@ -100,15 +97,8 @@ main (int argc, char *argv[])
 	textdomain (GETTEXT_PACKAGE);
 #endif
 
-	work = (Work*) malloc (sizeof (Work));
 	/* Definimos los elementos del trabajo inicial. */
-	//work->logic = (LlLogic*) malloc (sizeof (LlLogic));
-	//work->DIM = 0;
-	//work->logic->ucons = NULL;
-	//work->logic->bcons = NULL;
-	work->logic = NULL;
-	work->formula_pn[0] = '\0';
-	work->wff = NULL;
+	work = g_new0 (Work, 1);
 	work->evaluation_style = ALL;  /* Muestra todos los valores por defecto */
 
 	while ((c = getopt_long (argc, argv, "d:m:f:s:tghv", long_options, &option_index)) != -1)
@@ -127,7 +117,7 @@ main (int argc, char *argv[])
 					initmdv = atoi (optarg);
 					break;
 				case 'f':
-					strcpy (work->formula_pn, optarg);
+					strcpy (work->formula, optarg);
 					break;
 				case 'e':
 					if (strcmp (optarg, "a") == 0 || strcmp (optarg, "all") == 0)
@@ -174,8 +164,7 @@ main (int argc, char *argv[])
 		}
 
 	if (!work->logic) {
-		work->logic = (LlLogic*) malloc (sizeof (LlLogic));
-		work->DIM = 0;
+		work->logic = g_new0 (LlLogic, 1);
 	}
 
 	/* Establecemos la dimensión de las matrices */
@@ -195,22 +184,18 @@ main (int argc, char *argv[])
 	ll_logic_set_default_bcons_lukasiewicz (work->logic);
 
 	/* Establecemos la fórmula si está bien formada */
-	if (work->formula_pn[0])
-		if (ll_formula_is_wff_pn (work->formula_pn, work->logic))
-			{
-				ll_var_list_free (&work->logic->vars);
-				ll_logic_add_formula_vars (work->logic, work->formula_pn);
-				ll_wff_parse_formula_pn (&work->wff, work->formula_pn, work->logic);
-			}
-		else
+	work->wff = NULL;
+	if (work->formula[0]) {
+		ll_wff_parse_formula (&work->wff, work->formula, work->logic);
+		if (!work->wff) {
 			work->formula_pn[0] = '\0';  /* si no, la dejamos sin definir */
-
+		}
+	}
 	/* Pasamos al modo seleccionado, con interfaz gráfica por defecto */
-	if (use_tui)
-		if (use_gui)
-			mode_gui (argc, argv, work);
-		else
-			mode_tui (work);
+	if (use_gui)
+		mode_gui (argc, argv, work);
+	else if (use_tui)
+		mode_tui (work);
 	else
 		mode_gui (argc, argv, work);
 

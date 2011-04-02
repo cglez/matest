@@ -3,7 +3,7 @@
  * user.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2011 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,24 +42,24 @@
  * @return Caracter encontrado; si es una letra, en minúscula.
  */
 char
-readin (char str[], char pattern[])
+readin (char *str, const char *pattern)
 {
 	char ch;
 	int i;
 
 	fflush (stdout);
 	for (;;)
+	{
+		fgets (str, BUFSIZ, stdin);
+		ch = '\0';
+		for (i = 0; str[i]; i++)
 		{
-			fgets (str, BUFSIZ, stdin);
-			ch = 0;
-			for (i = 0; str[i]; i++)
-				{
-					if (isupper (ch = str[i]))
-						ch = tolower (ch);
-					if (strchr (pattern, ch))
-						return ch;
-				}
+			if (isupper (ch = str[i]))
+				ch = tolower (ch);
+			if (strchr (pattern, ch))
+				return ch;
 		}
+	}
 }
 
 
@@ -94,7 +94,7 @@ screen_clear (void)
 void
 make_pause (void)
 {
-	printf (_("\nPulse Intro para continuar... "));
+	printf (_("Pulse Intro para continuar... "));
 	fflush (stdout);
 	while (getchar() != '\n');
 }
@@ -123,20 +123,20 @@ void
 menu_usage (void)
 {
 	printf (_("Uso:\n"
-						"        matest [opciones] [archivo]\n"
-						"\n"
-						"Opciones:\n"
-						"        -h, --help                          muestra esta ayuda y termina\n"
-						"        -v, --version                       muestra la versión y termina\n"
-						"        -g, --gui                           con interfaz gráfica (por defecto)\n"
-						"        -t, --text                          modo interactivo en modo texto\n"
-						"        -d, --dimmension <entero>           dimensión de las matrices\n"
-						"        -m, --mdv        <entero>           mínimo valor designado\n"
-						"        -f, --formula    <formula>          fórmula que se evaluará\n"
-						"        -e, --evaluate                      valores que se evaluarán:\n"
-						"                         a, all              - todos\n"
-						"                         d, designated       - designados\n"
-						"                         n, not-designated   - no designados\n"));
+	          "      matest [opciones] [archivo]\n"
+	          "\n"
+	          "Opciones:\n"
+	          "      -h, --help                            muestra esta ayuda y termina\n"
+	          "      -v, --version                         muestra la versión y termina\n"
+	          "      -g, --gui                             con interfaz gráfica (por defecto)\n"
+	          "      -t, --text                            modo interactivo en modo texto\n"
+	          "      -d, --dimmension   <entero>           dimensión de las matrices\n"
+	          "      -m, --mdv          <entero>           mínimo valor designado\n"
+	          "      -f, --formula      <formula>          fórmula que se evaluará\n"
+	          "      -e, --evaluate                        valores que se evaluarán:\n"
+	          "                         a, all               - todos\n"
+	          "                         d, designated        - designados\n"
+	          "                         n, not-designated    - no designados\n"));
 }
 
 
@@ -161,56 +161,149 @@ menu_init (void)
 /*
  * Lector de archivos con matrices.
  */
+// FIXME Comentar el código
+// FIXME Liberar la memoria de las conectivas usadas si algo falla
 int
-read_matricesfile (Work *work, FILE *file)
+read_matricesfile (Work *work, char *filename)
 {
-	LlLogic  *logic;
-	LlUCon   *ucon;
-	LlBCon   *bcon;
-	char     con_symbol = 0,
-	         auxchar,
-	         line[BUFSIZ], *auxstr,
-	         value[BUFSIZ/2];
-	int      i, j, dim,
-	         row = 0, col = 0,
-	         vector[BUFSIZ/2],
-	         **mtx = NULL;
+	FILE       *file;
+	GList      *ucon_list = NULL,
+	           *bcon_list = NULL;
+	LlUCon     *ucon;
+	LlBCon     *bcon;
+	char        con_symbol[SLEN + 1],
+	            strsymb[SLEN + 1],
+	            auxsymb[BUFSIZ/2],
+	            line[BUFSIZ], *auxstr,
+	            value[BUFSIZ/2];
+	int         i, j, d, dim = 0, mdv = 0,
+	            row = 0, col = 0,
+	            vector[BUFSIZ/2],
+	           **mtx = NULL;
 
+	/* Comprobamos que el fichero se pueda abrir para lectura. */
+	file = fopen (filename, "r");
 	if (file == NULL) {
-		perror ("El archivo no existe.\n");
+		perror ("El archivo no existe o no tiene permisos para su lectura.\n");
 		return 1;
-	}
-
-	logic = (LlLogic*) malloc (sizeof (LlLogic));
-	if (!logic) {
-		perror ("Memoria insuficiente.\n");
-		return 2;
 	}
 
 	while (!feof (file)) {
 		while (fgets (line, BUFSIZ, file)) {
-			if (sscanf (line, "%c", &auxchar)) {
-				if (isspace (auxchar)) {
-					if (mtx) {
-						if (mtx[1][0] == -1 && con_symbol != 0) {
+			if (sscanf (line, "%s", auxsymb) != EOF) {
+				if (auxsymb[0] == '#') {
+					printf ("Se ha encontrado un comentario. Pasamos a la siguiente línea.\n");
+					break;
+				}
+				else if (strcmp ("MDV", auxsymb) == 0) {
+					sscanf (line, "%s%u", auxsymb, &mdv);
+				}
+				else if (!isdigit (auxsymb[0])) {
+					if (ll_ucon_list_get_ucon_by_symbol (ucon_list, con_symbol) ||
+					    ll_bcon_list_get_bcon_by_symbol (bcon_list, con_symbol)) {
+						fprintf (stderr, "Definición reiterada de la conectiva %s.\n", con_symbol);
+						return 6;
+					}
+					else {
+						printf ("No hay un símbolo de conectiva declarado. Se toma \'%s\'.\n", auxsymb);
+						if (strlen (auxsymb) > SLEN) {
+							printf ("El símbolo de la conectiva encontrado es demasiado largo.\n");
+							return 10;
+						}
+						else {
+							strcpy (con_symbol, auxsymb);
+						}
+					}
+					break;
+				}
+				else if (isdigit (auxsymb[0])) {
+					col = 0;
+					auxstr = line;
+					while (sscanf (auxstr, "%u", &vector[col]) != EOF) {
+						printf ("Se ha encontrado el valor \"%i\".\n", vector[col]);
+						sprintf (value, "%u", vector[col]);
+						auxstr = strstr (auxstr, value);
+						auxstr = auxstr + strlen (value);
+						col++;
+					}
+					for (i = 0; i < col; i++) {
+						printf ("v[%i]:%i ", i, vector[i]);
+					}
+					printf ("Guardado.\n");
+					if (col < 2) {
+						printf ("Muy pocos elementos para una conectiva unaria.\n");
+						return 11;
+					}
+					else {
+						d = col;
+					}
+					printf ("Comprobamos dimension.\n");
+					if (dim == 0) {
+						dim = d;
+						printf ("Definida dimension = %i.\n", dim);
+					}
+					else if (dim != d) {
+						perror ("El número de elementos de una fila es distinto al esperado.\n");
+						return 3;
+					}
+					printf ("Declaramos la matriz si no existía.\n");
+					if (!mtx) {
+						mtx = (int**) calloc (dim, sizeof (int*));
+						for (i = 0; i < dim; i++) {
+							mtx[i] = (int*) calloc (dim, sizeof (int));
+						}
+						mtx[1][0] = -1;
+						printf ("Declarada.\n");
+					}
+					else {
+						printf ("Ya estaba declarada.\n");
+						if (row < d)
+							row++;
+						else {
+							printf ("Demasiadas filas para una matriz.\n");
+							return 8;
+						}
+					}
+					if (row > dim) {
+						perror ("Una matriz tiene más filas de las esperadas.\n");
+						return 4;
+					}
+					for (i = 0; i < dim; i++) {
+						if (vector[i] > dim) {
+							perror ("Hay elementos con valor mayor que la dimensión de su matriz.\n");
+							return 5;
+						}
+					}
+					for (col = 0; col < dim; col++)
+						mtx[row][col] = vector[col];
+					for (i = 0; i < dim; i++)
+						printf ("[%i][%i]:%i ", row, i, mtx[row][i]);
+					putchar ('\n');
+				}
+			}
+			else if (sscanf (line, "%s", auxsymb) == EOF) {
+				if (mtx) {
+						if (mtx[1][0] == -1 && con_symbol[0] != '\0') {
 							printf ("* Guardamos una conectiva unaria.\n");
-							ucon = ll_ucon_new (&con_symbol, mtx[0], logic->dimension);
-							ll_ucon_list_append_ucon (&logic->ucons, ucon);
-							con_symbol = 0;
+							ucon = ll_ucon_new (con_symbol, con_symbol, mtx[0], dim);
+							ucon_list = ll_ucon_list_append (ucon_list, ucon);
+							con_symbol[0] = '\0';
 							row = 0;
-							for (i = 0; i < logic->dimension; i++)
+							for (i = 0; i < dim; i++) {
 								free (mtx[i]);
+							}
 							free (mtx);
 							mtx = NULL;
 						}
-						else if (con_symbol != 0)	{
+						else if (con_symbol[0] != '\0')	{
 							printf ("** Guardamos una conectiva binaria.\n");
-							bcon = ll_bcon_new (&con_symbol, mtx, logic->dimension);
-							ll_bcon_list_append_bcon (&logic->bcons, bcon);
-							con_symbol = 0;
+							bcon = ll_bcon_new (con_symbol, con_symbol, mtx, dim);
+							bcon_list = ll_bcon_list_append (bcon_list, bcon);
+							con_symbol[0] = '\0';
 							row = 0;
-							for (i = 0; i < logic->dimension; i++)
+							for (i = 0; i < dim; i++) {
 								free (mtx[i]);
+							}
 							free (mtx);
 							mtx = NULL;
 						}
@@ -219,86 +312,51 @@ read_matricesfile (Work *work, FILE *file)
 							return 9;
 						}
 					}
-					break;
-				}
-				else if (isalpha (auxchar)) {
-					if (con_symbol == 0) {
-						printf ("No hay un símbolo de conectiva declarado.\n");
-						con_symbol = auxchar;
-					}
-					else if (ll_ucon_list_get_ucon_by_symbol (logic->ucons, &con_symbol) ||
-									 ll_bcon_list_get_bcon_by_symbol (logic->bcons, &con_symbol)) {
-						fprintf (stderr, "Definición reiterada de la conectiva %c.\n", con_symbol);
-						return 6;
-					}
-					break;
-				}
-			}
-			if (sscanf (line, "%u", &i)) {
-				col = 0;
-				auxstr = line;
-				while (sscanf (auxstr, "%u", &vector[col]) != EOF) {
-					printf ("Se ha encontrado el valor \"%i\".\n", vector[col]);
-					sprintf (value, "%u", vector[col]);
-					auxstr = strstr (auxstr, value);
-					auxstr = auxstr + strlen (value);
-					col++;
-				}
-				for (i = 0; i < col; i++)
-					printf ("vector[%i]:%i ", i, vector[i]);
-				printf ("Guardado.\n");
-				dim = col;
-				printf ("Comprobamos dimension.\n");
-				if (logic->dimension == 0) {
-					logic->dimension = dim;
-					printf ("Definida dimension = %i.\n", logic->dimension);
-				}
-				else if (logic->dimension != dim) {
-					perror ("El número de elementos de una fila es distinto al esperado.\n");
-					return 3;
-				}
-				printf ("Declaramos la matriz si no existía.\n");
-				if (!mtx) {
-					mtx = (int**) calloc (logic->dimension, sizeof (int*));
-					for (i = 0; i < dim; i++)
-					mtx[i] = (int*) calloc (logic->dimension, sizeof (int));
-					mtx[1][0] = -1;
-					printf ("Declarada.\n");
-				}
-				else {
-					printf ("Ya estaba declarada.\n");
-					if (row < logic->dimension)
-						row++;
-					else {
-						printf ("Demasiadas filas para una matriz.\n");
-						return 8;
-					}
-				}
-				if (row > logic->dimension) {
-					perror ("Una matriz tiene más filas de las esperadas.\n");
-					return 4;
-				}
-				for (i = 0; i < logic->dimension; i++) {
-					if (vector[i] > logic->dimension) {
-						perror ("Hay elementos mayores que la dimensión de su matriz.\n");
-						return 5;
-					}
-				}
-				for (col = 0; col < logic->dimension; col++)
-					mtx[row][col] = vector[col];
-				for (i = 0; i < logic->dimension; i++)
-					printf ("mtx[%i][%i]:%i ", row, i, mtx[row][i]);
-				putchar ('\n');
 			}
 		}
 	}
-	if (!work->logic)
-		work->logic = (LlLogic*) malloc (sizeof (LlLogic));
-	if (!work->logic) {
-		perror ("Memoria insuficiente.\n");
-		return 2;
+	if (mtx) {
+		if (mtx[1][0] == -1 && con_symbol[0] != '\0') {
+			printf ("* Guardamos una conectiva unaria.\n");
+			ucon = ll_ucon_new (con_symbol, con_symbol, mtx[0], dim);
+			ucon_list = ll_ucon_list_append (ucon_list, ucon);
+			con_symbol[0] = '\0';
+			row = 0;
+			for (i = 0; i < dim; i++) {
+				free (mtx[i]);
+			}
+			free (mtx);
+			mtx = NULL;
+		}
+		else if (con_symbol[0] != '\0')	{
+			printf ("** Guardamos una conectiva binaria.\n");
+			bcon = ll_bcon_new (con_symbol, con_symbol, mtx, dim);
+			bcon_list = ll_bcon_list_append (bcon_list, bcon);
+			con_symbol[0] = '\0';
+			row = 0;
+			for (i = 0; i < dim; i++) {
+				free (mtx[i]);
+			}
+			free (mtx);
+			mtx = NULL;
+		}
+		else {
+			printf ("Hay una matriz sin símbolo asociado.\n");
+			return 9;
+		}
 	}
-	logic->mdv = logic->dimension - 1;
-	work->logic = logic;
+	
+	ll_ucon_list_free (work->logic->ucons);
+	work->logic->ucons = ucon_list;
+	ll_bcon_list_free (work->logic->bcons, work->DIM);
+	work->logic->bcons = bcon_list;
+	work->DIM = dim;
+	if (mdv > 0 && mdv < dim) {
+		work->MDV = mdv;
+	}
+	else {
+		work->MDV = work->MAXV;
+	}
+	work->logic_modified = TRUE;
 	return 0;
 }

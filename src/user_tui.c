@@ -3,7 +3,7 @@
  * user_text.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2011 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
  */
 
 
-/**
- * @file user.c
+/** @file user.c
  *
  * Este fichero contiene las funciones que se encargan de interactuar con el
  * usuario. Aquí se encuentran funciones para la entrada de datos (selección de
@@ -51,7 +50,7 @@ void menu_header (void)
 	screen_clear();
 	printf ("\n"
 	        "                            --- MaTest %s ---\n"
-	        "                     Matrix Tester for logical matrices\n"
+	        "                        Tester de matrices lógicas\n"
 	        "\n", VERSION);
 }
 
@@ -65,47 +64,48 @@ void menu_header (void)
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
-tui_ucon_add_custom (LlLogic* logic, char* symbol)
+tui_ucon_add_custom (LlLogic* logic, const char *symbol)
 {
-	LlUCon      *ucon;
-	char        value[10];
-	int         *matrix;
-	int         i;
+	LlUCon    *ucon;
+	char      *value;
+	int       *matrix;
+	int        i;
 
 	matrix = (int*) calloc (DIM, sizeof (int));
+	value = (char*) calloc (10, sizeof (char));
 
 	/* Iniciamos todos los valores a -1 para el control de errores */
-	for (i = 0; i < DIM; i++)
+	for (i = 0; i < DIM; i++) {
 		matrix[i] = -1;
+	}
 
 	/* Preguntamos por los nuevos valores, uno a uno */
-	for (i = 0; i < DIM; i++)
-		{
-			do
-				{
-					printf (" %s %i: ", symbol, i);
-					(void) fgets (value, 9, stdin);
-					/* si se pulsa Enter sin introducir un valor, se toma el último
-					   introducido, si no es el primero */
-					if (value[0] == '\n')
-						{
-							if (i == 0)
-								matrix[i] = -1;
-							else
-								{
-									matrix[i] = matrix[i - 1];
-									printf (" %s %i: %i\n", symbol, i, matrix[i]);
-								}
-						}
-					else
-						sscanf (value, "%i", &matrix[i]);
+	for (i = 0; i < DIM; i++) {
+		do {
+			printf (" %s %i: ", symbol, i);
+			value = fgets (value, 9, stdin);
+			/* si se pulsa Enter sin introducir un valor, si no es el primero, se toma
+			 * el último introducido */
+			if (value && value[0] == '\n') {
+				if (i == 0) {
+					matrix[i] = -1;
 				}
-			while (matrix[i] < 0 || matrix[i] >= DIM);
+				else {
+					matrix[i] = matrix[i - 1];
+					printf (" %s %i: %i\n", symbol, i, matrix[i]);
+				}
+			}
+			else {
+				sscanf (value, "%i", &matrix[i]);
+			}
 		}
+		while (matrix[i] < 0 || matrix[i] >= DIM);
+	}
 
-	ucon = ll_ucon_new (symbol, matrix, DIM);
-	ll_ucon_list_append_ucon (&logic->ucons, ucon);
+	ucon = ll_ucon_new (symbol, symbol, matrix, DIM);
+	logic->ucons = ll_ucon_list_append (logic->ucons, ucon);
 	free (matrix);
+	free (value);
 }
 
 
@@ -118,140 +118,59 @@ tui_ucon_add_custom (LlLogic* logic, char* symbol)
  * autómaticamente a la posición actual el último valor introducido.
  */
 void
-tui_bcon_add_custom (LlLogic* logic, char* symbol)
+tui_bcon_add_custom (LlLogic* logic, const char *symbol)
 {
-	LlBCon      *bcon;
-	char        value[10];
-	int         **matrix;
-	int         i, j;
+	LlBCon    *bcon;
+	char      *value;
+	int       **matrix;
+	int        i, j;
 
+	value = (char*) calloc (10, sizeof (char));
 	matrix = (int**) calloc (DIM, sizeof (int*));
-	for (i = 0; i < DIM; i++)
+	for (i = 0; i < DIM; i++) {
 		matrix[i] = calloc (DIM, sizeof (int));
+	}
 
 	/* Iniciamos todos los valores a -1 para el control de errores */
-	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				matrix[i][j] = -1;
+	for (i = 0; i < DIM; i++) {
+		for (j = 0; j < DIM; j++) {
+			matrix[i][j] = -1;
 		}
+	}
 
 	/* Preguntamos por los nuevos valores, uno a uno */
-	for (i = 0; i < DIM; i++)
-		{
-			for (j = 0; j < DIM; j++)
-				{
-					do
-						{
-							printf (" %s %i %i: ", symbol, i, j);
-							(void) fgets (value, 9, stdin);
-							/* si se pulsa Enter sin introducir un valor, se toma el último
-					       introducido, si no es el primero */
-							if (value[0] == '\n')
-								{
-									if (j == 0 && i == 0)
-										matrix[i][j] = -1;
-									else if (j == 0)
-										{
-											matrix[i][j] = matrix[i - 1][MAXV];
-											printf (" %s %i %i: %i\n", symbol, i, j, matrix[i][j]);
-										}
-									else
-										{
-											matrix[i][j] = matrix[i][j - 1];
-											printf (" %s %i %i: %i\n", symbol, i, j, matrix[i][j]);
-										}
-								}
-							else
-								sscanf (value, "%i", &matrix[i][j]);
-						}
-					while (matrix[i][j] < 0 || matrix[i][j] >= DIM);
+	for (i = 0; i < DIM; i++) {
+		for (j = 0; j < DIM; j++) {
+			do {
+				printf (" %s %i %i: ", symbol, i, j);
+				value = fgets (value, 9, stdin);
+				/* si se pulsa Enter sin introducir un valor, si no es el primer valor,
+				 * se toma el último introducido */
+				if (value && value[0] == '\n') {
+					if (j == 0 && i == 0) {
+						matrix[i][j] = -1;
+					}
+					else if (j == 0) {
+						matrix[i][j] = matrix[i - 1][MAXV];
+						printf (" %s %i %i: %i\n", symbol, i, j, matrix[i][j]);
+					}
+					else {
+						matrix[i][j] = matrix[i][j - 1];
+						printf (" %s %i %i: %i\n", symbol, i, j, matrix[i][j]);
+					}
 				}
+				else {
+					sscanf (value, "%i", &matrix[i][j]);
+				}
+			}
+			while (matrix[i][j] < 0 || matrix[i][j] >= DIM);
 		}
+	}
 
-	bcon = ll_bcon_new (symbol, matrix, DIM);
-	ll_bcon_list_append_bcon (&logic->bcons, bcon);
+	bcon = ll_bcon_new (symbol, symbol, matrix, DIM);
+	logic->bcons = ll_bcon_list_append (logic->bcons, bcon);
+	free (value);
 	free (matrix);
-}
-
-
-/*
- * Imprime la matriz de una conectiva unaria en forma de tabla, marcando los
- * valores designados con asterisco.
- */
-void
-print_ucon_matrix (LlUCon* ucon, LlLogic* logic)
-{
-	int i;
-
-	printf ("\n");
-
-	printf ("  %s |", ucon->symbol);
-	for (i = 0; i < DIM; i++)
-		{
-			if (i >= MDV)
-				printf (" *%i", i);
-			else
-				printf ("  %i", i);
-		}
-
-	printf ("\n----+");
-	for (i = 0; i < DIM; i++)
-		printf ("---");
-
-	printf ("-\n" "    |");
-	for (i = 0; i < DIM; i++)
-		{
-			if (ucon->matrix[i] >= MDV)
-				printf (" *%i", ucon->matrix[i]);
-			else
-				printf ("  %i", ucon->matrix[i]);
-		}
-	printf ("\n");
-}
-
-
-/*
- * Imprime la matriz de una conectiva binaria en forma de tabla, marcando los
- * valores designados con asterisco.
- */
-void
-print_bcon_matrix (LlBCon* bcon, LlLogic* logic)
-{
-	int i, j;
-
-	printf ("\n");
-
-	printf ("  %s |", bcon->symbol);
-	for (i = 0; i < DIM; i++)
-		{
-			if (i >= MDV)
-				printf (" *%i", i);
-			else
-				printf ("  %i", i);
-		}
-
-	printf ("\n----+");
-	for (i = 0; i < DIM; i++)
-		printf ("---");
-
-	printf ("-\n");
-	for (i = 0; i < DIM; i++)
-		{
-			if (i >= MDV)
-				printf (" *%i |", i);
-			else
-				printf ("  %i |", i);
-
-			for (j = 0; j < DIM; j++)
-				{
-					if (bcon->matrix[i][j] >= MDV)
-						printf (" *%i", bcon->matrix[i][j]);
-					else
-						printf ("  %i", bcon->matrix[i][j]);
-				}
-			printf ("\n");
-		}
 }
 
 
@@ -262,22 +181,22 @@ print_bcon_matrix (LlBCon* bcon, LlLogic* logic)
 void
 print_matrices (LlLogic* logic)
 {
-	LlUCon* ucon;
-	LlBCon* bcon;
+	GList   *iter;
+	gchar   *straux;
 
-	ucon = logic->ucons;
-	while (ucon)
-		{
-			print_ucon_matrix (ucon, logic);
-			ucon = ucon->next;
-		}
+	for (iter = logic->ucons; iter; iter = iter->next) {
+		straux = sprint_ucon_matrix ((LlUCon*) iter->data, logic);
+		printf ("%s", straux);
+		g_free (straux);
+		printf ("\n");
+	}
 
-	bcon = logic->bcons;
-	while (bcon)
-		{
-			print_bcon_matrix (bcon, logic);
-			bcon = bcon->next;
-		}
+	for (iter = logic->bcons; iter; iter = iter->next) {
+		straux = sprint_bcon_matrix ((LlBCon*) iter->data, logic);
+		printf ("%s", straux);
+		g_free (straux);
+		printf ("\n");
+	}
 }
 
 
@@ -295,48 +214,52 @@ print_matrices (LlLogic* logic)
  */
 void menu_info (Work* work)
 {
-	LlUCon  *ucon;
-	LlBCon  *bcon;
+	GList    *iter;
 
 	printf (_("  Dimensión de las matrices:  "));
-	if (work->DIM)
+	if (work->DIM) {
 		printf ("%ix%i", work->DIM, work->DIM);
-	else
+	}
+	else {
 		printf (_("Sin definir"));
+	}
 
 	printf (_("\n  Mínimo Valor Designado:     "));
-	if (work->MDV)
+	if (work->MDV) {
 		printf ("%i", work->MDV);
-	else
+	}
+	else {
 		printf (_("Sin definir"));
+	}
 
 	printf (_("\n  Conectivas unarias:         "));
-	ucon = work->logic->ucons;
-	while (ucon)
-		{
-			printf ("%s ", ucon->symbol);
-			ucon = ucon->next;
-		}
+	for (iter = work->logic->ucons; iter; iter = iter->next) {
+		printf ("%s ", ((LlUCon*) iter->data)->symbol);
+	}
 
 	printf (_("\n  Conectivas binarias:        "));
-	bcon = work->logic->bcons;
-	while (bcon)
-		{
-			printf ("%s ", bcon->symbol);
-			bcon = bcon->next;
-		}
+	for (iter = work->logic->bcons; iter; iter = iter->next) {
+		printf ("%s ", ((LlBCon*) iter->data)->symbol);
+	}
 
-	if (work->formula_pn[0])
+	if (work->formula_pn[0]) {
 		printf (_("\n  Fórmula:                    %s"), work->formula_pn);
-	else
+	}
+	else {
 		printf (_("\n  Fórmula:                    Sin definir"));
+	}
 
-	if (work->evaluation_style == ALL)
-		printf (_("\n  Evaluar valores:            [Todos]  Designados  No designados"));
-	if (work->evaluation_style == DESIGNATED)
-		printf (_("\n  Evaluar valores:            Todos  [Designados]  No designados"));
-	if (work->evaluation_style == NOT_DESIGNATED)
-		printf (_("\n  Evaluar valores:            Todos  Designados  [No designados]"));
+	switch (work->evaluation_style) {
+		case ALL :
+			printf (_("\n  Evaluar valores:            [Todos]  Designados  No designados"));
+			break;
+		case DESIGNATED :
+			printf (_("\n  Evaluar valores:            Todos  [Designados]  No designados"));
+			break;
+		case NOT_DESIGNATED :
+			printf (_("\n  Evaluar valores:            Todos  Designados  [No designados]"));
+			break;
+	}
 
 	printf ("\n\n");
 }
@@ -425,271 +348,274 @@ void menu_index (Work* work)
 int
 mode_tui (Work* work)
 {
-	char opt, symbol[4], answer[BUFSIZ], formula[BUFSIZ], namefile[BUFSIZ];
-	int  newdim;
-	FILE *outfile;
+	char     opt,
+	         symbol[4],
+	        *answer,
+	         formula[BUFSIZ],
+	         namefile[BUFSIZ],
+          *buffer = NULL;
+	int      newdim;
+	FILE    *outfile;
+
+	answer = (char*) calloc (BUFSIZ, sizeof (char));
 
 	/* Manejador de opciones interactivo */
-	for (;;)
-		{
-			menu_index (work);
-			opt = readin (answer, "dmvpwnkfeahq");
+	for (;;) {
+		menu_index (work);
+		opt = readin (answer, "dmvpwnkfeahq");
 
-			switch (opt)
-				{
-					/* Redefinir la dimensión de las matrices */
-					case 'd':
-						do
-							{
-								printf (_(" Nueva dimensión de las matrices ( <1 ): "));
-								fgets (answer, BUFSIZ, stdin);
-								sscanf (answer, "%i", &newdim);
-							}
-						while (newdim < 2);
-						ll_ucon_list_free (&work->logic->ucons);
-						ll_bcon_list_free (&work->logic->bcons, work->DIM);
-						work->DIM = newdim;
-						work->MDV = work->MAXV;
-						ll_logic_set_default_ucons_lukasiewicz (work->logic);
-				    ll_logic_set_default_bcons_lukasiewicz (work->logic);
-						/*
-						if (work->logic_modified)
-							{
-								printf (_(" Se han modificado las matrices por defecto.\n"
-								          " ¿Desea guardar los cambios? (s/N)\n"));
-								opt = readin (answer, "ysn\n");
-								switch (opt)
-									{
-										case 'y':
-										case 's':
-											write_matrices (file, work->logic);
-										case 'n':
-							*/
-				    break;
-
-					/* Cambia los valores mostrados en la evaluación */
-					case 'v':
-						screen_clear ();
-						menu_header ();
-						menu_info (work);
-						printf (_(" ¿Qué valores quiere que sean evaluados?\n"
-						          " a: Todos, d: Designados, n: No designados: "));
-						opt = readin (answer, "adn\n");
+		switch (opt) {
+			/* Redefinir la dimensión de las matrices */
+			case 'd':
+				do {
+					printf (_(" Nueva dimensión de las matrices ( <1 ): "));
+					answer = fgets (answer, BUFSIZ, stdin);
+					if (answer) {
+						sscanf (answer, "%i", &newdim);
+					}
+				}
+				while (answer && answer[0] != '\n' && newdim < 2);
+				if (answer[0] == '\n') {
+					break;
+				}
+				ll_ucon_list_free (work->logic->ucons);
+				work->logic->ucons = NULL;
+				ll_bcon_list_free (work->logic->bcons, work->DIM);
+				work->logic->bcons = NULL;
+				work->DIM = newdim;
+				work->MDV = work->MAXV;
+				ll_logic_set_default_ucons_lukasiewicz (work->logic);
+		    ll_logic_set_default_bcons_lukasiewicz (work->logic);
+				/*
+				if (work->logic_modified)
+					{
+						printf (_(" Se han modificado las matrices por defecto.\n"
+						          " ¿Desea guardar los cambios? (s/N)\n"));
+						opt = readin (answer, "ysn\n");
 						switch (opt)
 							{
-								case 'a':
-									work->evaluation_style = ALL;
-									break;
-								case 'd':
-									work->evaluation_style = DESIGNATED;
-									break;
+								case 'y':
+								case 's':
+									write_matrices (file, work->logic);
 								case 'n':
-									work->evaluation_style = NOT_DESIGNATED;
-									break;
-								default:
-									break;
-							}
-						break;
+					*/
+		    break;
 
-
-					/* Cambiar el Mínimo Valor Designado */
-					case 'm':
-						screen_clear ();
-						menu_header ();
-						menu_info (work);
-						do
-							{
-								printf (_(" Nuevo Mínimo Valor Designado [1 - %i]: "), work->DIM - 1);
-								fgets (answer, BUFSIZ, stdin);
-								sscanf (answer, "%i", &work->MDV);
-							}
-						while ((work->MDV < 1) || ((work->MDV) > (work->DIM - 1)));
-						break;
-
-
-					/* Imprimir las matrices por pantalla */
-					case 'p':
-						screen_clear ();
-						print_matrices (work->logic);
-						make_pause ();
-						break;
-
-
-					/* Escribir las matrices en un archivo externo */
-					case 'w':
-						screen_clear ();
-						menu_header ();
-						menu_info (work);
-						printf (_(" Escriba el nombre del archivo donde escribir: "));
-						fgets (answer, BUFSIZ, stdin);
-						sscanf (answer, "%s", namefile);
-
-						/* Comprueba que el archivo existe */
-						outfile = fopen (namefile, "r");
-						if (outfile)
-							{
-								printf (_(" El archivo \'%s\' ya existe, ¿desea sobreescribirlo? (s/N): "), namefile);
-								opt = readin (answer, "sy\n");
-								if (opt == 'y' || opt == 's')
-									{
-										outfile = freopen (namefile, "w", outfile);
-										if (outfile)
-											{
-												write_matrices (outfile, work->logic);
-												fclose (outfile);
-											}
-										else
-											{
-												printf (_("\n No tiene permisos para escribir en este archivo.\n"));
-												make_pause ();
-											}
-									}
-								else
-									{
-										fclose (outfile);
-										fprintf (stderr, _("\n Error: no fue posible abrir el archivo.\n"));
-									}
-							}
-						else
-							{
-								outfile = fopen (namefile, "w");
-								if (outfile)
-									{
-										write_matrices (outfile, work->logic);
-										fclose (outfile);
-									}
-								else
-									{
-										fprintf (stderr, _("\n Error: no se pudo escribir en el archivo.\n"));
-										make_pause ();
-									}
-							}
-						break;
-
-
-					/* Definir una conectiva nueva personalizada o editar una existente */
-					case 'n':
-						screen_clear ();
-						menu_header ();
-						menu_info (work);
-
-						printf (_(" Símbolo para la conectiva: "));
-						opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
-						sprintf (symbol, "%c", opt);
-						if (opt == '\n')
-							break;
-						else if (ll_ucon_list_get_ucon_by_symbol (work->logic->ucons, symbol))
-							{
-								printf (_(" Ya hay una conectiva unaria con el mismo símbolo, ¿desea redefinirla? (s/N): "));
-								opt = readin (answer, "ys\n");
-								if (opt == 's' || opt == 'y')
-									{
-										ll_con_delete_by_symbol (work->logic, symbol);
-										tui_ucon_add_custom (work->logic, symbol);
-										work->logic_modified = true;
-									}
-							}
-						else if (ll_bcon_list_get_bcon_by_symbol (work->logic->bcons, symbol))
-							{
-								printf (_(" Ya hay una conectiva binaria con el mismo símbolo, ¿desea redefinirla? (s/N): "));
-								opt = readin (answer, "ys\n");
-								if (opt == 's' || opt == 'y')
-									{
-										ll_con_delete_by_symbol (work->logic, symbol);
-										tui_bcon_add_custom (work->logic, symbol);
-										work->logic_modified = true;
-									}
-							}
-						else
-							{
-								printf (_(" ¿Conectiva unaria o binaria? (u/b): "));
-								opt = readin (answer, "ub\n");
-								switch (opt)
-									{
-										case 'u':
-											tui_ucon_add_custom (work->logic, symbol);
-											work->logic_modified = true;
-											break;
-										case 'b':
-											tui_bcon_add_custom (work->logic, symbol);
-											work->logic_modified = true;
-											break;
-									}
-							}
-						break;
-
-
-					/* Eliminar una conectiva existente */
-					case 'k':
-						screen_clear ();
-						menu_header ();
-						menu_info (work);
-
-						printf (_(" Símbolo de la conectiva a borrar: "));
-						opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
-						ll_con_delete_by_symbol (work->logic, &opt);
-						break;
-
-
-					/* Pedir una fórmula bien formada y pasársela al parser */
-					case 'f':
-						screen_clear();
-						menu_header();
-						menu_info (work);
-						do
-							{
-								printf (_("\n Escriba una fórmula en notación polaca: "));
-								fgets (answer, BUFSIZ, stdin);
-								sscanf (answer, "%s", formula);
-							}
-						while (formula[0] &&
-						       !ll_formula_is_wff_pn (formula, work->logic));
-
-						if (!formula[0])
-							break;
-						else
-							strcpy (work->formula_pn, formula);
-
-						if (work->logic->vars)
-							ll_var_list_free (&work->logic->vars);
-						ll_logic_add_formula_vars (work->logic, work->formula_pn);
-
-						if (work->wff)
-							ll_wff_free (&work->wff);
-						ll_wff_parse_formula_pn (&work->wff, work->formula_pn, work->logic);
-
-						formula[0] = '\0';
-						break;
-
-
-					/* Hacer la evaluación */
-					case 'e':
-						if (work->formula_pn[0] == 0)
-							printf (_("\n No se ha introducido ninguna fórmula bien formada.\n"));
-						else
-							{
-								screen_clear ();
-								evaluation (stdout, work);
-							}
-						make_pause ();
-						break;
-
-
-					/* Mostrar la página "Acerca de" */
+			/* Cambiar los valores mostrados en la evaluación */
+			case 'v':
+				screen_clear ();
+				menu_header ();
+				menu_info (work);
+				printf (_(" ¿Qué valores quiere que sean evaluados?\n"
+				          " a: Todos, d: Designados, n: No designados: "));
+				opt = readin (answer, "adn\n");
+				switch (opt) {
 					case 'a':
-						menu_about ();
-						make_pause ();
+						work->evaluation_style = ALL;
 						break;
+					case 'd':
+						work->evaluation_style = DESIGNATED;
+						break;
+					case 'n':
+						work->evaluation_style = NOT_DESIGNATED;
+						break;
+					default:
+						break;
+				}
+				break;
 
+			/* Cambiar el Mínimo Valor Designado */
+			case 'm':
+				screen_clear ();
+				menu_header ();
+				menu_info (work);
+				do {
+					printf (_(" Nuevo Mínimo Valor Designado [1 - %i]: "), work->MAXV);
+					answer = fgets (answer, BUFSIZ, stdin);
+					if (answer) {
+						sscanf (answer, "%i", &work->MDV);
+					}
+				}
+				while (work->MDV < 1 || work->MDV > work->MAXV);
+				break;
 
-					/* Salir pidiendo confirmación */
-					case 'q':
-						printf (_(" ¿Está seguro? (s/N): "));
-						fgets (answer, BUFSIZ, stdin);
-						if (answer[0] == 's' || answer[0] == 'y')
-							return 0;
-						else
+			/* Imprimir las matrices por pantalla */
+			case 'p':
+				screen_clear ();
+				print_matrices (work->logic);
+				make_pause ();
+				break;
+
+			/* Escribir las matrices en un archivo externo */
+			case 'w':
+				screen_clear ();
+				menu_header ();
+				menu_info (work);
+				printf (_(" Nombre del archivo donde escribir: "));
+				answer = fgets (answer, BUFSIZ, stdin);
+				if (answer) {
+					sscanf (answer, "%s", namefile);
+				}
+				if (answer[0] == '\n') {
+					break;
+				}
+				/* Comprueba que el archivo existe */
+				outfile = fopen (namefile, "r");
+				if (outfile) {
+					printf (_(" El archivo \'%s\' ya existe, ¿desea sobreescribirlo? (s/N): "), namefile);
+					opt = readin (answer, "sy\n");
+					if (opt == 'y' || opt == 's') {
+						outfile = freopen (namefile, "w", outfile);
+						if (outfile) {
+							write_matrices (outfile, work->logic);
+							fclose (outfile);
+						}
+						else {
+							printf (_("\n No tiene permisos para escribir en este archivo.\n\n"));
+							make_pause ();
+						}
+					}
+					else {
+						fclose (outfile);
+						fprintf (stderr, _("\n Error: no fue posible abrir el archivo.\n\n"));
+					}
+				}
+				else {
+					outfile = fopen (namefile, "w");
+					if (outfile) {
+						write_matrices (outfile, work->logic);
+						fclose (outfile);
+					}
+					else {
+						perror (_("\n Error: no se pudo escribir en el archivo.\n\n"));
+						make_pause ();
+					}
+				}
+				break;
+
+			/* Definir una conectiva nueva personalizada o editar una existente */
+			case 'n':
+				screen_clear ();
+				menu_header ();
+				menu_info (work);
+
+				printf (_(" Símbolo para la conectiva: "));
+				opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
+				sprintf (symbol, "%c", opt);
+				if (opt == '\n') {
+					break;
+				}
+				else if (ll_ucon_list_get_ucon_by_symbol (work->logic->ucons, symbol)) {
+					printf (_(" Ya hay una conectiva unaria con el mismo símbolo, ¿desea redefinirla? (s/N): "));
+					opt = readin (answer, "ys\n");
+					if (opt == 's' || opt == 'y') {
+						ll_con_delete_by_symbol (work->logic, symbol);
+						tui_ucon_add_custom (work->logic, symbol);
+						work->logic_modified = true;
+					}
+				}
+				else if (ll_bcon_list_get_bcon_by_symbol (work->logic->bcons, symbol)) {
+					printf (_(" Ya hay una conectiva binaria con el mismo símbolo, ¿desea redefinirla? (s/N): "));
+					opt = readin (answer, "ys\n");
+					if (opt == 's' || opt == 'y') {
+						ll_con_delete_by_symbol (work->logic, symbol);
+						tui_bcon_add_custom (work->logic, symbol);
+						work->logic_modified = true;
+					}
+				}
+				else {
+					printf (_(" ¿Conectiva unaria o binaria? (u/b): "));
+					opt = readin (answer, "ub\n");
+					switch (opt) {
+						case 'u':
+							tui_ucon_add_custom (work->logic, symbol);
+							work->logic_modified = true;
 							break;
+						case 'b':
+							tui_bcon_add_custom (work->logic, symbol);
+							work->logic_modified = true;
+							break;
+					}
+				}
+				break;
+
+			/* Eliminar una conectiva existente */
+			case 'k':
+				screen_clear ();
+				menu_header ();
+				menu_info (work);
+
+				printf (_(" Símbolo de la conectiva a borrar: "));
+				opt = toupper (readin (answer, "abcdefghijklmnopqrstuvwxyz\n"));
+				ll_con_delete_by_symbol (work->logic, &opt);
+				break;
+
+
+			/* Pedir una fórmula bien formada y pasársela al parser */
+			case 'f':
+				screen_clear();
+				menu_header();
+				menu_info (work);
+				do {
+					printf (_("\n Escriba una fórmula: "));
+					fgets (answer, BUFSIZ, stdin);
+					sscanf (answer, "%s", formula);
+				}
+				while (formula[0] && !ll_formula_is_wff_pn (formula, work->logic));
+
+				if (!formula[0])
+					break;
+				else
+					strcpy (work->formula, formula);
+
+				//ll_logic_add_formula_vars (work->logic, work->formula_pn);
+
+				//if (work->wff) {
+					//ll_wff_free (work->wff);
+					//work->wff = NULL;
+				//}
+				ll_wff_parse_formula (&work->wff, work->formula, work->logic);
+
+				formula[0] = '\0';
+				break;
+
+			/* Hacer la evaluación */
+			case 'e':
+				if (!work->wff) {
+					printf (_("\n No se ha introducido ninguna fórmula bien formada.\n\n"));
+				}
+				else {
+					screen_clear ();
+					buffer = (gchar*) sprint_evaluation (work);
+					printf ("%s\n", buffer);
+					g_free (buffer);
+				}
+				make_pause ();
+				break;
+
+			/* Mostrar la página "Acerca de" */
+			case 'a':
+				menu_about ();
+				make_pause ();
+				break;
+
+			/* Salir pidiendo confirmación */
+			case 'q':
+				if (work->logic_modified) {
+					printf (_(" Se han hecho cambios en la lógica actual. ¿Salir sin guardar? (s/N): "));
+					fgets (answer, BUFSIZ, stdin);
+					if (answer[0] == 's' || answer[0] == 'y') {
+						return 0;
+					}
+					else {
+						break;
+					}
+				}
+				else {
+					return 0;
 				}
 		}
+	}
+	
+	free (answer);
 }

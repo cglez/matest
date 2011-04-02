@@ -3,7 +3,7 @@
  * variables.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2011 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,20 +21,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-/**
- * @file variables.c
+/** @file variables.c
  *
- * Este archivo contiene las funciones encargadas de manejar las variables
- * proposicionales y sus listas.
+ * Contiene las funciones encargadas de manejar las variables proposicionales y
+ * sus listas.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "logics.h"
-
 
 /**
  * Crea una variable proposicional nueva.
@@ -46,20 +40,32 @@
 LlVar*
 ll_var_new (char* symbol, int value)
 {
-	LlVar *var;
+	LlVar    *var;
 
-	var = (LlVar*) malloc (sizeof (LlVar));
-	if (!var)
-		{
-			perror ("liblogics: Error al reservar memoria para una variable proposicional.\n");
-			return NULL;
-		}
-	else
-		{
-			var->value = value;
-			strcpy (var->symbol, symbol);
-			return var;
-		}
+	var = g_slice_new (LlVar);
+
+	if (!var) {
+		perror ("liblogics: Error al reservar memoria para una variable proposicional.\n");
+		return NULL;
+	}
+	else {
+		var->value = value;
+		strcpy (var->symbol, symbol);
+		return var;
+	}
+}
+
+
+/**
+ * @brief Libera la memoria de una variable proposicional.
+ * @param var Una variable proposicional.
+ * 
+ * 
+ */
+void
+ll_var_free (LlVar* var)
+{
+	g_slice_free (LlVar, var);
 }
 
 
@@ -87,16 +93,15 @@ ll_var_get_value (LlVar *var)
 {
 	if (var)
 		return var->value;
-	else
-		{
-			perror ("liblogics: La variable no existe.\n");
-			return -1;
-		}
+	else {
+		perror ("liblogics: La variable no existe.\n");
+		return -1;
+	}
 }
 
 
 bool
-ll_var_list_is_empty (LlVarList var_list)
+ll_var_list_is_empty (GList *var_list)
 {
 	return (var_list == NULL);
 }
@@ -107,16 +112,10 @@ ll_var_list_is_empty (LlVarList var_list)
  * memoria reservada.
  */
 void
-ll_var_list_free (LlVarList *var_list)
+ll_var_list_free (GList* var_list)
 {
-	LlVar *var;
-
-	while (*var_list)
-		{
-			var = *var_list;
-			*var_list = var->next;
-			free (var);
-		}
+	g_list_foreach (var_list, (GFunc) ll_var_free, NULL);
+	g_list_free (var_list);
 }
 
 
@@ -126,76 +125,48 @@ ll_var_list_free (LlVarList *var_list)
  * @return Puntero a la variable si existe, o el puntero nulo en caso contrario.
  */
 LlVar*
-ll_var_list_get_var_by_symbol (LlVarList var_list, char* symbol)
+ll_var_list_get_var_by_symbol (GList* var_list, char symbol[])
 {
-	LlVar *var = var_list;
+	GList    *iter = NULL;
+	LlVar    *var;
 
-	while (var)
+	for (iter = var_list; iter; iter = iter->next)
 		{
-			if (!strcmp (var->symbol, symbol))
+			var = (LlVar*) iter->data;
+			if (!g_ascii_strcasecmp (symbol, var->symbol)) {
 				return var;
-			else
-				var = var->next;
+			}
 		}
-	return var;
+
+	return NULL;
 }
 
 
 /**
- * Añade una variable proposicional a una lista si no existe ya una con ese
- * nombre, y la sitúa por orden alfabético, con lo que la lista queda ordenada.
+ * Añade una variable proposicional a una lista si no existe una con su mismo
+ * símbolo y la sitúa por orden alfabético, con lo que la lista queda ordenada.
  */
-void
-ll_var_list_add_var (LlVarList *var_list, LlVar* var)
+GList*
+ll_var_list_add_var (GList* var_list, LlVar* var)
 {
-	LlVar *aux;
-
 	/* No duplicamos las variables que ya existen */
-	if (!ll_var_list_get_var_by_symbol (*var_list, var->symbol))
-		{
-			/* Si la lista está vacía o la letra es previa a la primera de la lista,
-			 * el nuevo nodo es ahora el primer elemento */
-			if (ll_var_list_is_empty (*var_list) || strcmp (var->symbol, (*var_list)->symbol) < 0)
-				{
-					/* Añade la lista después del nodo */
-					var->next = *var_list;
-					/* Ahora la lista empieza con este nodo */
-					*var_list = var;
-				}
-			/* Sino, busca una variable de letra posterior para situarla antes o al
-			 * final de la lista. */
-			else
-				{
-					aux = *var_list;
-					while (aux->next && strcmp (aux->symbol, var->symbol) < 0)
-						aux = aux->next;
-					var->next = aux->next;
-					aux->next = var;
-				}
-		}
+	if (ll_var_list_get_var_by_symbol (var_list, var->symbol)) {
+		return var_list;
+	}
+	/* Añadimos la variable ordenada alfabéticamente */
+	else {
+		return g_list_insert_sorted (var_list, var, (GCompareFunc) g_ascii_strcasecmp);
+	}
 }
 
 
 /**
  * Devuelve el número de elementos que contiene una lista de variables.
  */
-unsigned int
-ll_var_list_length (LlVarList var_list)
+guint
+ll_var_list_length (GList *var_list)
 {
-	unsigned int  length = 0;
-	LlVar     *var = var_list;
-
-	if (ll_var_list_is_empty (var_list))
-		return 0;
-	else
-		{
-			while (var)
-				{
-					length++;
-					var = var->next;
-				}
-		}
-	return length;
+	return g_list_length (var_list);
 }
 
 
@@ -214,13 +185,18 @@ ll_logic_add_formula_vars (LlLogic* logic, char formula[])
 	int       i;
 	char      symbol[2];
 
+	if (logic->vars) {
+		ll_var_list_free (logic->vars);
+		logic->vars = NULL;
+	}
+
 	for (i = 0; i < (int) strlen (formula); i++)
 		{
-			sprintf (symbol, "%c", formula[i]);
-			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
+			g_sprintf (symbol, "%c", formula[i]);
+			if (ll_symbol_type (symbol, logic) == LL_SYMBOL_VAR)
 				{
 					var = ll_var_new (symbol, 0);
-			    ll_var_list_add_var (&logic->vars, var);
+			    logic->vars = ll_var_list_add_var (logic->vars, var);
 				}
 		}
 }

@@ -3,7 +3,7 @@
  * connectives.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2011 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-/**
- * @file connectives.c
+/** @file connectives.c
  *
  * Este archivo contiene el código responsable de manejar las conectivas, su
  * creación, definición, eliminación...
@@ -31,7 +29,6 @@
  * las conectivas unarias y otras para las conectivas binarias, unas manejan
  * vectores, las otras matrices.
  */
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -47,17 +44,19 @@
  * @param dimension Dimensión de contexto para la matriz.
  */
 LlUCon*
-ll_ucon_new (char* symbol, int *matrix, int dimension)
+ll_ucon_new (const char *symbol, const char *symbol_pn, int *matrix, int dimension)
 {
 	LlUCon  *ucon;
 	int     i;
 
-	ucon = (LlUCon*) malloc (sizeof (LlUCon));
-	ucon->matrix = (int*) calloc (dimension, sizeof (int));
+	ucon = g_slice_new (LlUCon);
+	ucon->matrix = g_new (int, dimension);
 
 	strcpy (ucon->symbol, symbol);
-	for (i = 0; i < dimension; i++)
+	strcpy (ucon->symbol_pn, symbol_pn);
+	for (i = 0; i < dimension; i++) {
 		ucon->matrix[i] = matrix[i];
+	}
 
 	return ucon;
 }
@@ -71,22 +70,58 @@ ll_ucon_new (char* symbol, int *matrix, int dimension)
  * @param dimension Dimensión de contexto para la matriz.
  */
 LlBCon*
-ll_bcon_new (char* symbol, int **matrix, int dimension)
+ll_bcon_new (const char *symbol, const char *symbol_pn, int **matrix, int dimension)
 {
-	LlBCon  *bcon;
-	int     i, j;
+	LlBCon    *bcon;
+	int       i, j;
 
-	bcon = (LlBCon*) malloc (sizeof (LlBCon));
-	bcon->matrix = (int**) calloc (dimension, sizeof (int*));
-	for (i = 0; i < dimension; i++)
-		bcon->matrix[i] = (int*) calloc (dimension, sizeof (int));
+	bcon = g_slice_new (LlBCon);
+	bcon->matrix = g_new (int*, dimension);
+	for (i = 0; i < dimension; i++) {
+		bcon->matrix[i] = g_new (int, dimension);
+	}
 
 	strcpy (bcon->symbol, symbol);
-	for (i = 0; i < dimension; i++)
-		for (j = 0; j < dimension; j++)
+	strcpy (bcon->symbol_pn, symbol_pn);
+	for (i = 0; i < dimension; i++) {
+		for (j = 0; j < dimension; j++) {
 			bcon->matrix[i][j] = matrix[i][j];
+		}
+	}
 
 	return bcon;
+}
+
+
+/**
+ * @brief Libera la memoria de una conectiva unaria.
+ * @param ucon Una conectiva unaria.
+ * 
+ * Libera la memoria de una conectiva unaria dada como argumento.
+ */
+void
+ll_ucon_free (LlUCon* ucon)
+{
+	g_free (ucon->matrix);
+	g_slice_free (LlUCon, ucon);
+}
+
+
+/**
+ * @brief Libera la memoria de una conectiva binaria.
+ * @param bcon Una conectiva binaria.
+ * @param dimension Dimensión de la matriz de la conectiva.
+ */
+void
+ll_bcon_free (LlBCon* bcon, guint dimension)
+{
+	guint    i;
+
+	for (i = 0; i < dimension; i++) {
+		g_free (bcon->matrix[i]);
+	}
+	g_free (bcon->matrix);
+	g_slice_free (LlBCon, bcon);
 }
 
 
@@ -100,20 +135,45 @@ ll_bcon_new (char* symbol, int **matrix, int dimension)
  *         caso contrario.
  */
 LlUCon*
-ll_ucon_list_get_ucon_by_symbol (LlUConList ucon_list, char* symbol)
+ll_ucon_list_get_ucon_by_symbol (GList* ucon_list, const char *symbol)
 {
-	LlUCon  *ucon;
+	GList     *iter = NULL;
+	LlUCon    *ucon;
 
-	ucon = ucon_list;
-	while (ucon)
-		{
-			if (strcmp (ucon->symbol, symbol) == 0)
-				return ucon;
-			else
-				ucon = ucon->next;
+	for (iter = ucon_list; iter; iter = iter->next) {
+		ucon = (LlUCon*) iter->data;
+		if (!g_ascii_strcasecmp (symbol, ucon->symbol)) {
+			return ucon;
 		}
+	}
 
-	return ucon;
+	return NULL;
+}
+
+
+/**
+ * Busca una conectiva unaria dada por su símbolo asociado dentro de una lista
+ * de conectivas unarias.
+ *
+ * @param ucon_list Lista de conectivas unarias donde buscar.
+ * @param symbol Símbolo por el que buscar.
+ * @return Devuelve un puntero a la conectiva, si existe, o el puntero nulo en
+ *         caso contrario.
+ */
+LlUCon*
+ll_ucon_list_get_ucon_by_symbol_pn (GList* ucon_list, const char *symbol_pn)
+{
+	GList     *iter = NULL;
+	LlUCon    *ucon;
+
+	for (iter = ucon_list; iter; iter = iter->next) {
+		ucon = (LlUCon*) iter->data;
+		if (!g_ascii_strcasecmp (symbol_pn, ucon->symbol_pn)) {
+			return ucon;
+		}
+	}
+
+	return NULL;
 }
 
 
@@ -127,20 +187,45 @@ ll_ucon_list_get_ucon_by_symbol (LlUConList ucon_list, char* symbol)
  *         caso contrario.
  */
 LlBCon*
-ll_bcon_list_get_bcon_by_symbol (LlBConList bcon_list, char* symbol)
+ll_bcon_list_get_bcon_by_symbol (GList* bcon_list, const char *symbol)
 {
-	LlBCon* bcon;
+	GList     *iter = NULL;
+	LlBCon    *bcon;
 
-	bcon = bcon_list;
-	while (bcon)
-		{
-			if (strcmp (bcon->symbol, symbol) == 0)
-				return bcon;
-			else
-				bcon = bcon->next;
+	for (iter = bcon_list; iter; iter = iter->next) {
+		bcon = (LlBCon*) iter->data;
+		if (!g_ascii_strcasecmp (symbol, bcon->symbol)) {
+			return bcon;
 		}
+	}
 
-	return bcon;
+	return NULL;
+}
+
+
+/**
+ * Busca una conectiva binaria dada por su símbolo asociado dentro de una lista
+ * de conectivas binarias.
+ *
+ * @param bcon_list Lista de conectivas binarias donde buscar.
+ * @param symbol Símbolo por el que buscar.
+ * @return Devuelve un puntero a la conectiva, si existe, o el puntero nulo en
+ *         caso contrario.
+ */
+LlBCon*
+ll_bcon_list_get_bcon_by_symbol_pn (GList* bcon_list, char* symbol)
+{
+	GList     *iter = NULL;
+	LlBCon    *bcon;
+
+	for (iter = bcon_list; iter; iter = iter->next) {
+		bcon = (LlBCon*) iter->data;
+		if (!g_ascii_strcasecmp (symbol, bcon->symbol_pn)) {
+			return bcon;
+		}
+	}
+
+	return NULL;
 }
 
 
@@ -150,19 +235,10 @@ ll_bcon_list_get_bcon_by_symbol (LlBConList bcon_list, char* symbol)
  * @param ucon_list Lista de conectivas unarias a borrar.
  */
 void
-ll_ucon_list_free (LlUConList *ucon_list)
+ll_ucon_list_free (GList* ucon_list)
 {
-	LlUCon  *ucon, *ucon_next;
-
-	ucon = *ucon_list;
-	while (ucon)
-		{
-			ucon_next = ucon->next;
-			free (ucon->matrix);
-			free (ucon);
-			ucon = ucon_next;
-		}
-	*ucon_list = NULL;
+	g_list_foreach (ucon_list, (GFunc) ll_ucon_free, NULL);
+	g_list_free (ucon_list);
 }
 
 
@@ -172,22 +248,10 @@ ll_ucon_list_free (LlUConList *ucon_list)
  * @param bcon_list Lista de conectivas binarias a borrar.
  */
 void
-ll_bcon_list_free (LlBConList *bcon_list, int dimension)
+ll_bcon_list_free (GList* bcon_list, int dimension)
 {
-	LlBCon  *bcon, *bcon_next;
-	int     i;
-
-	bcon = *bcon_list;
-	while (bcon)
-		{
-			bcon_next = bcon->next;
-			for (i = 0; i < dimension; i++)
-				free (bcon->matrix[i]);
-			free (bcon->matrix);
-			free (bcon);
-			bcon = bcon_next;
-		}
-	*bcon_list = NULL;
+	g_list_foreach (bcon_list, (GFunc) ll_bcon_free, GINT_TO_POINTER (dimension));
+	g_list_free (bcon_list);
 }
 
 
@@ -198,38 +262,17 @@ ll_bcon_list_free (LlBConList *bcon_list, int dimension)
  * @param ucon_list Una lista de conectivas unarias.
  * @param ucon Una conectiva unaria.
  */
-int
-ll_ucon_list_append_ucon (LlUConList *ucon_list, LlUCon* ucon)
+GList*
+ll_ucon_list_append (GList* ucon_list, LlUCon* ucon)
 {
-	LlUCon  *aux;
-
-	/* Si la lista está vacía, el nuevo nodo es el primer elemento */
-	if (*ucon_list == NULL)
-		{
-			ucon->next = *ucon_list;
-			*ucon_list = ucon;
-		}
-	else
-		{
-			aux = *ucon_list;
-			/* Buscamos el último elemento */
-			while (aux->next)
-				{
-					/* Descartamos los elementos que ya se encuentran en la lista */
-					if (strcmp (aux->symbol, ucon->symbol) == 0 ||
-					    strcmp (aux->next->symbol, ucon->symbol) == 0)
-						{
-							fprintf (stderr, "* Ya hay una conectiva definida como %s.\n", ucon->symbol);
-							return 1;
-						}
-					else
-						aux = aux->next;
-				}
-				ucon->next = aux->next;
-				aux->next = ucon;
-		}
-
-	return 0;
+	/* Descartamos la conectiva si hay otra con el mismo nombre */
+	if (ll_ucon_list_get_ucon_by_symbol (ucon_list, ucon->symbol)) {
+		return ucon_list;
+	}
+	/* Añadimos la conectiva al final de la lista */
+	else {
+		return g_list_append (ucon_list, ucon);
+	}
 }
 
 
@@ -237,38 +280,17 @@ ll_ucon_list_append_ucon (LlUConList *ucon_list, LlUCon* ucon)
  * Añade una conectiva binaria al final de una lista de conectivas binarias
  * siempre y cuando no exista ya una con el mismo símbolo.
  */
-int
-ll_bcon_list_append_bcon (LlBConList *bcon_list, LlBCon* bcon)
+GList*
+ll_bcon_list_append (GList* bcon_list, LlBCon* bcon)
 {
-	LlBCon  *aux;
-
-	/* Si la lista está vacía, el nuevo nodo es el primer elemento */
-	if (*bcon_list == NULL)
-		{
-			bcon->next = *bcon_list;
-			*bcon_list = bcon;
-		}
-	else
-		{
-			aux = *bcon_list;
-			/* Buscamos el último elemento */
-			while (aux->next)
-				{
-					/* Descartamos los elementos que ya se encuentran en la lista */
-					if (strcmp (aux->symbol, bcon->symbol) == 0 ||
-					    strcmp (aux->next->symbol, bcon->symbol) == 0)
-						{
-							fprintf (stderr, "* Ya hay una conectiva definida como %s.\n", bcon->symbol);
-							return 1;
-						}
-					else
-						aux = aux->next;
-				}
-				bcon->next = aux->next;
-				aux->next = bcon;
-		}
-
-	return 0;
+	/* Descartamos la conectiva si hay otra con el mismo nombre */
+	if (ll_bcon_list_get_bcon_by_symbol (bcon_list, bcon->symbol)) {
+		return bcon_list;
+	}
+	/* Añadimos la conectiva al final de la lista */
+	else {
+		return g_list_append (bcon_list, bcon);
+	}
 }
 
 
@@ -280,20 +302,21 @@ ll_bcon_list_append_bcon (LlBConList *bcon_list, LlBCon* bcon)
 void
 ll_logic_set_default_ucons_lukasiewicz (LlLogic* logic)
 {
-	LlUCon  *ucon;
-	int     *matrix;
-	int     i;
+	LlUCon    *ucon;
+	int       *matrix;
+	int       i;
 
-	matrix = (int*) calloc (DIM, sizeof (int));
+	matrix = g_new (int, DIM);
 
-	/* Negación (N):
-	 *  Nx [¬x]	=df	(1 - x)	 */
-	for (i = 0; i < DIM; i++)
+	/* Negación (~, N):
+	 *  ~x [Np]  =df  (1 - x)  */
+	for (i = 0; i < DIM; i++) {
 		matrix[i] = MAXV - i;
-	ucon = ll_ucon_new ("N", matrix, DIM);
-	ll_ucon_list_append_ucon (&logic->ucons, ucon);
+	}
+	ucon = ll_ucon_new ("~", "N", matrix, DIM);
+	logic->ucons = ll_ucon_list_append (logic->ucons, ucon);
 
-	free (matrix);
+	g_free (matrix);
 }
 
 
@@ -308,118 +331,112 @@ ll_logic_set_default_ucons_lukasiewicz (LlLogic* logic)
 void
 ll_logic_set_default_bcons_lukasiewicz (LlLogic* logic)
 {
-	LlBCon  *bcon;
-	int     **mtx;
-	int     i, j;
+	LlBCon    *bcon;
+	int       **mtx;
+	int       i, j;
 
-	mtx = (int**) calloc (DIM, sizeof (int*));
-	for (i = 0; i < DIM; i++)
-		mtx[i] = calloc (DIM, sizeof (int));
+	mtx = g_new (int*, DIM);
+	for (i = 0; i < DIM; i++) {
+		mtx[i] = g_new (int, DIM);
+	}
 
-	/* Implicación (C):
-	 *  Cxy [x -> y]  =df  min {n, n - x + y}  */
-	for (i = 0; i < DIM; i++)
-		for (j = 0; j < DIM; j++)
+	/* Implicación (->, C):
+	 *  x -> y [Cxy]  =df  min {n, n - x + y}  */
+	for (i = 0; i < DIM; i++) {
+		for (j = 0; j < DIM; j++) {
 			mtx[i][j] = MIN (MAXV, (MAXV - i + j));
-	bcon = ll_bcon_new ("C", mtx, DIM);
-	ll_bcon_list_append_bcon (&logic->bcons, bcon);
+		}
+	}
+	bcon = ll_bcon_new ("->", "C", mtx, DIM);
+	logic->bcons = ll_bcon_list_append (logic->bcons, bcon);
 
-	/* Conjunción (K):
-	 *  Kxy [x & y]  =df  min {x, y}  */
-	for (i = 0; i < DIM; i++)
-		for (j = 0; j < DIM; j++)
+	/* Conjunción (&, K):
+	 *  x & y [Kxy]  =df  min {x, y}  */
+	for (i = 0; i < DIM; i++) {
+		for (j = 0; j < DIM; j++) {
 			mtx[i][j] = MIN (i, j);
-	bcon = ll_bcon_new ("K", mtx, DIM);
-	ll_bcon_list_append_bcon (&logic->bcons, bcon);
+		}
+	}
+	bcon = ll_bcon_new ("&", "K", mtx, DIM);
+	logic->bcons = ll_bcon_list_append (logic->bcons, bcon);
 
-	/* Disyunción (A):
-	 *  Axy [x v y]  =df  Max {x, y}  */
-	for (i = 0; i < DIM; i++)
-		for (j = 0; j < DIM; j++)
+	/* Disyunción (v, A):
+	 *  x v y [Axy]  =df  max {x, y}  */
+	for (i = 0; i < DIM; i++) {
+		for (j = 0; j < DIM; j++) {
 			mtx[i][j] = MAX (i, j);
-	bcon = ll_bcon_new ("A", mtx, DIM);
-	ll_bcon_list_append_bcon (&logic->bcons, bcon);
+		}
+	}
+	bcon = ll_bcon_new ("v", "A", mtx, DIM);
+	logic->bcons = ll_bcon_list_append (logic->bcons, bcon);
 
-	/* Bicondicional (E):
-	 *  Exy [x <-> y]  =df  n - |x - y|  */
-	for (i = 0; i < DIM; i++)
-		for (j = 0; j < DIM; j++)
+	/* Bicondicional (<->, E):
+	 *  x <-> y [Exy]  =df  n - |x - y|  */
+	for (i = 0; i < DIM; i++) {
+		for (j = 0; j < DIM; j++) {
 			mtx[i][j] = MAXV - abs (i - j);
-	bcon = ll_bcon_new ("E", mtx, DIM);
-	ll_bcon_list_append_bcon (&logic->bcons, bcon);
+		}
+	}
+	bcon = ll_bcon_new ("<->", "E", mtx, DIM);
+	logic->bcons = ll_bcon_list_append (logic->bcons, bcon);
 
-	free (mtx);
+	g_free (mtx);
 }
 
 
 /**
- * Elimina de una lógica una conectiva, unaria o binaria indistintamente, dada
- * por su símbolo.
+ * Elimina de una lógica todas las apariciones de una conectiva, unaria o
+ * binaria indistintamente, dada por su símbolo.
  */
 void
-ll_con_delete_by_symbol (LlLogic* logic, char* symbol)
+ll_con_delete_by_symbol (LlLogic* logic, const char *symbol)
 {
-	LlUCon  *unyprev, *unyaux;
-	LlBCon  *binprev, *binaux;
-	int     i;
+	LlUCon    *ucon;
+	LlBCon    *bcon;
 
-	if (ll_ucon_list_get_ucon_by_symbol (logic->ucons, symbol))
-		{
-			unyprev = NULL;
-			unyaux = logic->ucons;
+	ucon = ll_ucon_list_get_ucon_by_symbol (logic->ucons, symbol);
+	if (ucon) {
+		logic->ucons = g_list_remove (logic->ucons, ucon);
+		ll_ucon_free (ucon);
+	}
+	bcon = ll_bcon_list_get_bcon_by_symbol (logic->bcons, symbol);
+	if (bcon) {
+		logic->bcons = g_list_remove (logic->bcons, bcon);
+		ll_bcon_free (bcon, DIM);
+	}
+}
 
-			while (unyaux && strcmp (unyaux->symbol, symbol))
-				{
-					unyprev = unyaux;
-					unyaux = unyaux->next;
-				}
-			if (!unyaux || strcmp (unyaux->symbol, symbol))
-				{
-					perror ("* ¡Error inesperado!\n");
-					return;
-				}
-			else
-				{
-					if (!unyprev)
-						logic->ucons = unyaux->next;
-					else
-						unyprev->next = unyaux->next;
 
-					free (unyaux->matrix);
-					free (unyaux);
-				}
-		}
+/**
+ * Elimina de una lógica todas las apariciones de una conectiva, unaria o
+ * binaria indistintamente, dada por su símbolo.
+ */
+void
+ll_con_delete_by_symbol_pn (LlLogic* logic, char* symbol)
+{
+	LlUCon    *ucon;
+	LlBCon    *bcon;
 
-	else if (ll_bcon_list_get_bcon_by_symbol (logic->bcons, symbol))
-		{
-			binprev = NULL;
-			binaux = logic->bcons;
-
-			while (binaux && strcmp (binaux->symbol, symbol))
-				{
-					binprev = binaux;
-					binaux = binaux->next;
-				}
-			if (!binaux || strcmp (binaux->symbol, symbol))
-				{
-					perror ("* Error inesperado\n");
-					return;
-				}
-			else
-				{
-					if (!binprev)
-						logic->bcons = binaux->next;
-					else
-						binprev->next = binaux->next;
-
-					for (i = 0; i < DIM; i++)
-						free (binaux->matrix[i]);
-					free (binaux->matrix);
-					free (binaux);
-				}
-		}
-	else
-		fprintf (stderr, "* La conectiva %s no existe.\n", symbol);
+	ucon = ll_ucon_list_get_ucon_by_symbol (logic->ucons, symbol);
+	if (ucon) {
+		logic->ucons = g_list_remove (logic->ucons, ucon);
+		g_free (ucon);
+	}
+	ucon = ll_ucon_list_get_ucon_by_symbol_pn (logic->ucons, symbol);
+	if (ucon) {
+		logic->ucons = g_list_remove (logic->ucons, ucon);
+		g_free (ucon);
+	}
+	bcon = ll_bcon_list_get_bcon_by_symbol (logic->ucons, symbol);
+	if (bcon) {
+		logic->bcons = g_list_remove (logic->bcons, bcon);
+		g_free (bcon);
+	}
+	bcon = ll_bcon_list_get_bcon_by_symbol_pn (logic->ucons, symbol);
+	if (bcon) {
+		logic->bcons = g_list_remove (logic->bcons, bcon);
+		g_free (bcon);
+	}
 }
 
 
@@ -436,17 +453,17 @@ write_ucon_matrix (FILE *file, LlUCon* ucon, int dimension)
 {
 	int i;
 
-	if (file)
-		{
-			fprintf (file, "%s\n", ucon->symbol);
-			for (i = 0; i < dimension; i++)
-				fprintf (file, "%i ", ucon->matrix[i]);
-			fprintf (file, "\n\n");
-
-			return 0;
+	if (file) {
+		fprintf (file, "%s\n", ucon->symbol);
+		for (i = 0; i < dimension; i++) {
+			fprintf (file, "%i ", ucon->matrix[i]);
 		}
-	else
+		fprintf (file, "\n\n");
+		return 0;
+	}
+	else {
 		return 1;
+	}
 }
 
 
@@ -463,21 +480,19 @@ write_bcon_matrix (FILE *file, LlBCon* bcon, int dimension)
 {
 	int i, j;
 
-	if (file)
-		{
-			fprintf (file, "%s\n", bcon->symbol);
-			for (i = 0; i < dimension; i++)
-				{
-					for (j = 0; j < dimension; j++)
-						fprintf (file, "%i ", bcon->matrix[i][j]);
-					fprintf (file, "\n");
-				}
+	if (file) {
+		fprintf (file, "%s\n", bcon->symbol);
+		for (i = 0; i < dimension; i++) {
+			for (j = 0; j < dimension; j++)
+				fprintf (file, "%i ", bcon->matrix[i][j]);
 			fprintf (file, "\n");
-
-			return 0;
 		}
-	else
+		fprintf (file, "\n");
+		return 0;
+	}
+	else {
 		return 1;
+	}
 }
 
 
@@ -494,27 +509,337 @@ write_bcon_matrix (FILE *file, LlBCon* bcon, int dimension)
 int
 write_matrices (FILE *file, LlLogic* logic)
 {
-	LlUCon  *ucon;
-	LlBCon  *bcon;
+	GList    *iter;
 
-	if (file)
-		{
-			ucon = logic->ucons;
-			while (ucon)
-				{
-					write_ucon_matrix (file, ucon, DIM);
-					ucon = ucon->next;
-				}
+	for (iter = logic->ucons; iter; iter = iter->next) {
+		write_ucon_matrix (file, (LlUCon*) iter->data, DIM);
+	}
+	for (iter = logic->bcons; iter; iter = iter->next) {
+		write_bcon_matrix (file, iter->data, DIM);
+	}
+}
 
-			bcon = logic->bcons;
-			while (bcon)
-				{
-					write_bcon_matrix (file, bcon, DIM);
-					bcon = bcon->next;
-				}
 
-			return 0;
+/*
+ * Imprime la matriz de una conectiva unaria en forma de tabla, marcando los
+ * valores designados con asterisco.
+ */
+gchar*
+sprint_ucon_matrix (LlUCon* ucon, LlLogic* logic)
+{
+	GString    *buffer;
+	int         i;
+
+	buffer = g_string_new (NULL);
+
+	for (i = 0; i < SLEN - strlen (ucon->symbol); i++) {
+		g_string_append_c (buffer, ' ');
+	}
+	g_string_append_printf (buffer, "%s |", ucon->symbol);
+
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			g_string_append_printf (buffer, " *%i", i);
 		}
-	else
-		return 1;
+		else {
+			g_string_append_printf (buffer, "  %i", i);
+		}
+	}
+	g_string_append_c (buffer, '\n');
+
+	for (i = 0; i <= SLEN; i++) {
+		g_string_append_c (buffer, '-');
+	}
+	g_string_append_c (buffer, '+');
+	for (i = 0; i < DIM; i++) {
+		g_string_append (buffer, "---");
+	}
+	g_string_append (buffer, "-\n");
+	for (i = 0; i <= SLEN; i++) {
+		g_string_append_c (buffer, ' ');
+	}
+	g_string_append_c (buffer, '|');
+	for (i = 0; i < DIM; i++) {
+		if (ucon->matrix[i] >= MDV) {
+			g_string_append_printf (buffer, " *%i", ucon->matrix[i]);
+		}
+		else {
+			g_string_append_printf (buffer, "  %i", ucon->matrix[i]);
+		}
+	}
+	g_string_append_c (buffer, '\n');
+
+	return g_string_free (buffer, FALSE);
+}
+
+
+gchar*
+sprint_ucon_matrix_hex (LlUCon* ucon, LlLogic* logic)
+{
+	GString    *buffer;
+	int         i;
+
+	buffer = g_string_new (NULL);
+
+	for (i = 0; i < SLEN - strlen (ucon->symbol); i++) {
+		g_string_append_c (buffer, ' ');
+	}
+	g_string_append_printf (buffer, "%s |", ucon->symbol);
+
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			g_string_append_printf (buffer, " *%x", i);
+		}
+		else {
+			g_string_append_printf (buffer, "  %x", i);
+		}
+	}
+	g_string_append_c (buffer, '\n');
+
+	for (i = 0; i <= SLEN; i++) {
+		g_string_append_c (buffer, '-');
+	}
+	g_string_append_c (buffer, '+');
+	for (i = 0; i < DIM; i++) {
+		g_string_append (buffer, "---");
+	}
+	g_string_append (buffer, "\n");
+	for (i = 0; i <= SLEN; i++) {
+		g_string_append_c (buffer, ' ');
+	}
+	g_string_append_c (buffer, '|');
+	for (i = 0; i < DIM; i++) {
+		if (ucon->matrix[i] >= MDV) {
+			g_string_append_printf (buffer, " *%x", ucon->matrix[i]);
+		}
+		else {
+			g_string_append_printf (buffer, "  %x", ucon->matrix[i]);
+		}
+	}
+	g_string_append_c (buffer, '\n');
+
+	return g_string_free (buffer, FALSE);
+}
+
+
+/*
+ * Imprime la matriz de una conectiva unaria en forma de tabla, marcando los
+ * valores designados con asterisco.
+ */
+const gchar*
+sprint_ucon_matrix_pn (LlUCon* ucon, LlLogic* logic)
+{
+	gchar    *buffer,
+	         *straux;
+	int       i;
+
+	buffer = g_new0 (gchar, 1);
+	straux = g_strdup_printf ("  %s |", ucon->symbol);
+	buffer = g_strconcat (buffer, straux, NULL);
+	g_free (straux);
+
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			straux = g_strdup_printf (" *%i", i);
+			buffer = g_strconcat (buffer, straux, NULL);
+			g_free (straux);
+		}
+		else {
+			straux = g_strdup_printf ("  %i", i);
+			buffer = g_strconcat (buffer, straux, NULL);
+			g_free (straux);
+		}
+	}
+
+	buffer = g_strconcat (buffer, "\n----+", NULL);
+	for (i = 0; i < DIM; i++) {
+		buffer = g_strconcat (buffer, "---", NULL);
+	}
+	buffer = g_strconcat (buffer, "-\n", "    |", NULL);
+	for (i = 0; i < DIM; i++) {
+		if (ucon->matrix[i] >= MDV) {
+			straux = g_strdup_printf (" *%i", ucon->matrix[i]);
+			buffer = g_strconcat (buffer, straux, NULL);
+			g_free (straux);
+		}
+		else {
+			straux = g_strdup_printf ("  %i", ucon->matrix[i]);
+			buffer = g_strconcat (buffer, straux, NULL);
+			g_free (straux);
+		}
+	}
+	buffer = g_strconcat (buffer, "\n", NULL);
+
+	return buffer;
+}
+
+
+/*
+ * Imprime la matriz de una conectiva binaria en forma de tabla, marcando los
+ * valores designados con asterisco.
+ */
+gchar*
+sprint_bcon_matrix_hex (LlBCon* bcon, LlLogic* logic)
+{
+	GString   *buffer;
+	int        i, j;
+
+	buffer = g_string_new (NULL);
+	for (i = 0; i < SLEN - strlen (bcon->symbol); i++) {
+		g_string_append_c (buffer, ' ');
+	}
+	g_string_append_printf (buffer, "%s |", bcon->symbol);
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			g_string_append_printf (buffer, " *%x", i);
+		}
+		else {
+			g_string_append_printf (buffer, "  %x", i);
+		}
+	}
+	g_string_append_c (buffer, '\n');
+	for (i = 0; i <= SLEN; i++) {
+		g_string_append_c (buffer, '-');
+	}
+	g_string_append_c (buffer, '+');
+	for (i = 0; i < DIM; i++) {
+		g_string_append (buffer, "---");
+	}
+	g_string_append (buffer, "\n");
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			g_string_append_printf (buffer, " *%x |", i);
+		}
+		else {
+			g_string_append_printf (buffer, "  %x |", i);
+		}
+
+		for (j = 0; j < DIM; j++) {
+			if (bcon->matrix[i][j] >= MDV) {
+				g_string_append_printf (buffer, " *%x", bcon->matrix[i][j]);
+			}
+			else {
+				g_string_append_printf (buffer, "  %x", bcon->matrix[i][j]);
+			}
+		}
+		g_string_append_c (buffer, '\n');
+	}
+
+	return g_string_free (buffer, FALSE);
+}
+
+
+gchar*
+sprint_bcon_matrix (LlBCon* bcon, LlLogic* logic)
+{
+	GString   *buffer;
+	int        i, j;
+
+	buffer = g_string_new (NULL);
+	for (i = 0; i < SLEN - strlen (bcon->symbol); i++) {
+		g_string_append_c (buffer, ' ');
+	}
+	g_string_append_printf (buffer, "%s |", bcon->symbol);
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			g_string_append_printf (buffer, " *%i", i);
+		}
+		else {
+			g_string_append_printf (buffer, "  %i", i);
+		}
+	}
+	g_string_append_c (buffer, '\n');
+	for (i = 0; i <= SLEN; i++) {
+		g_string_append_c (buffer, '-');
+	}
+	g_string_append_c (buffer, '+');
+	for (i = 0; i < DIM; i++) {
+		g_string_append (buffer, "---");
+	}
+	g_string_append (buffer, "-\n");
+	for (i = 0; i < DIM; i++) {
+		if (i >= MDV) {
+			g_string_append_printf (buffer, " *%i |", i);
+		}
+		else {
+			g_string_append_printf (buffer, "  %i |", i);
+		}
+
+		for (j = 0; j < DIM; j++) {
+			if (bcon->matrix[i][j] >= MDV) {
+				g_string_append_printf (buffer, " *%i", bcon->matrix[i][j]);
+			}
+			else {
+				g_string_append_printf (buffer, "  %i", bcon->matrix[i][j]);
+			}
+		}
+		g_string_append_c (buffer, '\n');
+	}
+
+	return g_string_free (buffer, FALSE);
+}
+
+
+/*
+ * Imprime la matriz de una conectiva binaria en forma de tabla, marcando los
+ * valores designados con asterisco.
+ */
+const gchar*
+sprint_bcon_matrix_pn (LlBCon* bcon, LlLogic* logic)
+{
+	gchar    *buffer,
+	         *straux;
+	int       i, j;
+
+	buffer = g_new0 (gchar, 1);
+	straux = g_strdup_printf ("  %s |", bcon->symbol);
+	buffer = g_strconcat (buffer, straux, NULL);
+	g_free (straux);
+	for (i = 0; i < DIM; i++)
+		{
+			if (i >= MDV) {
+				straux = g_strdup_printf (" *%i", i);
+				buffer = g_strconcat (buffer, straux, NULL);
+				g_free (straux);
+			}
+			else {
+				straux = g_strdup_printf ("  %i", i);
+				buffer = g_strconcat (buffer, straux, NULL);
+				g_free (straux);
+			}
+		}
+	buffer = g_strconcat (buffer, "\n----+", NULL);
+	for (i = 0; i < DIM; i++)
+		buffer = g_strconcat (buffer, "---", NULL);
+	buffer = g_strconcat (buffer, "-\n", NULL);
+	for (i = 0; i < DIM; i++)
+		{
+			if (i >= MDV) {
+				straux = g_strdup_printf (" *%i |", i);
+				buffer = g_strconcat (buffer, straux, NULL);
+				g_free (straux);
+			}
+			else {
+				straux = g_strdup_printf ("  %i |", i);
+				buffer = g_strconcat (buffer, straux, NULL);
+				g_free (straux);
+			}
+
+			for (j = 0; j < DIM; j++)
+				{
+					if (bcon->matrix[i][j] >= MDV) {
+						straux = g_strdup_printf (" *%i", bcon->matrix[i][j]);
+						buffer = g_strconcat (buffer, straux, NULL);
+						g_free (straux);
+					}
+					else {
+						straux = g_strdup_printf ("  %i", bcon->matrix[i][j]);
+						buffer = g_strconcat (buffer, straux, NULL);
+						g_free (straux);
+					}
+				}
+			buffer = g_strconcat (buffer, "\n", NULL);
+		}
+
+	return buffer;
 }

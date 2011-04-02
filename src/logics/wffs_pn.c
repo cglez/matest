@@ -3,7 +3,7 @@
  * wffs_pn.c
  * This file is part of MaTest
  *
- * Copyright (C) 2008-2010 - César González Gutiérrez <ceguel@gmail.com>
+ * Copyright (C) 2008-2011 - César González Gutiérrez <ceguel@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
  */
 
 
-/**
- * @file wffs_pn.c
+/** @file wffs_pn.c
  *
  * Este archivo contiene el código que se encarga de manejar las fórmulas en
  * notación polaca. Contiene las funciones necesarias para determinar si una
@@ -80,56 +79,51 @@ ll_symbol_pn_get_type (char symbol, LlLogic* logic)
 bool
 ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 {
-	int i, deep = 1;
+	int    deep = 1,
+	       i;
 
 	/* Comprobamos que sólo haya caracteres válidos */
-	for (i = 0; i < (int) strlen (formula); i++)
-		{
-			if (!isalpha (formula[i]))
-				{
-					perror ("* La fórmula dada contiene caracteres no válidos.\n");
-					return false;
-				}
+	for (i = 0; i < (int) strlen (formula); i++) {
+		if (!isalpha (formula[i])) {
+			perror ("* La fórmula dada contiene caracteres no válidos.\n");
+			return false;
 		}
+	}
 
-	for (i = 0; i < (int) strlen (formula); i++)
-		{
-			/* Las variables disminuyen la profundidad de la fórmula */
-			if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
-				deep--;
-			/* Las conectivas unarias dejan la profundidad inalterada */
-			else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_U_CON)
-				deep = deep;
-			/* Las conectivas binarias aumentan la profundidad de la fórmula */
-			else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_B_CON)
-				deep++;
-			/* Sino la conectiva no está definida */
-			else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_NONE)
-				{
-					fprintf (stderr, "* La conectiva %c no está definida.\n", formula[i]);
-					return false;
-				}
+	for (i = 0; i < (int) strlen (formula); i++) {
+		/* Las variables disminuyen la profundidad de la fórmula */
+		if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_VAR)
+			deep--;
+		/* Las conectivas unarias dejan la profundidad inalterada */
+		else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_U_CON)
+			continue;
+		/* Las conectivas binarias aumentan la profundidad de la fórmula */
+		else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_B_CON)
+			deep++;
+		/* Sino la conectiva no está definida */
+		else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_NONE) {
+			fprintf (stderr, "* La conectiva %c no está definida.\n", formula[i]);
+			return false;
+		}
 
 		/* Si en este punto las conectivas tienen completos sus argumentos pero aún
 		 * resta fórmula, está mal formada por dos posibles motivos */
-		if (deep == 0 && formula[i + 1] != 0)
-			{
-				/* Demasiadas variables */
-				if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_VAR)
-					perror ("* Profundidad excedida; demasiadas variables. Revise la fórmula.\n");
-				/* o empieza una nueva fórmula */
-				else if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_U_CON ||
-				         ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_B_CON)
-					perror ("* Hay varias fórmulas juntas.\n");
-				return false;
-			}
-		}
-	/* Si después de recorrer la fórmula aún restan argumentos, faltan variables */
-	if (deep != 0)
-		{
-			perror ("* Profundidad insuficiente; muy pocas variables. Revise la fórmula.\n");
+		if (deep == 0 && formula[i + 1] != 0) {
+			/* Demasiadas variables */
+			if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_VAR)
+				perror ("* Profundidad excedida; demasiadas variables. Revise la fórmula.\n");
+			/* o empieza una nueva fórmula */
+			else if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_U_CON ||
+			         ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_B_CON)
+				perror ("* Hay varias fórmulas juntas.\n");
 			return false;
 		}
+	}
+	/* Si después de recorrer la fórmula aún restan argumentos, faltan variables */
+	if (deep != 0) {
+		perror ("* Profundidad insuficiente; muy pocas variables. Revise la fórmula.\n");
+		return false;
+	}
 	else
 		return true;
 }
@@ -142,29 +136,36 @@ ll_formula_is_wff_pn (char formula[], LlLogic* logic)
  * un árbol de fórmula bien formada correcto, como es propio de la notación
  * polaca.
  */
-void
-ll_wff_parse_formula_pn (LlWFF* tree, char formula_pn[], LlLogic* logic)
-{
-	LlVar  *var;
-	char   symbol[2];
-	int    i;
+//LlWFF*
+//ll_wff_parse_formula_pn (LlWFF* wff, char formula_pn[], LlLogic* logic)
+//{
+	//LlVar    *var;
+	//char     symbol[2];
+	//int      i;
 
-	for (i = 0; i < (int) strlen (formula_pn); i++)
-		{
-			sprintf (symbol, "%c", formula_pn[i]);
-			if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_VAR)
-				{
-					var = ll_var_list_get_var_by_symbol (logic->vars, symbol);
-					ll_wff_add_node (tree, LL_WFF_NODE_VAR, symbol, &var->value);
-				}
-			else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_U_CON)
-				ll_wff_add_node (tree, LL_WFF_NODE_U_CON, symbol, NULL);
-			else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_B_CON)
-				ll_wff_add_node (tree, LL_WFF_NODE_B_CON, symbol, NULL);
-			else
-				{
-					perror ("* Parsing... Error inesperado\n");
-					return;
-				}
-		}
-}
+	//printf ("\n");
+	//for (i = 0; i < (int) strlen (formula_pn); i++)
+		//{
+			//sprintf (symbol, "%c", formula_pn[i]);
+			//if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_VAR)
+				//{
+					//printf ("Encontrada variable %c\n", formula_pn[i]);
+					//var = ll_var_list_get_var_by_symbol (logic->vars, symbol);
+					//wff = ll_wff_add_node (wff, LL_WFF_NODE_VAR, symbol, var->value);
+				//}
+			//else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_U_CON) {
+				//printf ("Encontrada conectiva unaria %c\n", formula_pn[i]);
+				//wff = ll_wff_add_node (wff, LL_WFF_NODE_U_CON, symbol, 0);
+			//}
+			//else if (ll_symbol_pn_get_type (formula_pn[i], logic) == LL_SYMBOL_B_CON) {
+				//printf ("Encontrada conectiva binaria %c\n", formula_pn[i]);
+				//wff = ll_wff_add_node (wff, LL_WFF_NODE_B_CON, symbol, 0);
+			//}
+			//else
+				//{
+					//perror ("* Parsing... Error inesperado\n");
+					//return NULL;
+				//}
+		//}
+	//return wff;
+//}
