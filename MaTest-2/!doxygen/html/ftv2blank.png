@@ -1,6 +1,0 @@
-g->lbq_len;
-		cqicb->lbq_len = cpu_to_le16(bq_len);
-		rx_ring->lbq_prod_idx = 0;
-		rx_ring->lbq_curr_idx = 0;
-		rx_ring->lbq_clean_idx = 0;
-		rx_ring->lbq_free_cnt = rx_ring-

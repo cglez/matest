@@ -1,5 +1,0 @@
-*/
-	qdev->rx_coalesce_usecs = DFLT_COALESCE_WAIT;
-	qdev->tx_coalesce_usecs = DFLT_COALESCE_WAIT;
-	qdev->rx_max_coalesced_frames = DFLT_INTER_FRAME_WAIT;
-	qdev->tx_max_coalesced_frames = DFLT_INTER_FRA

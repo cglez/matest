@@ -1,6 +1,0 @@
-en;
-	skb->protocol = eth_type_trans(skb, ndev);
-	skb->ip_summed = CHECKSUM_NONE;
-
-	/* If rx checksum is on, and there are no
-	 * csum or fra

@@ -1,5 +1,0 @@
-esc->skb, j,
-					  tx_ring_desc->index);
-				ql_unmap_send(qdev, tx_ring_desc,
-					      tx_ring_desc->map_cnt);
-			

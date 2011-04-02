@@ -1,8 +1,0 @@
-, length);
-			skb_put(skb, length);
-			pci_unmap_single(qdev->pdev,
-					 dma_unmap_addr(sbq_desc,
-							mapaddr),
-					 dma_unmap_len(sbq_desc,
-						       maplen),
-					 PCI_

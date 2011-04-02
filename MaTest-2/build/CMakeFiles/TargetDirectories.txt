@@ -1,2 +1,0 @@
-/home/cgg/Proyectos/MaTest/build/src/logics/CMakeFiles/logics.dir
-/home/cgg/Proyectos/MaTest/build/src/CMakeFiles/matest.dir

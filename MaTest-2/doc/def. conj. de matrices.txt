@@ -1,3 +1,0 @@
-Conjunto de matrices para una lógica proposicional construido sobre un lenguaje L.
-
-Dado un conjunto de números naturales K, y un subconjunto propio de K, D, que denominamos el conjunto de los valores designados; un conjunto de matrices para una lógica proposicional construida sobre un lenguaje L, es un conjunto de funciones K-->K (unarias) para interpretar cada una de las conectivas unarias primitivas del lenguaje L, y un conjunto de funciones K^2-->K (binarias) para interpretar todas y cada una de las conectivas binarias primitivas de dicho lenguaje, donde al menos una de las funciones binarias interpreta una conectiva que representa algún tipo de implicación.

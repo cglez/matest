@@ -1,4 +1,0 @@
-	break;
-		default:
-			netif_printk(qdev, rx_status, KERN_DEBUG, qdev->ndev,
-				     "Hit default

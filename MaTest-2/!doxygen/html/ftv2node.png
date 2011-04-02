@@ -1,6 +1,0 @@
-c_count(ndev) > MAX_MULTICAST_ENTRIES)) {
-		if (!test_bit(QL_ALLMULTI, &qdev->flags)) {
-			if (ql_set_routing_reg
-			    (qdev, RT_IDX_ALLMULTI_SLOT, RT_IDX_MCAST, 1)) {
-				netif_err(qdev, hw, qdev->ndev,
-					  "Failed to set all-mul

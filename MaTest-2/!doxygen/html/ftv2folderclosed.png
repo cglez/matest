@@ -1,8 +1,0 @@
-rs enable/disable/read bits so
-			 * there's no bit/mask calculations in the critical path.
-			 */
-			intr_context->intr_en_mask =
-			    INTR_EN_TYPE_MASK | INTR_EN_INTR_MASK |
-			    INTR_EN_TYPE_ENABLE | INTR_EN_IHD_MASK | INTR_EN_IHD
-			    | i;
-			intr_c

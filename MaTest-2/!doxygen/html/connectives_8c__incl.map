@@ -1,4 +1,0 @@
- FRF_AB_EE_SF_CLOCK_DIV, 7,
-				     /* 125 MHz / 63 ~= 2 MHz */
-				     FRF_AB_EE_EE_CLOCK_DIV, 63);
-		efx_writeo(efx, &ee_vpd_cfg

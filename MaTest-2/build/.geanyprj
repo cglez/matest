@@ -1,7 +1,0 @@
-[project]
-name=build
-description=
-base_path=./
-run_cmd="cmake .."
-regenerate=true
-type=C

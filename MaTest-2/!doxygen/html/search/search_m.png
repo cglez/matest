@@ -1,7 +1,0 @@
-turn 0;
-
-	stack_page = (unsigned long)p;
-	fp = ((struct pt_regs *)p->thread.ksp)->er6;
-	do {
-		if (fp < stack_page+sizeof(struct thread_info) ||
-		    fp >= 8
