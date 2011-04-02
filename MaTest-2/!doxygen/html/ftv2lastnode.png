@@ -1,0 +1,11 @@
+nlock(qdev, SEM_RT_IDX_MASK);
+	return status;
+}
+
+int ql_cam_route_initialize(struct ql_adapter *qdev)
+{
+	int status, set;
+
+	/* If check if the link is up and use to
+	 * determine if we are setting or clearing
+	 * the MAC address in t

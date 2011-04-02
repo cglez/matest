@@ -1,0 +1,83 @@
+ efx_dword_t) to be little-endian.
+ */
+
+/* Lowest bit numbers and widths */
+#define EFX_DUMMY_FIELD_LBN 0
+#define EFX_DUMMY_FIELD_WIDTH 0
+#define EFX_DWORD_0_LBN 0
+#define EFX_DWORD_0_WIDTH 32
+#define EFX_DWORD_1_LBN 32
+#define EFX_DWORD_1_WIDTH 32
+#define EFX_DWORD_2_LBN 64
+#define EFX_DWORD_2_WIDTH 32
+#define EFX_DWORD_3_LBN 96
+#define EFX_DWORD_3_WIDTH 32
+#define EFX_QWORD_0_LBN 0
+#define EFX_QWORD_0_WIDTH 64
+
+/* Specified attribute (e.g. LBN) of the specified field */
+#define EFX_VAL(field, attribute) field ## _ ## attribute
+/* Low bit number of the specified field */
+#define EFX_LOW_BIT(field) EFX_VAL(field, LBN)
+/* Bit width of the specified field */
+#define EFX_WIDTH(field) EFX_VAL(field, WIDTH)
+/* High bit number of the specified field */
+#define EFX_HIGH_BIT(field) (EFX_LOW_BIT(field) + EFX_WIDTH(field) - 1)
+/* Mask equal in width to the specified field.
+ *
+ * For example, a field with width 5 would have a mask of 0x1f.
+ *
+ * The maximum width mask that can be generated is 64 bits.
+ */
+#define EFX_MASK64(width)			\
+	((width) == 64 ? ~((u64) 0) :		\
+	 (((((u64) 1) << (width))) - 1))
+
+/* Mask equal in width to the specified field.
+ *
+ * For example, a field with width 5 would have a mask of 0x1f.
+ *
+ * The maximum width mask that can be generated is 32 bits.  Use
+ * EFX_MASK64 for higher width fields.
+ */
+#define EFX_MASK32(width)			\
+	((width) == 32 ? ~((u32) 0) :		\
+	 (((((u32) 1) << (width))) - 1))
+
+/* A doubleword (i.e. 4 byte) datatype - little-endian in HW */
+typedef union efx_dword {
+	__le32 u32[1];
+} efx_dword_t;
+
+/* A quadword (i.e. 8 byte) datatype - little-endian in HW */
+typedef union efx_qword {
+	__le64 u64[1];
+	__le32 u32[2];
+	efx_dword_t dword[2];
+} efx_qword_t;
+
+/* An octword (eight-word, i.e. 16 byte) datatype - little-endian in HW */
+typedef union efx_oword {
+	__le64 u64[2];
+	efx_qword_t qword[2];
+	__le32 u32[4];
+	efx_dword_t dword[4];
+} efx_oword_t;
+
+/* Format string and value expanders for printk */
+#define EFX_DWORD_FMT "%08x"
+#define EFX_QWORD_FMT "%08x:%08x"
+#define EFX_OWORD_FMT "%08x:%08x:%08x:%08x"
+#define EFX_DWORD_VAL(dword)				\
+	((unsigned int) le32_to_cpu((dword).u32[0]))
+#define EFX_QWORD_VAL(qword)				\
+	((unsigned int) le32_to_cpu((qword).u32[1])),	\
+	((unsigned int) le32_to_cpu((qword).u32[0]))
+#define EFX_OWORD_VAL(oword)				\
+	((unsigned int) le32_to_cpu((oword).u32[3])),	\
+	((unsigned int) le32_to_cpu((oword).u32[2])),	\
+	((unsigned int) le32_to_cpu((oword).u32[1])),	\
+	((unsigned int) le32_to_cpu((oword).u32[0]))
+
+/*
+ * Extract bit field

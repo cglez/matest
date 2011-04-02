@@ -1,0 +1,49 @@
+efx) {
+		netif_dbg(channel->efx, drv, channel->efx->net_dev,
+			  "shut down chan %d\n", channel->channel);
+
+		efx_for_each_channel_rx_queue(rx_queue, channel)
+			efx_fini_rx_queue(rx_queue);
+		efx_for_each_channel_tx_queue(tx_queue, channel)
+			efx_fini_tx_queue(tx_queue);
+		efx_fini_eventq(channel);
+	}
+}
+
+static void efx_remove_channel(struct efx_channel *channel)
+{
+	struct efx_tx_queue *tx_queue;
+	struct efx_rx_queue *rx_queue;
+
+	netif_dbg(channel->efx, drv, channel->efx->net_dev,
+		  "destroy chan %d\n", channel->channel);
+
+	efx_for_each_channel_rx_queue(rx_queue, channel)
+		efx_remove_rx_queue(rx_queue);
+	efx_for_each_channel_tx_queue(tx_queue, channel)
+		efx_remove_tx_queue(tx_queue);
+	efx_remove_eventq(channel);
+}
+
+void efx_schedule_slow_fill(struct efx_rx_queue *rx_queue)
+{
+	mod_timer(&rx_queue->slow_fill, jiffies + msecs_to_jiffies(100));
+}
+
+/**************************************************************************
+ *
+ * Port handling
+ *
+ **************************************************************************/
+
+/* This ensures that the kernel is kept informed (via
+ * netif_carrier_on/off) of the link status, and also maintains the
+ * link status's stop on the port's TX queue.
+ */
+void efx_link_status_changed(struct efx_nic *efx)
+{
+	struct efx_link_state *link_state = &efx->link_state;
+
+	/* SFC Bug 5356: A net_dev notifier is registered, so we must ensure
+	 * that no events are triggered between unregister_netdev() and the
+	 * driver unloading. A more general condition is that NETDEV_CHANG

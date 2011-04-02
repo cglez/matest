@@ -1,0 +1,323 @@
+ -ENOMEM;
+
+	return 0;
+}
+
+static void efx_fini_struct(struct efx_nic *efx)
+{
+	if (efx->workqueue) {
+		destroy_workqueue(efx->workqueue);
+		efx->workqueue = NULL;
+	}
+}
+
+/**************************************************************************
+ *
+ * PCI interface
+ *
+ **************************************************************************/
+
+/* Main body of final NIC shutdown code
+ * This is called only at module unload (or hotplug removal).
+ */
+static void efx_pci_remove_main(struct efx_nic *efx)
+{
+	efx_nic_fini_interrupt(efx);
+	efx_fini_channels(efx);
+	efx_fini_port(efx);
+	efx->type->fini(efx);
+	efx_fini_napi(efx);
+	efx_remove_all(efx);
+}
+
+/* Final NIC shutdown
+ * This is called only at module unload (or hotplug removal).
+ */
+static void efx_pci_remove(struct pci_dev *pci_dev)
+{
+	struct efx_nic *efx;
+
+	efx = pci_get_drvdata(pci_dev);
+	if (!efx)
+		return;
+
+	/* Mark the NIC as fini, then stop the interface */
+	rtnl_lock();
+	efx->state = STATE_FINI;
+	dev_close(efx->net_dev);
+
+	/* Allow any queued efx_resets() to complete */
+	rtnl_unlock();
+
+	efx_unregister_netdev(efx);
+
+	efx_mtd_remove(efx);
+
+	/* Wait for any scheduled resets to complete. No more will be
+	 * scheduled from this point because efx_stop_all() has been
+	 * called, we are no longer registered with driverlink, and
+	 * the net_device's have been removed. */
+	cancel_work_sync(&efx->reset_work);
+
+	efx_pci_remove_main(efx);
+
+	efx_fini_io(efx);
+	netif_dbg(efx, drv, efx->net_dev, "shutdown successful\n");
+
+	pci_set_drvdata(pci_dev, NULL);
+	efx_fini_struct(efx);
+	free_netdev(efx->net_dev);
+};
+
+/* Main body of NIC initialisation
+ * This is called at module load (or hotplug insertion, theoretically).
+ */
+static int efx_pci_probe_main(struct efx_nic *efx)
+{
+	int rc;
+
+	/* Do start-of-day initialisation */
+	rc = efx_probe_all(efx);
+	if (rc)
+		goto fail1;
+
+	rc = efx_init_napi(efx);
+	if (rc)
+		goto fail2;
+
+	rc = efx->type->init(efx);
+	if (rc) {
+		netif_err(efx, probe, efx->net_dev,
+			  "failed to initialise NIC\n");
+		goto fail3;
+	}
+
+	rc = efx_init_port(efx);
+	if (rc) {
+		netif_err(efx, probe, efx->net_dev,
+			  "failed to initialise port\n");
+		goto fail4;
+	}
+
+	efx_init_channels(efx);
+
+	rc = efx_nic_init_interrupt(efx);
+	if (rc)
+		goto fail5;
+
+	return 0;
+
+ fail5:
+	efx_fini_channels(efx);
+	efx_fini_port(efx);
+ fail4:
+	efx->type->fini(efx);
+ fail3:
+	efx_fini_napi(efx);
+ fail2:
+	efx_remove_all(efx);
+ fail1:
+	return rc;
+}
+
+/* NIC initialisation
+ *
+ * This is called at module load (or hotplug insertion,
+ * theoretically).  It sets up PCI mappings, tests and resets the NIC,
+ * sets up and registers the network devices with the kernel and hooks
+ * the interrupt service routine.  It does not prepare the device for
+ * transmission; this is left to the first time one of the network
+ * interfaces is brought up (i.e. efx_net_open).
+ */
+static int __devinit efx_pci_probe(struct pci_dev *pci_dev,
+				   const struct pci_device_id *entry)
+{
+	struct efx_nic_type *type = (struct efx_nic_type *) entry->driver_data;
+	struct net_device *net_dev;
+	struct efx_nic *efx;
+	int i, rc;
+
+	/* Allocate and initialise a struct net_device and struct efx_nic */
+	net_dev = alloc_etherdev_mq(sizeof(*efx), EFX_MAX_CORE_TX_QUEUES);
+	if (!net_dev)
+		return -ENOMEM;
+	net_dev->features |= (type->offload_features | NETIF_F_SG |
+			      NETIF_F_HIGHDMA | NETIF_F_TSO |
+			      NETIF_F_GRO);
+	if (type->offload_features & NETIF_F_V6_CSUM)
+		net_dev->features |= NETIF_F_TSO6;
+	/* Mask for features that also apply to VLAN devices */
+	net_dev->vlan_features |= (NETIF_F_ALL_CSUM | NETIF_F_SG |
+				   NETIF_F_HIGHDMA | NETIF_F_TSO);
+	efx = netdev_priv(net_dev);
+	pci_set_drvdata(pci_dev, efx);
+	SET_NETDEV_DEV(net_dev, &pci_dev->dev);
+	rc = efx_init_struct(efx, type, pci_dev, net_dev);
+	if (rc)
+		goto fail1;
+
+	netif_info(efx, probe, efx->net_dev,
+		   "Solarflare Communications NIC detected\n");
+
+	/* Set up basic I/O (BAR mappings etc) */
+	rc = efx_init_io(efx);
+	if (rc)
+		goto fail2;
+
+	/* No serialisation is required with the reset path because
+	 * we're in STATE_INIT. */
+	for (i = 0; i < 5; i++) {
+		rc = efx_pci_probe_main(efx);
+
+		/* Serialise against efx_reset(). No more resets will be
+		 * scheduled since efx_stop_all() has been called, and we
+		 * have not and never have been registered with either
+		 * the rtnetlink or driverlink layers. */
+		cancel_work_sync(&efx->reset_work);
+
+		if (rc == 0) {
+			if (efx->reset_pending != RESET_TYPE_NONE) {
+				/* If there was a scheduled reset during
+				 * probe, the NIC is probably hosed anyway */
+				efx_pci_remove_main(efx);
+				rc = -EIO;
+			} else {
+				break;
+			}
+		}
+
+		/* Retry if a recoverably reset event has been scheduled */
+		if ((efx->reset_pending != RESET_TYPE_INVISIBLE) &&
+		    (efx->reset_pending != RESET_TYPE_ALL))
+			goto fail3;
+
+		efx->reset_pending = RESET_TYPE_NONE;
+	}
+
+	if (rc) {
+		netif_err(efx, probe, efx->net_dev, "Could not reset NIC\n");
+		goto fail4;
+	}
+
+	/* Switch to the running state before we expose the device to the OS,
+	 * so that dev_open()|efx_start_all() will actually start the device */
+	efx->state = STATE_RUNNING;
+
+	rc = efx_register_netdev(efx);
+	if (rc)
+		goto fail5;
+
+	netif_dbg(efx, probe, efx->net_dev, "initialisation successful\n");
+
+	rtnl_lock();
+	efx_mtd_probe(efx); /* allowed to fail */
+	rtnl_unlock();
+	return 0;
+
+ fail5:
+	efx_pci_remove_main(efx);
+ fail4:
+ fail3:
+	efx_fini_io(efx);
+ fail2:
+	efx_fini_struct(efx);
+ fail1:
+	WARN_ON(rc > 0);
+	netif_dbg(efx, drv, efx->net_dev, "initialisation failed. rc=%d\n", rc);
+	free_netdev(net_dev);
+	return rc;
+}
+
+static int efx_pm_freeze(struct device *dev)
+{
+	struct efx_nic *efx = pci_get_drvdata(to_pci_dev(dev));
+
+	efx->state = STATE_FINI;
+
+	netif_device_detach(efx->net_dev);
+
+	efx_stop_all(efx);
+	efx_fini_channels(efx);
+
+	return 0;
+}
+
+static int efx_pm_thaw(struct device *dev)
+{
+	struct efx_nic *efx = pci_get_drvdata(to_pci_dev(dev));
+
+	efx->state = STATE_INIT;
+
+	efx_init_channels(efx);
+
+	mutex_lock(&efx->mac_lock);
+	efx->phy_op->reconfigure(efx);
+	mutex_unlock(&efx->mac_lock);
+
+	efx_start_all(efx);
+
+	netif_device_attach(efx->net_dev);
+
+	efx->state = STATE_RUNNING;
+
+	efx->type->resume_wol(efx);
+
+	/* Reschedule any quenched resets scheduled during efx_pm_freeze() */
+	queue_work(reset_workqueue, &efx->reset_work);
+
+	return 0;
+}
+
+static int efx_pm_poweroff(struct device *dev)
+{
+	struct pci_dev *pci_dev = to_pci_dev(dev);
+	struct efx_nic *efx = pci_get_drvdata(pci_dev);
+
+	efx->type->fini(efx);
+
+	efx->reset_pending = RESET_TYPE_NONE;
+
+	pci_save_state(pci_dev);
+	return pci_set_power_state(pci_dev, PCI_D3hot);
+}
+
+/* Used for both resume and restore */
+static int efx_pm_resume(struct device *dev)
+{
+	struct pci_dev *pci_dev = to_pci_dev(dev);
+	struct efx_nic *efx = pci_get_drvdata(pci_dev);
+	int rc;
+
+	rc = pci_set_power_state(pci_dev, PCI_D0);
+	if (rc)
+		return rc;
+	pci_restore_state(pci_dev);
+	rc = pci_enable_device(pci_dev);
+	if (rc)
+		return rc;
+	pci_set_master(efx->pci_dev);
+	rc = efx->type->reset(efx, RESET_TYPE_ALL);
+	if (rc)
+		return rc;
+	rc = efx->type->init(efx);
+	if (rc)
+		return rc;
+	efx_pm_thaw(dev);
+	return 0;
+}
+
+static int efx_pm_suspend(struct device *dev)
+{
+	int rc;
+
+	efx_pm_freeze(dev);
+	rc = efx_pm_poweroff(dev);
+	if (rc)
+		efx_pm_resume(dev);
+	return rc;
+}
+
+static struct dev_pm_ops efx_pm_ops = {
+	.suspend	= efx_pm_suspend,
+	.resume		= efx_pm_resume,
+	.free

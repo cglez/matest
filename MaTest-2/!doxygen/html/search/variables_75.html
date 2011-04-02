@@ -1,0 +1,39 @@
+(val64, &bar0->rx_w_round_robin_4);
+
+		val64 = 0x8080404020201010ULL;
+		writeq(val64, &bar0->rts_qos_steering);
+		break;
+	case 5:
+		val64 = 0x0001020304000102ULL;
+		writeq(val64, &bar0->rx_w_round_robin_0);
+		val64 = 0x0304000102030400ULL;
+		writeq(val64, &bar0->rx_w_round_robin_1);
+		val64 = 0x0102030400010203ULL;
+		writeq(val64, &bar0->rx_w_round_robin_2);
+		val64 = 0x0400010203040001ULL;
+		writeq(val64, &bar0->rx_w_round_robin_3);
+		val64 = 0x0203040000000000ULL;
+		writeq(val64, &bar0->rx_w_round_robin_4);
+
+		val64 = 0x8080404020201008ULL;
+		writeq(val64, &bar0->rts_qos_steering);
+		break;
+	case 6:
+		val64 = 0x0001020304050001ULL;
+		writeq(val64, &bar0->rx_w_round_robin_0);
+		val64 = 0x0203040500010203ULL;
+		writeq(val64, &bar0->rx_w_round_robin_1);
+		val64 = 0x0405000102030405ULL;
+		writeq(val64, &bar0->rx_w_round_robin_2);
+		val64 = 0x0001020304050001ULL;
+		writeq(val64, &bar0->rx_w_round_robin_3);
+		val64 = 0x0203040500000000ULL;
+		writeq(val64, &bar0->rx_w_round_robin_4);
+
+		val64 = 0x8080404020100804ULL;
+		writeq(val64, &bar0->rts_qos_steering);
+		break;
+	case 7:
+		val64 = 0x0001020304050600ULL;
+		writeq(val64, &bar0->rx_w_round_robin_0);
+		val64 = 0x0102030405060001

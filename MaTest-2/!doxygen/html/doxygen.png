@@ -1,0 +1,159 @@
+w_space(struct ql_adapter *qdev)
+{
+	qdev->rx_ring_shadow_reg_area =
+	    pci_alloc_consistent(qdev->pdev,
+				 PAGE_SIZE, &qdev->rx_ring_shadow_reg_dma);
+	if (qdev->rx_ring_shadow_reg_area == NULL) {
+		netif_err(qdev, ifup, qdev->ndev,
+			  "Allocation of RX shadow space failed.\n");
+		return -ENOMEM;
+	}
+	memset(qdev->rx_ring_shadow_reg_area, 0, PAGE_SIZE);
+	qdev->tx_ring_shadow_reg_area =
+	    pci_alloc_consistent(qdev->pdev, PAGE_SIZE,
+				 &qdev->tx_ring_shadow_reg_dma);
+	if (qdev->tx_ring_shadow_reg_area == NULL) {
+		netif_err(qdev, ifup, qdev->ndev,
+			  "Allocation of TX shadow space failed.\n");
+		goto err_wqp_sh_area;
+	}
+	memset(qdev->tx_ring_shadow_reg_area, 0, PAGE_SIZE);
+	return 0;
+
+err_wqp_sh_area:
+	pci_free_consistent(qdev->pdev,
+			    PAGE_SIZE,
+			    qdev->rx_ring_shadow_reg_area,
+			    qdev->rx_ring_shadow_reg_dma);
+	return -ENOMEM;
+}
+
+static void ql_init_tx_ring(struct ql_adapter *qdev, struct tx_ring *tx_ring)
+{
+	struct tx_ring_desc *tx_ring_desc;
+	int i;
+	struct ob_mac_iocb_req *mac_iocb_ptr;
+
+	mac_iocb_ptr = tx_ring->wq_base;
+	tx_ring_desc = tx_ring->q;
+	for (i = 0; i < tx_ring->wq_len; i++) {
+		tx_ring_desc->index = i;
+		tx_ring_desc->skb = NULL;
+		tx_ring_desc->queue_entry = mac_iocb_ptr;
+		mac_iocb_ptr++;
+		tx_ring_desc++;
+	}
+	atomic_set(&tx_ring->tx_count, tx_ring->wq_len);
+	atomic_set(&tx_ring->queue_stopped, 0);
+}
+
+static void ql_free_tx_resources(struct ql_adapter *qdev,
+				 struct tx_ring *tx_ring)
+{
+	if (tx_ring->wq_base) {
+		pci_free_consistent(qdev->pdev, tx_ring->wq_size,
+				    tx_ring->wq_base, tx_ring->wq_base_dma);
+		tx_ring->wq_base = NULL;
+	}
+	kfree(tx_ring->q);
+	tx_ring->q = NULL;
+}
+
+static int ql_alloc_tx_resources(struct ql_adapter *qdev,
+				 struct tx_ring *tx_ring)
+{
+	tx_ring->wq_base =
+	    pci_alloc_consistent(qdev->pdev, tx_ring->wq_size,
+				 &tx_ring->wq_base_dma);
+
+	if ((tx_ring->wq_base == NULL) ||
+	    tx_ring->wq_base_dma & WQ_ADDR_ALIGN) {
+		netif_err(qdev, ifup, qdev->ndev, "tx_ring alloc failed.\n");
+		return -ENOMEM;
+	}
+	tx_ring->q =
+	    kmalloc(tx_ring->wq_len * sizeof(struct tx_ring_desc), GFP_KERNEL);
+	if (tx_ring->q == NULL)
+		goto err;
+
+	return 0;
+err:
+	pci_free_consistent(qdev->pdev, tx_ring->wq_size,
+			    tx_ring->wq_base, tx_ring->wq_base_dma);
+	return -ENOMEM;
+}
+
+static void ql_free_lbq_buffers(struct ql_adapter *qdev, struct rx_ring *rx_ring)
+{
+	struct bq_desc *lbq_desc;
+
+	uint32_t  curr_idx, clean_idx;
+
+	curr_idx = rx_ring->lbq_curr_idx;
+	clean_idx = rx_ring->lbq_clean_idx;
+	while (curr_idx != clean_idx) {
+		lbq_desc = &rx_ring->lbq[curr_idx];
+
+		if (lbq_desc->p.pg_chunk.last_flag) {
+			pci_unmap_page(qdev->pdev,
+				lbq_desc->p.pg_chunk.map,
+				ql_lbq_block_size(qdev),
+				       PCI_DMA_FROMDEVICE);
+			lbq_desc->p.pg_chunk.last_flag = 0;
+		}
+
+		put_page(lbq_desc->p.pg_chunk.page);
+		lbq_desc->p.pg_chunk.page = NULL;
+
+		if (++curr_idx == rx_ring->lbq_len)
+			curr_idx = 0;
+
+	}
+}
+
+static void ql_free_sbq_buffers(struct ql_adapter *qdev, struct rx_ring *rx_ring)
+{
+	int i;
+	struct bq_desc *sbq_desc;
+
+	for (i = 0; i < rx_ring->sbq_len; i++) {
+		sbq_desc = &rx_ring->sbq[i];
+		if (sbq_desc == NULL) {
+			netif_err(qdev, ifup, qdev->ndev,
+				  "sbq_desc %d is NULL.\n", i);
+			return;
+		}
+		if (sbq_desc->p.skb) {
+			pci_unmap_single(qdev->pdev,
+					 dma_unmap_addr(sbq_desc, mapaddr),
+					 dma_unmap_len(sbq_desc, maplen),
+					 PCI_DMA_FROMDEVICE);
+			dev_kfree_skb(sbq_desc->p.skb);
+			sbq_desc->p.skb = NULL;
+		}
+	}
+}
+
+/* Free all large and small rx buffers associated
+ * with the completion queues for this device.
+ */
+static void ql_free_rx_buffers(struct ql_adapter *qdev)
+{
+	int i;
+	struct rx_ring *rx_ring;
+
+	for (i = 0; i < qdev->rx_ring_count; i++) {
+		rx_ring = &qdev->rx_ring[i];
+		if (rx_ring->lbq)
+			ql_free_lbq_buffers(qdev, rx_ring);
+		if (rx_ring->sbq)
+			ql_free_sbq_buffers(qdev, rx_ring);
+	}
+}
+
+static void ql_alloc_rx_buffers(struct ql_adapter *qdev)
+{
+	struct rx_ring *rx_ring;
+	int i;
+
+	fo

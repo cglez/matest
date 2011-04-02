@@ -1,0 +1,14 @@
+	goto error_up;
+
+	err = ql_adapter_up(qdev);
+	if (err)
+		goto error_up;
+
+	return err;
+
+error_up:
+	ql_release_adapter_resources(qdev);
+	return err;
+}
+
+static int ql_change_rx_buffers(struct ql_ad

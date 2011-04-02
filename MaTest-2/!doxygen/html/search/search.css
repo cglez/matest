@@ -1,0 +1,106 @@
+id)		/* 20 */
+	.long SYMBOL_NAME(sys_mount)
+	.long SYMBOL_NAME(sys_oldumount)
+	.long SYMBOL_NAME(sys_setuid16)
+	.long SYMBOL_NAME(sys_getuid16)
+	.long SYMBOL_NAME(sys_stime)		/* 25 */
+	.long SYMBOL_NAME(sys_ptrace)
+	.long SYMBOL_NAME(sys_alarm)
+	.long SYMBOL_NAME(sys_fstat)
+	.long SYMBOL_NAME(sys_pause)
+	.long SYMBOL_NAME(sys_utime)		/* 30 */
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old stty syscall holder */
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old gtty syscall holder */
+	.long SYMBOL_NAME(sys_access)
+	.long SYMBOL_NAME(sys_nice)
+	.long SYMBOL_NAME(sys_ni_syscall)	/* 35 old ftime syscall holder */
+	.long SYMBOL_NAME(sys_sync)
+	.long SYMBOL_NAME(sys_kill)
+	.long SYMBOL_NAME(sys_rename)
+	.long SYMBOL_NAME(sys_mkdir)
+	.long SYMBOL_NAME(sys_rmdir)		/* 40 */
+	.long SYMBOL_NAME(sys_dup)
+	.long SYMBOL_NAME(sys_pipe)
+	.long SYMBOL_NAME(sys_times)
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old prof syscall holder */
+	.long SYMBOL_NAME(sys_brk)		/* 45 */
+	.long SYMBOL_NAME(sys_setgid16)
+	.long SYMBOL_NAME(sys_getgid16)
+	.long SYMBOL_NAME(sys_signal)
+	.long SYMBOL_NAME(sys_geteuid16)
+	.long SYMBOL_NAME(sys_getegid16)	/* 50 */
+	.long SYMBOL_NAME(sys_acct)
+	.long SYMBOL_NAME(sys_umount)		/* recycled never used phys() */
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old lock syscall holder */
+	.long SYMBOL_NAME(sys_ioctl)
+	.long SYMBOL_NAME(sys_fcntl)		/* 55 */
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old mpx syscall holder */
+	.long SYMBOL_NAME(sys_setpgid)
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old ulimit syscall holder */
+	.long SYMBOL_NAME(sys_ni_syscall)
+	.long SYMBOL_NAME(sys_umask)		/* 60 */
+	.long SYMBOL_NAME(sys_chroot)
+	.long SYMBOL_NAME(sys_ustat)
+	.long SYMBOL_NAME(sys_dup2)
+	.long SYMBOL_NAME(sys_getppid)
+	.long SYMBOL_NAME(sys_getpgrp)		/* 65 */
+	.long SYMBOL_NAME(sys_setsid)
+	.long SYMBOL_NAME(sys_sigaction)
+	.long SYMBOL_NAME(sys_sgetmask)
+	.long SYMBOL_NAME(sys_ssetmask)
+	.long SYMBOL_NAME(sys_setreuid16)	/* 70 */
+	.long SYMBOL_NAME(sys_setregid16)
+	.long SYMBOL_NAME(sys_sigsuspend)
+	.long SYMBOL_NAME(sys_sigpending)
+	.long SYMBOL_NAME(sys_sethostname)
+	.long SYMBOL_NAME(sys_setrlimit)	/* 75 */
+	.long SYMBOL_NAME(sys_old_getrlimit)
+	.long SYMBOL_NAME(sys_getrusage)
+	.long SYMBOL_NAME(sys_gettimeofday)
+	.long SYMBOL_NAME(sys_settimeofday)
+	.long SYMBOL_NAME(sys_getgroups16)	/* 80 */
+	.long SYMBOL_NAME(sys_setgroups16)
+	.long SYMBOL_NAME(sys_old_select)
+	.long SYMBOL_NAME(sys_symlink)
+	.long SYMBOL_NAME(sys_lstat)
+	.long SYMBOL_NAME(sys_readlink)		/* 85 */
+	.long SYMBOL_NAME(sys_uselib)
+	.long SYMBOL_NAME(sys_swapon)
+	.long SYMBOL_NAME(sys_reboot)
+	.long SYMBOL_NAME(sys_old_readdir)
+	.long SYMBOL_NAME(sys_old_mmap)		/* 90 */
+	.long SYMBOL_NAME(sys_munmap)
+	.long SYMBOL_NAME(sys_truncate)
+	.long SYMBOL_NAME(sys_ftruncate)
+	.long SYMBOL_NAME(sys_fchmod)
+	.long SYMBOL_NAME(sys_fchown16)		/* 95 */
+	.long SYMBOL_NAME(sys_getpriority)
+	.long SYMBOL_NAME(sys_setpriority)
+	.long SYMBOL_NAME(sys_ni_syscall)	/* old profil syscall holder */
+	.long SYMBOL_NAME(sys_statfs)
+	.long SYMBOL_NAME(sys_fstatfs)		/* 100 */
+	.long SYMBOL_NAME(sys_ni_syscall)	/* ioperm for i386 */
+	.long SYMBOL_NAME(sys_socketcall)
+	.long SYMBOL_NAME(sys_syslog)
+	.long SYMBOL_NAME(sys_setitimer)
+	.long SYMBOL_NAME(sys_getitimer)	/* 105 */
+	.long SYMBOL_NAME(sys_newstat)
+	.long SYMBOL_NAME(sys_newlstat)
+	.long SYMBOL_NAME(sys_newfstat)
+	.long SYMBOL_NAME(sys_ni_syscall)
+	.long SYMBOL_NAME(sys_ni_syscall)	/* iopl for i386 */ /* 110 */
+	.long SYMBOL_NAME(sys_vhangup)
+	.long SYMBOL_NAME(sys_ni_syscall)	/* obsolete idle() syscall */
+	.long SYMBOL_NAME(sys_ni_syscall)	/* vm86old for i386 */
+	.long SYMBOL_NAME(sys_wait4)
+	.long SYMBOL_NAME(sys_swapoff)		/* 115 */
+	.long SYMBOL_NAME(sys_sysinfo)
+	.long SYMBOL_NAME(sys_ipc)
+	.long SYMBOL_NAME(sys_fsync)
+	.long SYMBOL_NAME(sys_sigreturn)
+	.long SYMBOL_NAME(sys_clone)		/* 120 */
+	.long SYMBOL_NAME(sys_setdomainname)
+	.long SYMBOL_NAME(sys_newuname)
+	.long SYMBOL_NAME(sys_cacheflush)	/* modify_ldt for i386 */
+	.long SYMBOL_NAME(sys_adjtimex)
+	.long SY

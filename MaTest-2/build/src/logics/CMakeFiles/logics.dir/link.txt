@@ -1,0 +1,2 @@
+/usr/bin/ar cr liblogics.a  CMakeFiles/logics.dir/connectives.c.o CMakeFiles/logics.dir/variables.c.o CMakeFiles/logics.dir/wffs.c.o CMakeFiles/logics.dir/wffs_pn.c.o CMakeFiles/logics.dir/wffs_std.c.o
+/usr/bin/ranlib liblogics.a

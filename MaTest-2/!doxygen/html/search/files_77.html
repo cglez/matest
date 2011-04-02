@@ -1,0 +1,55 @@
+
+	udelay(5);
+
+	outw( SEEQCMD_FIFO_WRITE | SEEQCMD_SET_ALL_OFF, SEEQ_CMD);
+	outw( 0, SEEQ_DMAAR);			/* load start address into both low and high byte */
+/*	wait_for_buffer(dev); */		/* I think that you only need a wait for memory buffer */
+	outw( SEEQCFG1_BUFFER_MAC0, SEEQ_CFG1);
+
+	for(i=0;i<6;i++) {			/* set Station address */
+		outb(dev->dev_addr[i], SEEQ_BUFFER);
+		udelay(2);
+	}
+
+	outw( SEEQCFG1_BUFFER_TEA, SEEQ_CFG1);	/* set xmit end area pointer to 16K */
+	outb( DEFAULT_TEA, SEEQ_BUFFER);	/* this gives us 16K of send buffer and 48K of recv buffer */
+
+	lp->receive_ptr = (DEFAULT_TEA+1)<<8;	/* so we can find our packet_header */
+	outw( lp->receive_ptr, SEEQ_RPR);	/* Receive Pointer Register is set to recv buffer memory */
+
+	outw( 0x00ff, SEEQ_REA);		/* Receive Area End */
+
+	if (net_debug>4) {
+		printk("%s: SA0 = ",dev->name);
+
+		outw( SEEQCMD_FIFO_READ | SEEQCMD_SET_ALL_OFF, SEEQ_CMD);
+		outw( 0, SEEQ_DMAAR);
+		outw( SEEQCFG1_BUFFER_MAC0, SEEQ_CFG1);
+
+		for(i=0;i<6;i++) {
+			printk("%02x ",inb(SEEQ_BUFFER));
+		}
+		printk("\n");
+	}
+
+	outw( SEEQCFG1_MAC0_EN | SEEQCFG1_MATCH_BROAD | SEEQCFG1_BUFFER_BUFFER, SEEQ_CFG1);
+	outw( SEEQCFG2_AUTO_REA | SEEQCFG2_CTRLO, SEEQ_CFG2);
+	outw( SEEQCMD_SET_RX_ON | SEEQCMD_TX_INT_EN | SEEQCMD_RX_INT_EN, SEEQ_CMD);
+
+	if (net_debug>4) {
+		int old_cfg1;
+		old_cfg1 = inw(SEEQ_CFG1);
+		printk("%s: stat = 0x%04x\n",dev->name,inw(SEEQ_STATUS));
+		printk("%s: cfg1 = 0x%04x\n",dev->name,old_cfg1);
+		printk("%s: cfg2 = 0x%04x\n",dev->name,inw(SEEQ_CFG2));
+		printk("%s: raer = 0x%04x\n",dev->name,inw(SEEQ_REA));
+		printk("%s: dmaar= 0x%04x\n",dev->name,inw(SEEQ_DMAAR));
+
+	}
+}
+
+
+static void hardware_send_packet(struct net_device * dev, char *buf, int length)
+{
+	int ioaddr = dev->base_addr;
+	

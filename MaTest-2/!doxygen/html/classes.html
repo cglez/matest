@@ -1,0 +1,196 @@
+/
+		case sbmac_fc_carrier:		/* not valid in full duplex */
+		default:
+			return 0;
+		}
+		break;
+	default:
+		return 0;
+	}
+
+	/*
+	 * Send the bits back to the hardware
+	 */
+
+	__raw_writeq(cfg, s->sbm_maccfg);
+
+	return 1;
+}
+
+
+
+
+/**********************************************************************
+ *  SBMAC_INTR()
+ *
+ *  Interrupt handler for MAC interrupts
+ *
+ *  Input parameters:
+ *  	   MAC structure
+ *
+ *  Return value:
+ *  	   nothing
+ ********************************************************************* */
+static irqreturn_t sbmac_intr(int irq,void *dev_instance)
+{
+	struct net_device *dev = (struct net_device *) dev_instance;
+	struct sbmac_softc *sc = netdev_priv(dev);
+	uint64_t isr;
+	int handled = 0;
+
+	/*
+	 * Read the ISR (this clears the bits in the real
+	 * register, except for counter addr)
+	 */
+
+	isr = __raw_readq(sc->sbm_isr) & ~M_MAC_COUNTER_ADDR;
+
+	if (isr == 0)
+		return IRQ_RETVAL(0);
+	handled = 1;
+
+	/*
+	 * Transmits on channel 0
+	 */
+
+	if (isr & (M_MAC_INT_CHANNEL << S_MAC_TX_CH0))
+		sbdma_tx_process(sc,&(sc->sbm_txdma), 0);
+
+	if (isr & (M_MAC_INT_CHANNEL << S_MAC_RX_CH0)) {
+		if (napi_schedule_prep(&sc->napi)) {
+			__raw_writeq(0, sc->sbm_imr);
+			__napi_schedule(&sc->napi);
+			/* Depend on the exit from poll to reenable intr */
+		}
+		else {
+			/* may leave some packets behind */
+			sbdma_rx_process(sc,&(sc->sbm_rxdma),
+					 SBMAC_MAX_RXDESCR * 2, 0);
+		}
+	}
+	return IRQ_RETVAL(handled);
+}
+
+/**********************************************************************
+ *  SBMAC_START_TX(skb,dev)
+ *
+ *  Start output on the specified interface.  Basically, we
+ *  queue as many buffers as we can until the ring fills up, or
+ *  we run off the end of the queue, whichever comes first.
+ *
+ *  Input parameters:
+ *
+ *
+ *  Return value:
+ *  	   nothing
+ ********************************************************************* */
+static int sbmac_start_tx(struct sk_buff *skb, struct net_device *dev)
+{
+	struct sbmac_softc *sc = netdev_priv(dev);
+	unsigned long flags;
+
+	/* lock eth irq */
+	spin_lock_irqsave(&sc->sbm_lock, flags);
+
+	/*
+	 * Put the buffer on the transmit ring.  If we
+	 * don't have room, stop the queue.
+	 */
+
+	if (sbdma_add_txbuffer(&(sc->sbm_txdma),skb)) {
+		/* XXX save skb that we could not send */
+		netif_stop_queue(dev);
+		spin_unlock_irqrestore(&sc->sbm_lock, flags);
+
+		return NETDEV_TX_BUSY;
+	}
+
+	spin_unlock_irqrestore(&sc->sbm_lock, flags);
+
+	return NETDEV_TX_OK;
+}
+
+/**********************************************************************
+ *  SBMAC_SETMULTI(sc)
+ *
+ *  Reprogram the multicast table into the hardware, given
+ *  the list of multicasts associated with the interface
+ *  structure.
+ *
+ *  Input parameters:
+ *  	   sc - softc
+ *
+ *  Return value:
+ *  	   nothing
+ ********************************************************************* */
+
+static void sbmac_setmulti(struct sbmac_softc *sc)
+{
+	uint64_t reg;
+	void __iomem *port;
+	int idx;
+	struct netdev_hw_addr *ha;
+	struct net_device *dev = sc->sbm_dev;
+
+	/*
+	 * Clear out entire multicast table.  We do this by nuking
+	 * the entire hash table and all the direct matches except
+	 * the first one, which is used for our station address
+	 */
+
+	for (idx = 1; idx < MAC_ADDR_COUNT; idx++) {
+		port = sc->sbm_base + R_MAC_ADDR_BASE+(idx*sizeof(uint64_t));
+		__raw_writeq(0, port);
+	}
+
+	for (idx = 0; idx < MAC_HASH_COUNT; idx++) {
+		port = sc->sbm_base + R_MAC_HASH_BASE+(idx*sizeof(uint64_t));
+		__raw_writeq(0, port);
+	}
+
+	/*
+	 * Clear the filter to say we don't want any multicasts.
+	 */
+
+	reg = __raw_readq(sc->sbm_rxfilter);
+	reg &= ~(M_MAC_MCAST_INV | M_MAC_MCAST_EN);
+	__raw_writeq(reg, sc->sbm_rxfilter);
+
+	if (dev->flags & IFF_ALLMULTI) {
+		/*
+		 * Enable ALL multicasts.  Do this by inverting the
+		 * multicast enable bit.
+		 */
+		reg = __raw_readq(sc->sbm_rxfilter);
+		reg |= (M_MAC_MCAST_INV | M_MAC_MCAST_EN);
+		__raw_writeq(reg, sc->sbm_rxfilter);
+		return;
+	}
+
+
+	/*
+	 * Progam new multicast entries.  For now, only use the
+	 * perfect filter.  In the future we'll need to use the
+	 * hash filter if the perfect filter overflows
+	 */
+
+	/* XXX only using perfect filter for now, need to use hash
+	 * XXX if the table overflows */
+
+	idx = 1;		/* skip station address */
+	netdev_for_each_mc_addr(ha, dev) {
+		if (idx == MAC_ADDR_COUNT)
+			break;
+		reg = sbmac_addr2reg(ha->addr);
+		port = sc->sbm_base + R_MAC_ADDR_BASE+(idx * sizeof(uint64_t));
+		__raw_writeq(reg, port);
+		idx++;
+	}
+
+	/*
+	 * Enable the "accept multicast bits" if we programmed at least one
+	 * multicast.
+	 */
+
+	if (idx > 1) {
+		reg = __raw_readq(sc-

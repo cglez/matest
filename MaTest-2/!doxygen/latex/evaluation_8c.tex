@@ -1,0 +1,99 @@
+\hypertarget{evaluation_8c}{
+\section{Referencia del Archivo evaluation.c}
+\label{evaluation_8c}\index{evaluation.c@{evaluation.c}}
+}
+{\ttfamily \#include $<$stdlib.h$>$}\par
+{\ttfamily \#include $<$stdio.h$>$}\par
+{\ttfamily \#include $<$stdbool.h$>$}\par
+{\ttfamily \#include $<$string.h$>$}\par
+{\ttfamily \#include $<$ctype.h$>$}\par
+{\ttfamily \#include \char`\"{}MaTest.h\char`\"{}}\par
+Dependencia gr·fica adjunta para evaluation.c:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=400pt]{evaluation_8c__incl}
+\end{center}
+\end{figure}
+\subsection*{Funciones}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{evaluation_8c_a6e5dce937b2c038ad07e2f9c8a38bde0}{print\_\-current\_\-evaluating\_\-formula\_\-pn} (FILE $\ast$output, char formula\mbox{[}$\,$\mbox{]}, \hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+void \hyperlink{evaluation_8c_afabe418eb3c770f283ab1389106277b2}{print\_\-used\_\-variables} (\hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+void \hyperlink{evaluation_8c_a925f729f62289a3a51392dde66870879}{print\_\-current\_\-variables\_\-values} (\hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+void \hyperlink{evaluation_8c_abe651429606118d1a13a19bf95a3d95f}{print\_\-evaluation\_\-header} (Work $\ast$work)
+\item 
+void \hyperlink{evaluation_8c_a7b325774cf141eac4d8d832f57b00acf}{action} (FILE $\ast$output, Work $\ast$work, int $\ast$all, int $\ast$desig)
+\item 
+void \hyperlink{evaluation_8c_ad4912b116a88a17128b7219f057410f1}{evaluation} (FILE $\ast$output, Work $\ast$work)
+\end{DoxyCompactItemize}
+
+
+\subsection{DescripciÛn detallada}
+El c√≥digo de este archivo se encarga de realizar la evaluaci√≥n seg√∫n los elementos que se hayen definidos. 
+
+\subsection{DocumentaciÛn de las funciones}
+\hypertarget{evaluation_8c_a7b325774cf141eac4d8d832f57b00acf}{
+\index{evaluation.c@{evaluation.c}!action@{action}}
+\index{action@{action}!evaluation.c@{evaluation.c}}
+\subsubsection[{action}]{\setlength{\rightskip}{0pt plus 5cm}void action (
+\begin{DoxyParamCaption}
+\item[{FILE $\ast$}]{ output, }
+\item[{Work $\ast$}]{ work, }
+\item[{int $\ast$}]{ all, }
+\item[{int $\ast$}]{ desig}
+\end{DoxyParamCaption}
+)}}
+\label{evaluation_8c_a7b325774cf141eac4d8d832f57b00acf}
+\hypertarget{evaluation_8c_ad4912b116a88a17128b7219f057410f1}{
+\index{evaluation.c@{evaluation.c}!evaluation@{evaluation}}
+\index{evaluation@{evaluation}!evaluation.c@{evaluation.c}}
+\subsubsection[{evaluation}]{\setlength{\rightskip}{0pt plus 5cm}void evaluation (
+\begin{DoxyParamCaption}
+\item[{FILE $\ast$}]{ output, }
+\item[{Work $\ast$}]{ work}
+\end{DoxyParamCaption}
+)}}
+\label{evaluation_8c_ad4912b116a88a17128b7219f057410f1}
+\hypertarget{evaluation_8c_a6e5dce937b2c038ad07e2f9c8a38bde0}{
+\index{evaluation.c@{evaluation.c}!print\_\-current\_\-evaluating\_\-formula\_\-pn@{print\_\-current\_\-evaluating\_\-formula\_\-pn}}
+\index{print\_\-current\_\-evaluating\_\-formula\_\-pn@{print\_\-current\_\-evaluating\_\-formula\_\-pn}!evaluation.c@{evaluation.c}}
+\subsubsection[{print\_\-current\_\-evaluating\_\-formula\_\-pn}]{\setlength{\rightskip}{0pt plus 5cm}void print\_\-current\_\-evaluating\_\-formula\_\-pn (
+\begin{DoxyParamCaption}
+\item[{FILE $\ast$}]{ output, }
+\item[{char}]{ formula\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{evaluation_8c_a6e5dce937b2c038ad07e2f9c8a38bde0}
+\hypertarget{evaluation_8c_a925f729f62289a3a51392dde66870879}{
+\index{evaluation.c@{evaluation.c}!print\_\-current\_\-variables\_\-values@{print\_\-current\_\-variables\_\-values}}
+\index{print\_\-current\_\-variables\_\-values@{print\_\-current\_\-variables\_\-values}!evaluation.c@{evaluation.c}}
+\subsubsection[{print\_\-current\_\-variables\_\-values}]{\setlength{\rightskip}{0pt plus 5cm}void print\_\-current\_\-variables\_\-values (
+\begin{DoxyParamCaption}
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{evaluation_8c_a925f729f62289a3a51392dde66870879}
+\hypertarget{evaluation_8c_abe651429606118d1a13a19bf95a3d95f}{
+\index{evaluation.c@{evaluation.c}!print\_\-evaluation\_\-header@{print\_\-evaluation\_\-header}}
+\index{print\_\-evaluation\_\-header@{print\_\-evaluation\_\-header}!evaluation.c@{evaluation.c}}
+\subsubsection[{print\_\-evaluation\_\-header}]{\setlength{\rightskip}{0pt plus 5cm}void print\_\-evaluation\_\-header (
+\begin{DoxyParamCaption}
+\item[{Work $\ast$}]{ work}
+\end{DoxyParamCaption}
+)}}
+\label{evaluation_8c_abe651429606118d1a13a19bf95a3d95f}
+\hypertarget{evaluation_8c_afabe418eb3c770f283ab1389106277b2}{
+\index{evaluation.c@{evaluation.c}!print\_\-used\_\-variables@{print\_\-used\_\-variables}}
+\index{print\_\-used\_\-variables@{print\_\-used\_\-variables}!evaluation.c@{evaluation.c}}
+\subsubsection[{print\_\-used\_\-variables}]{\setlength{\rightskip}{0pt plus 5cm}void print\_\-used\_\-variables (
+\begin{DoxyParamCaption}
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{evaluation_8c_afabe418eb3c770f283ab1389106277b2}

@@ -1,0 +1,29 @@
+LATE_QWORD_5(qword, ...) \
+	EFX_POPULATE_QWORD_6(qword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_QWORD_4(qword, ...) \
+	EFX_POPULATE_QWORD_5(qword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_QWORD_3(qword, ...) \
+	EFX_POPULATE_QWORD_4(qword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_QWORD_2(qword, ...) \
+	EFX_POPULATE_QWORD_3(qword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_QWORD_1(qword, ...) \
+	EFX_POPULATE_QWORD_2(qword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_ZERO_QWORD(qword) \
+	EFX_POPULATE_QWORD_1(qword, EFX_DUMMY_FIELD, 0)
+#define EFX_SET_QWORD(qword) \
+	EFX_POPULATE_QWORD_2(qword, \
+			     EFX_DWORD_0, 0xffffffff, \
+			     EFX_DWORD_1, 0xffffffff)
+
+/* Populate a dword field with various numbers of arguments */
+#define EFX_POPULATE_DWORD_10 EFX_POPULATE_DWORD
+#define EFX_POPULATE_DWORD_9(dword, ...) \
+	EFX_POPULATE_DWORD_10(dword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_DWORD_8(dword, ...) \
+	EFX_POPULATE_DWORD_9(dword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_DWORD_7(dword, ...) \
+	EFX_POPULATE_DWORD_8(dword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_DWORD_6(dword, ...) \
+	EFX_POPULATE_DWORD_7(dword, EFX_DUMMY_FIELD, 0, __VA_ARGS__)
+#define EFX_POPULATE_DWORD_5(dword, ...) \
+	E

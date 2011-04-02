@@ -1,0 +1,1326 @@
+ second breakpoint at
+ * kprobe->ainsn.insn[1] to hit.  When it does we:
+ * - Run the post-handler
+ * - Set regs->tpc to "remembered" regs->tnpc stored above,
+ *   restore the PIL interrupt level in "regs->tstate" as well
+ * - Make any adjustments necessary to regs->tnpc in order
+ *   to handle relative branches correctly.  See below.
+ * - Mark that we are no longer actively in a kprobe.
+ */
+
+DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
+DEFINE_PER_CPU(struct kprobe_ctlblk, kprobe_ctlblk);
+
+struct kretprobe_blackpoint kretprobe_blacklist[] = {{NULL, NULL}};
+
+int __kprobes arch_prepare_kprobe(struct kprobe *p)
+{
+	if ((unsigned long) p->addr & 0x3UL)
+		return -EILSEQ;
+
+	p->ainsn.insn[0] = *p->addr;
+	flushi(&p->ainsn.insn[0]);
+
+	p->ainsn.insn[1] = BREAKPOINT_INSTRUCTION_2;
+	flushi(&p->ainsn.insn[1]);
+
+	p->opcode = *p->addr;
+	return 0;
+}
+
+void __kprobes arch_arm_kprobe(struct kprobe *p)
+{
+	*p->addr = BREAKPOINT_INSTRUCTION;
+	flushi(p->addr);
+}
+
+void __kprobes arch_disarm_kprobe(struct kprobe *p)
+{
+	*p->addr = p->opcode;
+	flushi(p->addr);
+}
+
+static void __kprobes save_previous_kprobe(struct kprobe_ctlblk *kcb)
+{
+	kcb->prev_kprobe.kp = kprobe_running();
+	kcb->prev_kprobe.status = kcb->kprobe_status;
+	kcb->prev_kprobe.orig_tnpc = kcb->kprobe_orig_tnpc;
+	kcb->prev_kprobe.orig_tstate_pil = kcb->kprobe_orig_tstate_pil;
+}
+
+static void __kprobes restore_previous_kprobe(struct kprobe_ctlblk *kcb)
+{
+	__get_cpu_var(current_kprobe) = kcb->prev_kprobe.kp;
+	kcb->kprobe_status = kcb->prev_kprobe.status;
+	kcb->kprobe_orig_tnpc = kcb->prev_kprobe.orig_tnpc;
+	kcb->kprobe_orig_tstate_pil = kcb->prev_kprobe.orig_tstate_pil;
+}
+
+static void __kprobes set_current_kprobe(struct kprobe *p, struct pt_regs *regs,
+				struct kprobe_ctlblk *kcb)
+{
+	__get_cpu_var(current_kprobe) = p;
+	kcb->kprobe_orig_tnpc = regs->tnpc;
+	kcb->kprobe_orig_tstate_pil = (regs->tstate & TSTATE_PIL);
+}
+
+static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs,
+			struct kprobe_ctlblk *kcb)
+{
+	regs->tstate |= TSTATE_PIL;
+
+	/*single step inline, if it a breakpoint instruction*/
+	if (p->opcode == BREAKPOINT_INSTRUCTION) {
+		regs->tpc = (unsigned long) p->addr;
+		regs->tnpc = kcb->kprobe_orig_tnpc;
+	} else {
+		regs->tpc = (unsigned long) &p->ainsn.insn[0];
+		regs->tnpc = (unsigned long) &p->ainsn.insn[1];
+	}
+}
+
+static int __kprobes kprobe_handler(struct pt_regs *regs)
+{
+	struct kprobe *p;
+	void *addr = (void *) regs->tpc;
+	int ret = 0;
+	struct kprobe_ctlblk *kcb;
+
+	/*
+	 * We don't want to be preempted for the entire
+	 * duration of kprobe processing
+	 */
+	preempt_disable();
+	kcb = get_kprobe_ctlblk();
+
+	if (kprobe_running()) {
+		p = get_kprobe(addr);
+		if (p) {
+			if (kcb->kprobe_status == KPROBE_HIT_SS) {
+				regs->tstate = ((regs->tstate & ~TSTATE_PIL) |
+					kcb->kprobe_orig_tstate_pil);
+				goto no_kprobe;
+			}
+			/* We have reentered the kprobe_handler(), since
+			 * another probe was hit while within the handler.
+			 * We here save the original kprobes variables and
+			 * just single step on the instruction of the new probe
+			 * without calling any user handlers.
+			 */
+			save_previous_kprobe(kcb);
+			set_current_kprobe(p, regs, kcb);
+			kprobes_inc_nmissed_count(p);
+			kcb->kprobe_status = KPROBE_REENTER;
+			prepare_singlestep(p, regs, kcb);
+			return 1;
+		} else {
+			if (*(u32 *)addr != BREAKPOINT_INSTRUCTION) {
+			/* The breakpoint instruction was removed by
+			 * another cpu right after we hit, no further
+			 * handling of this interrupt is appropriate
+			 */
+				ret = 1;
+				goto no_kprobe;
+			}
+			p = __get_cpu_var(current_kprobe);
+			if (p->break_handler && p->break_handler(p, regs))
+				goto ss_probe;
+		}
+		goto no_kprobe;
+	}
+
+	p = get_kprobe(addr);
+	if (!p) {
+		if (*(u32 *)addr != BREAKPOINT_INSTRUCTION) {
+			/*
+			 * The breakpoint instruction was removed right
+			 * after we hit it.  Another cpu has removed
+			 * either a probepoint or a debugger breakpoint
+			 * at this address.  In either case, no further
+			 * handling of this interrupt is appropriate.
+			 */
+			ret = 1;
+		}
+		/* Not one of ours: let kernel handle it */
+		goto no_kprobe;
+	}
+
+	set_current_kprobe(p, regs, kcb);
+	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
+	if (p->pre_handler && p->pre_handler(p, regs))
+		return 1;
+
+ss_probe:
+	prepare_singlestep(p, regs, kcb);
+	kcb->kprobe_status = KPROBE_HIT_SS;
+	return 1;
+
+no_kprobe:
+	preempt_enable_no_resched();
+	return ret;
+}
+
+/* If INSN is a relative control transfer instruction,
+ * return the corrected branch destination value.
+ *
+ * regs->tpc and regs->tnpc still hold the values of the
+ * program counters at the time of trap due to the execution
+ * of the BREAKPOINT_INSTRUCTION_2 at p->ainsn.insn[1]
+ * 
+ */
+static unsigned long __kprobes relbranch_fixup(u32 insn, struct kprobe *p,
+					       struct pt_regs *regs)
+{
+	unsigned long real_pc = (unsigned long) p->addr;
+
+	/* Branch not taken, no mods necessary.  */
+	if (regs->tnpc == regs->tpc + 0x4UL)
+		return real_pc + 0x8UL;
+
+	/* The three cases are call, branch w/prediction,
+	 * and traditional branch.
+	 */
+	if ((insn & 0xc0000000) == 0x40000000 ||
+	    (insn & 0xc1c00000) == 0x00400000 ||
+	    (insn & 0xc1c00000) == 0x00800000) {
+		unsigned long ainsn_addr;
+
+		ainsn_addr = (unsigned long) &p->ainsn.insn[0];
+
+		/* The instruction did all the work for us
+		 * already, just apply the offset to the correct
+		 * instruction location.
+		 */
+		return (real_pc + (regs->tnpc - ainsn_addr));
+	}
+
+	/* It is jmpl or some other absolute PC modification instruction,
+	 * leave NPC as-is.
+	 */
+	return regs->tnpc;
+}
+
+/* If INSN is an instruction which writes it's PC location
+ * into a destination register, fix that up.
+ */
+static void __kprobes retpc_fixup(struct pt_regs *regs, u32 insn,
+				  unsigned long real_pc)
+{
+	unsigned long *slot = NULL;
+
+	/* Simplest case is 'call', which always uses %o7 */
+	if ((insn & 0xc0000000) == 0x40000000) {
+		slot = &regs->u_regs[UREG_I7];
+	}
+
+	/* 'jmpl' encodes the register inside of the opcode */
+	if ((insn & 0xc1f80000) == 0x81c00000) {
+		unsigned long rd = ((insn >> 25) & 0x1f);
+
+		if (rd <= 15) {
+			slot = &regs->u_regs[rd];
+		} else {
+			/* Hard case, it goes onto the stack. */
+			flushw_all();
+
+			rd -= 16;
+			slot = (unsigned long *)
+				(regs->u_regs[UREG_FP] + STACK_BIAS);
+			slot += rd;
+		}
+	}
+	if (slot != NULL)
+		*slot = real_pc;
+}
+
+/*
+ * Called after single-stepping.  p->addr is the address of the
+ * instruction which has been replaced by the breakpoint
+ * instruction.  To avoid the SMP problems that can occur when we
+ * temporarily put back the original opcode to single-step, we
+ * single-stepped a copy of the instruction.  The address of this
+ * copy is &p->ainsn.insn[0].
+ *
+ * This function prepares to return from the post-single-step
+ * breakpoint trap.
+ */
+static void __kprobes resume_execution(struct kprobe *p,
+		struct pt_regs *regs, struct kprobe_ctlblk *kcb)
+{
+	u32 insn = p->ainsn.insn[0];
+
+	regs->tnpc = relbranch_fixup(insn, p, regs);
+
+	/* This assignment must occur after relbranch_fixup() */
+	regs->tpc = kcb->kprobe_orig_tnpc;
+
+	retpc_fixup(regs, insn, (unsigned long) p->addr);
+
+	regs->tstate = ((regs->tstate & ~TSTATE_PIL) |
+			kcb->kprobe_orig_tstate_pil);
+}
+
+static int __kprobes post_kprobe_handler(struct pt_regs *regs)
+{
+	struct kprobe *cur = kprobe_running();
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+
+	if (!cur)
+		return 0;
+
+	if ((kcb->kprobe_status != KPROBE_REENTER) && cur->post_handler) {
+		kcb->kprobe_status = KPROBE_HIT_SSDONE;
+		cur->post_handler(cur, regs, 0);
+	}
+
+	resume_execution(cur, regs, kcb);
+
+	/*Restore back the original saved kprobes variables and continue. */
+	if (kcb->kprobe_status == KPROBE_REENTER) {
+		restore_previous_kprobe(kcb);
+		goto out;
+	}
+	reset_current_kprobe();
+out:
+	preempt_enable_no_resched();
+
+	return 1;
+}
+
+int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
+{
+	struct kprobe *cur = kprobe_running();
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+	const struct exception_table_entry *entry;
+
+	switch(kcb->kprobe_status) {
+	case KPROBE_HIT_SS:
+	case KPROBE_REENTER:
+		/*
+		 * We are here because the instruction being single
+		 * stepped caused a page fault. We reset the current
+		 * kprobe and the tpc points back to the probe address
+		 * and allow the page fault handler to continue as a
+		 * normal page fault.
+		 */
+		regs->tpc = (unsigned long)cur->addr;
+		regs->tnpc = kcb->kprobe_orig_tnpc;
+		regs->tstate = ((regs->tstate & ~TSTATE_PIL) |
+				kcb->kprobe_orig_tstate_pil);
+		if (kcb->kprobe_status == KPROBE_REENTER)
+			restore_previous_kprobe(kcb);
+		else
+			reset_current_kprobe();
+		preempt_enable_no_resched();
+		break;
+	case KPROBE_HIT_ACTIVE:
+	case KPROBE_HIT_SSDONE:
+		/*
+		 * We increment the nmissed count for accounting,
+		 * we can also use npre/npostfault count for accouting
+		 * these specific fault cases.
+		 */
+		kprobes_inc_nmissed_count(cur);
+
+		/*
+		 * We come here because instructions in the pre/post
+		 * handler caused the page_fault, this could happen
+		 * if handler tries to access user space by
+		 * copy_from_user(), get_user() etc. Let the
+		 * user-specified handler try to fix it first.
+		 */
+		if (cur->fault_handler && cur->fault_handler(cur, regs, trapnr))
+			return 1;
+
+		/*
+		 * In case the user-specified fault handler returned
+		 * zero, try to fix up.
+		 */
+
+		entry = search_exception_tables(regs->tpc);
+		if (entry) {
+			regs->tpc = entry->fixup;
+			regs->tnpc = regs->tpc + 4;
+			return 1;
+		}
+
+		/*
+		 * fixup_exception() could not handle it,
+		 * Let do_page_fault() fix it.
+		 */
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+/*
+ * Wrapper routine to for handling exceptions.
+ */
+int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
+				       unsigned long val, void *data)
+{
+	struct die_args *args = (struct die_args *)data;
+	int ret = NOTIFY_DONE;
+
+	if (args->regs && user_mode(args->regs))
+		return ret;
+
+	switch (val) {
+	case DIE_DEBUG:
+		if (kprobe_handler(args->regs))
+			ret = NOTIFY_STOP;
+		break;
+	case DIE_DEBUG_2:
+		if (post_kprobe_handler(args->regs))
+			ret = NOTIFY_STOP;
+		break;
+	default:
+		break;
+	}
+	return ret;
+}
+
+asmlinkage void __kprobes kprobe_trap(unsigned long trap_level,
+				      struct pt_regs *regs)
+{
+	BUG_ON(trap_level != 0x170 && trap_level != 0x171);
+
+	if (user_mode(regs)) {
+		local_irq_enable();
+		bad_trap(regs, trap_level);
+		return;
+	}
+
+	/* trap_level == 0x170 --> ta 0x70
+	 * trap_level == 0x171 --> ta 0x71
+	 */
+	if (notify_die((trap_level == 0x170) ? DIE_DEBUG : DIE_DEBUG_2,
+		       (trap_level == 0x170) ? "debug" : "debug_2",
+		       regs, 0, trap_level, SIGTRAP) != NOTIFY_STOP)
+		bad_trap(regs, trap_level);
+}
+
+/* Jprobes support.  */
+int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+{
+	struct jprobe *jp = container_of(p, struct jprobe, kp);
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+
+	memcpy(&(kcb->jprobe_saved_regs), regs, sizeof(*regs));
+
+	regs->tpc  = (unsigned long) jp->entry;
+	regs->tnpc = ((unsigned long) jp->entry) + 0x4UL;
+	regs->tstate |= TSTATE_PIL;
+
+	return 1;
+}
+
+void __kprobes jprobe_return(void)
+{
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+	register unsigned long orig_fp asm("g1");
+
+	orig_fp = kcb->jprobe_saved_regs.u_regs[UREG_FP];
+	__asm__ __volatile__("\n"
+"1:	cmp		%%sp, %0\n\t"
+	"blu,a,pt	%%xcc, 1b\n\t"
+	" restore\n\t"
+	".globl		jprobe_return_trap_instruction\n"
+"jprobe_return_trap_instruction:\n\t"
+	"ta		0x70"
+	: /* no outputs */
+	: "r" (orig_fp));
+}
+
+extern void jprobe_return_trap_instruction(void);
+
+int __kprobes longjmp_break_handler(struct kprobe *p, struct pt_regs *regs)
+{
+	u32 *addr = (u32 *) regs->tpc;
+	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
+
+	if (addr == (u32 *) jprobe_return_trap_instruction) {
+		memcpy(regs, &(kcb->jprobe_saved_regs), sizeof(*regs));
+		preempt_enable_no_resched();
+		return 1;
+	}
+	return 0;
+}
+
+/* The value stored in the return address register is actually 2
+ * instructions before where the callee will return to.
+ * Sequences usually look something like this
+ *
+ *		call	some_function	<--- return register points here
+ *		 nop			<--- call delay slot
+ *		whatever		<--- where callee returns to
+ *
+ * To keep trampoline_probe_handler logic simpler, we normalize the
+ * value kept in ri->ret_addr so we don't need to keep adjusting it
+ * back and forth.
+ */
+void __kprobes arch_prepare_kretprobe(struct kretprobe_instance *ri,
+				      struct pt_regs *regs)
+{
+	ri->ret_addr = (kprobe_opcode_t *)(regs->u_regs[UREG_RETPC] + 8);
+
+	/* Replace the return addr with trampoline addr */
+	regs->u_regs[UREG_RETPC] =
+		((unsigned long)kretprobe_trampoline) - 8;
+}
+
+/*
+ * Called when the probe at kretprobe trampoline is hit
+ */
+int __kprobes trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
+{
+	struct kretprobe_instance *ri = NULL;
+	struct hlist_head *head, empty_rp;
+	struct hlist_node *node, *tmp;
+	unsigned long flags, orig_ret_address = 0;
+	unsigned long trampoline_address =(unsigned long)&kretprobe_trampoline;
+
+	INIT_HLIST_HEAD(&empty_rp);
+	kretprobe_hash_lock(current, &head, &flags);
+
+	/*
+	 * It is possible to have multiple instances associated with a given
+	 * task either because an multiple functions in the call path
+	 * have a return probe installed on them, and/or more than one return
+	 * return probe was registered for a target function.
+	 *
+	 * We can handle this because:
+	 *     - instances are always inserted at the head of the list
+	 *     - when multiple return probes are registered for the same
+	 *       function, the first instance's ret_addr will point to the
+	 *       real return address, and all the rest will point to
+	 *       kretprobe_trampoline
+	 */
+	hlist_for_each_entry_safe(ri, node, tmp, head, hlist) {
+		if (ri->task != current)
+			/* another task is sharing our hash bucket */
+			continue;
+
+		if (ri->rp && ri->rp->handler)
+			ri->rp->handler(ri, regs);
+
+		orig_ret_address = (unsigned long)ri->ret_addr;
+		recycle_rp_inst(ri, &empty_rp);
+
+		if (orig_ret_address != trampoline_address)
+			/*
+			 * This is the real return address. Any other
+			 * instances associated with this task are for
+			 * other calls deeper on the call stack
+			 */
+			break;
+	}
+
+	kretprobe_assert(ri, orig_ret_address, trampoline_address);
+	regs->tpc = orig_ret_address;
+	regs->tnpc = orig_ret_address + 4;
+
+	reset_current_kprobe();
+	kretprobe_hash_unlock(current, &flags);
+	preempt_enable_no_resched();
+
+	hlist_for_each_entry_safe(ri, node, tmp, &empty_rp, hlist) {
+		hlist_del(&ri->hlist);
+		kfree(ri);
+	}
+	/*
+	 * By returning a non-zero value, we are telling
+	 * kprobe_handler() that we don't want the post_handler
+	 * to run (and have re-enabled preemption)
+	 */
+	return 1;
+}
+
+void kretprobe_trampoline_holder(void)
+{
+	asm volatile(".global kretprobe_trampoline\n"
+		     "kretprobe_trampoline:\n"
+		     "\tnop\n"
+		     "\tnop\n");
+}
+static struct kprobe trampoline_p = {
+	.addr = (kprobe_opcode_t *) &kretprobe_trampoline,
+	.pre_handler = trampoline_probe_handler
+};
+
+int __init arch_init_kprobes(void)
+{
+	return register_kprobe(&trampoline_p);
+}
+
+int __kprobes arch_trampoline_kprobe(struct kprobe *p)
+{
+	if (p->addr == (kprobe_opcode_t *)&kretprobe_trampoline)
+		return 1;
+
+	return 0;
+}
+                                                                                                                                                                                                             /* pci_common.c: PCI controller common support.
+ *
+ * Copyright (C) 1999, 2007 David S. Miller (davem@davemloft.net)
+ */
+
+#include <linux/string.h>
+#include <linux/slab.h>
+#include <linux/init.h>
+#include <linux/pci.h>
+#include <linux/device.h>
+#include <linux/of_device.h>
+
+#include <asm/prom.h>
+#include <asm/oplib.h>
+
+#include "pci_impl.h"
+#include "pci_sun4v.h"
+
+static int config_out_of_range(struct pci_pbm_info *pbm,
+			       unsigned long bus,
+			       unsigned long devfn,
+			       unsigned long reg)
+{
+	if (bus < pbm->pci_first_busno ||
+	    bus > pbm->pci_last_busno)
+		return 1;
+	return 0;
+}
+
+static void *sun4u_config_mkaddr(struct pci_pbm_info *pbm,
+				 unsigned long bus,
+				 unsigned long devfn,
+				 unsigned long reg)
+{
+	unsigned long rbits = pbm->config_space_reg_bits;
+
+	if (config_out_of_range(pbm, bus, devfn, reg))
+		return NULL;
+
+	reg = (reg & ((1 << rbits) - 1));
+	devfn <<= rbits;
+	bus <<= rbits + 8;
+
+	return (void *)	(pbm->config_space | bus | devfn | reg);
+}
+
+/* At least on Sabre, it is necessary to access all PCI host controller
+ * registers at their natural size, otherwise zeros are returned.
+ * Strange but true, and I see no language in the UltraSPARC-IIi
+ * programmer's manual that mentions this even indirectly.
+ */
+static int sun4u_read_pci_cfg_host(struct pci_pbm_info *pbm,
+				   unsigned char bus, unsigned int devfn,
+				   int where, int size, u32 *value)
+{
+	u32 tmp32, *addr;
+	u16 tmp16;
+	u8 tmp8;
+
+	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
+	if (!addr)
+		return PCIBIOS_SUCCESSFUL;
+
+	switch (size) {
+	case 1:
+		if (where < 8) {
+			unsigned long align = (unsigned long) addr;
+
+			align &= ~1;
+			pci_config_read16((u16 *)align, &tmp16);
+			if (where & 1)
+				*value = tmp16 >> 8;
+			else
+				*value = tmp16 & 0xff;
+		} else {
+			pci_config_read8((u8 *)addr, &tmp8);
+			*value = (u32) tmp8;
+		}
+		break;
+
+	case 2:
+		if (where < 8) {
+			pci_config_read16((u16 *)addr, &tmp16);
+			*value = (u32) tmp16;
+		} else {
+			pci_config_read8((u8 *)addr, &tmp8);
+			*value = (u32) tmp8;
+			pci_config_read8(((u8 *)addr) + 1, &tmp8);
+			*value |= ((u32) tmp8) << 8;
+		}
+		break;
+
+	case 4:
+		tmp32 = 0xffffffff;
+		sun4u_read_pci_cfg_host(pbm, bus, devfn,
+					where, 2, &tmp32);
+		*value = tmp32;
+
+		tmp32 = 0xffffffff;
+		sun4u_read_pci_cfg_host(pbm, bus, devfn,
+					where + 2, 2, &tmp32);
+		*value |= tmp32 << 16;
+		break;
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+
+static int sun4u_read_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
+			      int where, int size, u32 *value)
+{
+	struct pci_pbm_info *pbm = bus_dev->sysdata;
+	unsigned char bus = bus_dev->number;
+	u32 *addr;
+	u16 tmp16;
+	u8 tmp8;
+
+	switch (size) {
+	case 1:
+		*value = 0xff;
+		break;
+	case 2:
+		*value = 0xffff;
+		break;
+	case 4:
+		*value = 0xffffffff;
+		break;
+	}
+
+	if (!bus_dev->number && !PCI_SLOT(devfn))
+		return sun4u_read_pci_cfg_host(pbm, bus, devfn, where,
+					       size, value);
+
+	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
+	if (!addr)
+		return PCIBIOS_SUCCESSFUL;
+
+	switch (size) {
+	case 1:
+		pci_config_read8((u8 *)addr, &tmp8);
+		*value = (u32) tmp8;
+		break;
+
+	case 2:
+		if (where & 0x01) {
+			printk("pci_read_config_word: misaligned reg [%x]\n",
+			       where);
+			return PCIBIOS_SUCCESSFUL;
+		}
+		pci_config_read16((u16 *)addr, &tmp16);
+		*value = (u32) tmp16;
+		break;
+
+	case 4:
+		if (where & 0x03) {
+			printk("pci_read_config_dword: misaligned reg [%x]\n",
+			       where);
+			return PCIBIOS_SUCCESSFUL;
+		}
+		pci_config_read32(addr, value);
+		break;
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+
+static int sun4u_write_pci_cfg_host(struct pci_pbm_info *pbm,
+				    unsigned char bus, unsigned int devfn,
+				    int where, int size, u32 value)
+{
+	u32 *addr;
+
+	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
+	if (!addr)
+		return PCIBIOS_SUCCESSFUL;
+
+	switch (size) {
+	case 1:
+		if (where < 8) {
+			unsigned long align = (unsigned long) addr;
+			u16 tmp16;
+
+			align &= ~1;
+			pci_config_read16((u16 *)align, &tmp16);
+			if (where & 1) {
+				tmp16 &= 0x00ff;
+				tmp16 |= value << 8;
+			} else {
+				tmp16 &= 0xff00;
+				tmp16 |= value;
+			}
+			pci_config_write16((u16 *)align, tmp16);
+		} else
+			pci_config_write8((u8 *)addr, value);
+		break;
+	case 2:
+		if (where < 8) {
+			pci_config_write16((u16 *)addr, value);
+		} else {
+			pci_config_write8((u8 *)addr, value & 0xff);
+			pci_config_write8(((u8 *)addr) + 1, value >> 8);
+		}
+		break;
+	case 4:
+		sun4u_write_pci_cfg_host(pbm, bus, devfn,
+					 where, 2, value & 0xffff);
+		sun4u_write_pci_cfg_host(pbm, bus, devfn,
+					 where + 2, 2, value >> 16);
+		break;
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+
+static int sun4u_write_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
+			       int where, int size, u32 value)
+{
+	struct pci_pbm_info *pbm = bus_dev->sysdata;
+	unsigned char bus = bus_dev->number;
+	u32 *addr;
+
+	if (!bus_dev->number && !PCI_SLOT(devfn))
+		return sun4u_write_pci_cfg_host(pbm, bus, devfn, where,
+						size, value);
+
+	addr = sun4u_config_mkaddr(pbm, bus, devfn, where);
+	if (!addr)
+		return PCIBIOS_SUCCESSFUL;
+
+	switch (size) {
+	case 1:
+		pci_config_write8((u8 *)addr, value);
+		break;
+
+	case 2:
+		if (where & 0x01) {
+			printk("pci_write_config_word: misaligned reg [%x]\n",
+			       where);
+			return PCIBIOS_SUCCESSFUL;
+		}
+		pci_config_write16((u16 *)addr, value);
+		break;
+
+	case 4:
+		if (where & 0x03) {
+			printk("pci_write_config_dword: misaligned reg [%x]\n",
+			       where);
+			return PCIBIOS_SUCCESSFUL;
+		}
+		pci_config_write32(addr, value);
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+
+struct pci_ops sun4u_pci_ops = {
+	.read =		sun4u_read_pci_cfg,
+	.write =	sun4u_write_pci_cfg,
+};
+
+static int sun4v_read_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
+			      int where, int size, u32 *value)
+{
+	struct pci_pbm_info *pbm = bus_dev->sysdata;
+	u32 devhandle = pbm->devhandle;
+	unsigned int bus = bus_dev->number;
+	unsigned int device = PCI_SLOT(devfn);
+	unsigned int func = PCI_FUNC(devfn);
+	unsigned long ret;
+
+	if (config_out_of_range(pbm, bus, devfn, where)) {
+		ret = ~0UL;
+	} else {
+		ret = pci_sun4v_config_get(devhandle,
+				HV_PCI_DEVICE_BUILD(bus, device, func),
+				where, size);
+	}
+	switch (size) {
+	case 1:
+		*value = ret & 0xff;
+		break;
+	case 2:
+		*value = ret & 0xffff;
+		break;
+	case 4:
+		*value = ret & 0xffffffff;
+		break;
+	};
+
+
+	return PCIBIOS_SUCCESSFUL;
+}
+
+static int sun4v_write_pci_cfg(struct pci_bus *bus_dev, unsigned int devfn,
+			       int where, int size, u32 value)
+{
+	struct pci_pbm_info *pbm = bus_dev->sysdata;
+	u32 devhandle = pbm->devhandle;
+	unsigned int bus = bus_dev->number;
+	unsigned int device = PCI_SLOT(devfn);
+	unsigned int func = PCI_FUNC(devfn);
+	unsigned long ret;
+
+	if (config_out_of_range(pbm, bus, devfn, where)) {
+		/* Do nothing. */
+	} else {
+		ret = pci_sun4v_config_put(devhandle,
+				HV_PCI_DEVICE_BUILD(bus, device, func),
+				where, size, value);
+	}
+	return PCIBIOS_SUCCESSFUL;
+}
+
+struct pci_ops sun4v_pci_ops = {
+	.read =		sun4v_read_pci_cfg,
+	.write =	sun4v_write_pci_cfg,
+};
+
+void pci_get_pbm_props(struct pci_pbm_info *pbm)
+{
+	const u32 *val = of_get_property(pbm->op->dev.of_node, "bus-range", NULL);
+
+	pbm->pci_first_busno = val[0];
+	pbm->pci_last_busno = val[1];
+
+	val = of_get_property(pbm->op->dev.of_node, "ino-bitmap", NULL);
+	if (val) {
+		pbm->ino_bitmap = (((u64)val[1] << 32UL) |
+				   ((u64)val[0] <<  0UL));
+	}
+}
+
+static void pci_register_legacy_regions(struct resource *io_res,
+					struct resource *mem_res)
+{
+	struct resource *p;
+
+	/* VGA Video RAM. */
+	p = kzalloc(sizeof(*p), GFP_KERNEL);
+	if (!p)
+		return;
+
+	p->name = "Video RAM area";
+	p->start = mem_res->start + 0xa0000UL;
+	p->end = p->start + 0x1ffffUL;
+	p->flags = IORESOURCE_BUSY;
+	request_resource(mem_res, p);
+
+	p = kzalloc(sizeof(*p), GFP_KERNEL);
+	if (!p)
+		return;
+
+	p->name = "System ROM";
+	p->start = mem_res->start + 0xf0000UL;
+	p->end = p->start + 0xffffUL;
+	p->flags = IORESOURCE_BUSY;
+	request_resource(mem_res, p);
+
+	p = kzalloc(sizeof(*p), GFP_KERNEL);
+	if (!p)
+		return;
+
+	p->name = "Video ROM";
+	p->start = mem_res->start + 0xc0000UL;
+	p->end = p->start + 0x7fffUL;
+	p->flags = IORESOURCE_BUSY;
+	request_resource(mem_res, p);
+}
+
+static void pci_register_iommu_region(struct pci_pbm_info *pbm)
+{
+	const u32 *vdma = of_get_property(pbm->op->dev.of_node, "virtual-dma",
+					  NULL);
+
+	if (vdma) {
+		struct resource *rp = kzalloc(sizeof(*rp), GFP_KERNEL);
+
+		if (!rp) {
+			pr_info("%s: Cannot allocate IOMMU resource.\n",
+				pbm->name);
+			return;
+		}
+		rp->name = "IOMMU";
+		rp->start = pbm->mem_space.start + (unsigned long) vdma[0];
+		rp->end = rp->start + (unsigned long) vdma[1] - 1UL;
+		rp->flags = IORESOURCE_BUSY;
+		if (request_resource(&pbm->mem_space, rp)) {
+			pr_info("%s: Unable to request IOMMU resource.\n",
+				pbm->name);
+			kfree(rp);
+		}
+	}
+}
+
+void pci_determine_mem_io_space(struct pci_pbm_info *pbm)
+{
+	const struct linux_prom_pci_ranges *pbm_ranges;
+	int i, saw_mem, saw_io;
+	int num_pbm_ranges;
+
+	saw_mem = saw_io = 0;
+	pbm_ranges = of_get_property(pbm->op->dev.of_node, "ranges", &i);
+	if (!pbm_ranges) {
+		prom_printf("PCI: Fatal error, missing PBM ranges property "
+			    " for %s\n",
+			    pbm->name);
+		prom_halt();
+	}
+
+	num_pbm_ranges = i / sizeof(*pbm_ranges);
+
+	for (i = 0; i < num_pbm_ranges; i++) {
+		const struct linux_prom_pci_ranges *pr = &pbm_ranges[i];
+		unsigned long a, size;
+		u32 parent_phys_hi, parent_phys_lo;
+		u32 size_hi, size_lo;
+		int type;
+
+		parent_phys_hi = pr->parent_phys_hi;
+		parent_phys_lo = pr->parent_phys_lo;
+		if (tlb_type == hypervisor)
+			parent_phys_hi &= 0x0fffffff;
+
+		size_hi = pr->size_hi;
+		size_lo = pr->size_lo;
+
+		type = (pr->child_phys_hi >> 24) & 0x3;
+		a = (((unsigned long)parent_phys_hi << 32UL) |
+		     ((unsigned long)parent_phys_lo  <<  0UL));
+		size = (((unsigned long)size_hi << 32UL) |
+			((unsigned long)size_lo  <<  0UL));
+
+		switch (type) {
+		case 0:
+			/* PCI config space, 16MB */
+			pbm->config_space = a;
+			break;
+
+		case 1:
+			/* 16-bit IO space, 16MB */
+			pbm->io_space.start = a;
+			pbm->io_space.end = a + size - 1UL;
+			pbm->io_space.flags = IORESOURCE_IO;
+			saw_io = 1;
+			break;
+
+		case 2:
+			/* 32-bit MEM space, 2GB */
+			pbm->mem_space.start = a;
+			pbm->mem_space.end = a + size - 1UL;
+			pbm->mem_space.flags = IORESOURCE_MEM;
+			saw_mem = 1;
+			break;
+
+		case 3:
+			/* XXX 64-bit MEM handling XXX */
+
+		default:
+			break;
+		};
+	}
+
+	if (!saw_io || !saw_mem) {
+		prom_printf("%s: Fatal error, missing %s PBM range.\n",
+			    pbm->name,
+			    (!saw_io ? "IO" : "MEM"));
+		prom_halt();
+	}
+
+	printk("%s: PCI IO[%llx] MEM[%llx]\n",
+	       pbm->name,
+	       pbm->io_space.start,
+	       pbm->mem_space.start);
+
+	pbm->io_space.name = pbm->mem_space.name = pbm->name;
+
+	request_resource(&ioport_resource, &pbm->io_space);
+	request_resource(&iomem_resource, &pbm->mem_space);
+
+	pci_register_legacy_regions(&pbm->io_space,
+				    &pbm->mem_space);
+	pci_register_iommu_region(pbm);
+}
+
+/* Generic helper routines for PCI error reporting. */
+void pci_scan_for_target_abort(struct pci_pbm_info *pbm,
+			       struct pci_bus *pbus)
+{
+	struct pci_dev *pdev;
+	struct pci_bus *bus;
+
+	list_for_each_entry(pdev, &pbus->devices, bus_list) {
+		u16 status, error_bits;
+
+		pci_read_config_word(pdev, PCI_STATUS, &status);
+		error_bits =
+			(status & (PCI_STATUS_SIG_TARGET_ABORT |
+				   PCI_STATUS_REC_TARGET_ABORT));
+		if (error_bits) {
+			pci_write_config_word(pdev, PCI_STATUS, error_bits);
+			printk("%s: Device %s saw Target Abort [%016x]\n",
+			       pbm->name, pci_name(pdev), status);
+		}
+	}
+
+	list_for_each_entry(bus, &pbus->children, node)
+		pci_scan_for_target_abort(pbm, bus);
+}
+
+void pci_scan_for_master_abort(struct pci_pbm_info *pbm,
+			       struct pci_bus *pbus)
+{
+	struct pci_dev *pdev;
+	struct pci_bus *bus;
+
+	list_for_each_entry(pdev, &pbus->devices, bus_list) {
+		u16 status, error_bits;
+
+		pci_read_config_word(pdev, PCI_STATUS, &status);
+		error_bits =
+			(status & (PCI_STATUS_REC_MASTER_ABORT));
+		if (error_bits) {
+			pci_write_config_word(pdev, PCI_STATUS, error_bits);
+			printk("%s: Device %s received Master Abort [%016x]\n",
+			       pbm->name, pci_name(pdev), status);
+		}
+	}
+
+	list_for_each_entry(bus, &pbus->children, node)
+		pci_scan_for_master_abort(pbm, bus);
+}
+
+void pci_scan_for_parity_error(struct pci_pbm_info *pbm,
+			       struct pci_bus *pbus)
+{
+	struct pci_dev *pdev;
+	struct pci_bus *bus;
+
+	list_for_each_entry(pdev, &pbus->devices, bus_list) {
+		u16 status, error_bits;
+
+		pci_read_config_word(pdev, PCI_STATUS, &status);
+		error_bits =
+			(status & (PCI_STATUS_PARITY |
+				   PCI_STATUS_DETECTED_PARITY));
+		if (error_bits) {
+			pci_write_config_word(pdev, PCI_STATUS, error_bits);
+			printk("%s: Device %s saw Parity Error [%016x]\n",
+			       pbm->name, pci_name(pdev), status);
+		}
+	}
+
+	list_for_each_entry(bus, &pbus->children, node)
+		pci_scan_for_parity_error(pbm, bus);
+}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    CONFIG_EXPERIMENTAL=y
+CONFIG_SYSVIPC=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_LOG_BUF_SHIFT=20
+CONFIG_SYSFS_DEPRECATED_V2=y
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_KALLSYMS_ALL=y
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+# CONFIG_BLK_DEV_BSG is not set
+CONFIG_PARAVIRT_GUEST=y
+CONFIG_IA64_XEN_GUEST=y
+CONFIG_MCKINLEY=y
+CONFIG_IA64_CYCLONE=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=16
+CONFIG_HOTPLUG_CPU=y
+CONFIG_PERMIT_BSP_REMOVE=y
+CONFIG_FORCE_CPEI_RETARGET=y
+CONFIG_IA64_MCA_RECOVERY=y
+CONFIG_PERFMON=y
+CONFIG_IA64_PALINFO=y
+CONFIG_KEXEC=y
+CONFIG_EFI_VARS=y
+CONFIG_BINFMT_MISC=m
+CONFIG_ACPI_PROCFS=y
+CONFIG_ACPI_BUTTON=m
+CONFIG_ACPI_FAN=m
+CONFIG_ACPI_PROCESSOR=m
+CONFIG_ACPI_CONTAINER=m
+CONFIG_HOTPLUG_PCI=m
+CONFIG_HOTPLUG_PCI_ACPI=m
+CONFIG_PACKET=y
+CONFIG_UNIX=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_ARPD=y
+CONFIG_SYN_COOKIES=y
+# CONFIG_INET_LRO is not set
+# CONFIG_IPV6 is not set
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_IDE=y
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_GENERIC=y
+CONFIG_BLK_DEV_CMD64X=y
+CONFIG_BLK_DEV_PIIX=y
+CONFIG_SCSI=y
+CONFIG_BLK_DEV_SD=y
+CONFIG_CHR_DEV_ST=m
+CONFIG_BLK_DEV_SR=m
+CONFIG_CHR_DEV_SG=m
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_QLOGIC_1280=y
+CONFIG_MD=y
+CONFIG_BLK_DEV_MD=m
+CONFIG_MD_LINEAR=m
+CONFIG_MD_RAID0=m
+CONFIG_MD_RAID1=m
+CONFIG_MD_MULTIPATH=m
+CONFIG_BLK_DEV_DM=m
+CONFIG_DM_CRYPT=m
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_MIRROR=m
+CONFIG_DM_ZERO=m
+CONFIG_FUSION=y
+CONFIG_FUSION_SPI=y
+CONFIG_FUSION_FC=y
+CONFIG_FUSION_CTL=y
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=m
+CONFIG_NET_ETHERNET=y
+CONFIG_NET_TULIP=y
+CONFIG_TULIP=m
+CONFIG_NET_PCI=y
+CONFIG_E100=m
+CONFIG_E1000=y
+CONFIG_TIGON3=y
+CONFIG_NETCONSOLE=y
+# CONFIG_SERIO_SERPORT is not set
+CONFIG_GAMEPORT=m
+CONFIG_SERIAL_NONSTANDARD=y
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_SERIAL_8250_NR_UARTS=6
+CONFIG_SERIAL_8250_EXTENDED=y
+CONFIG_SERIAL_8250_SHARE_IRQ=y
+# CONFIG_HW_RANDOM is not set
+CONFIG_EFI_RTC=y
+CONFIG_RAW_DRIVER=m
+CONFIG_HPET=y
+CONFIG_AGP=m
+CONFIG_DRM=m
+CONFIG_DRM_TDFX=m
+CONFIG_DRM_R128=m
+CONFIG_DRM_RADEON=m
+CONFIG_DRM_MGA=m
+CONFIG_DRM_SIS=m
+CONFIG_HID_GYRATION=y
+CONFIG_HID_NTRIG=y
+CONFIG_HID_PANTHERLORD=y
+CONFIG_HID_PETALYNX=y
+CONFIG_HID_SAMSUNG=y
+CONFIG_HID_SONY=y
+CONFIG_HID_SUNPLUS=y
+CONFIG_HID_TOPSEED=y
+CONFIG_USB=y
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_EHCI_HCD=m
+CONFIG_USB_OHCI_HCD=m
+CONFIG_USB_UHCI_HCD=y
+CONFIG_USB_STORAGE=m
+CONFIG_EXT2_FS=y
+CONFIG_EXT2_FS_XATTR=y
+CONFIG_EXT2_FS_POSIX_ACL=y
+CONFIG_EXT2_FS_SECURITY=y
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_EXT3_FS_SECURITY=y
+CONFIG_REISERFS_FS=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+CONFIG_REISERFS_FS_SECURITY=y
+CONFIG_XFS_FS=y
+CONFIG_AUTOFS_FS=y
+CONFIG_AUTOFS4_FS=y
+CONFIG_ISO9660_FS=m
+CONFIG_JOLIET=y
+CONFIG_UDF_FS=m
+CONFIG_VFAT_FS=y
+CONFIG_NTFS_FS=m
+CONFIG_PROC_KCORE=y
+CONFIG_TMPFS=y
+CONFIG_HUGETLBFS=y
+CONFIG_NFS_FS=m
+CONFIG_NFS_V3=y
+CONFIG_NFS_V4=y
+CONFIG_NFSD=m
+CONFIG_NFSD_V4=y
+CONFIG_SMB_FS=m
+CONFIG_SMB_NLS_DEFAULT=y
+CONFIG_CIFS=m
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_SGI_PARTITION=y
+CONFIG_EFI_PARTITION=y
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_CODEPAGE_737=m
+CONFIG_NLS_CODEPAGE_775=m
+CONFIG_NLS_CODEPAGE_850=m
+CONFIG_NLS_CODEPAGE_852=m
+CONFIG_NLS_CODEPAGE_855=m
+CONFIG_NLS_CODEPAGE_857=m
+CONFIG_NLS_CODEPAGE_860=m
+CONFIG_NLS_CODEPAGE_861=m
+CONFIG_NLS_CODEPAGE_862=m
+CONFIG_NLS_CODEPAGE_863=m
+CONFIG_NLS_CODEPAGE_864=m
+CONFIG_NLS_CODEPAGE_865=m
+CONFIG_NLS_CODEPAGE_866=m
+CONFIG_NLS_CODEPAGE_869=m
+CONFIG_NLS_CODEPAGE_936=m
+CONFIG_NLS_CODEPAGE_950=m
+CONFIG_NLS_CODEPAGE_932=m
+CONFIG_NLS_CODEPAGE_949=m
+CONFIG_NLS_CODEPAGE_874=m
+CONFIG_NLS_ISO8859_8=m
+CONFIG_NLS_CODEPAGE_1250=m
+CONFIG_NLS_CODEPAGE_1251=m
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_ISO8859_2=m
+CONFIG_NLS_ISO8859_3=m
+CONFIG_NLS_ISO8859_4=m
+CONFIG_NLS_ISO8859_5=m
+CONFIG_NLS_ISO8859_6=m
+CONFIG_NLS_ISO8859_7=m
+CONFIG_NLS_ISO8859_9=m
+CONFIG_NLS_ISO8859_13=m
+CONFIG_NLS_ISO8859_14=m
+CONFIG_NLS_ISO8859_15=m
+CONFIG_NLS_KOI8_R=m
+CONFIG_NLS_KOI8_U=m
+CONFIG_NLS_UTF8=m
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_MUTEXES=y
+# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+CONFIG_IA64_GRANULE_16MB=y
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_PCBC=m
+CONFIG_CRYPTO_MD5=y
+# CONFIG_CRYPTO_ANSI_CPRNG is not set
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                #ifndef _ASM_IA64_ATOMIC_H
+#define _ASM_IA64_ATOMIC_H
+
+/*
+ * Atomic operations that C can't guarantee us.  Useful for
+ * resource counting etc..
+ *
+ * NOTE: don't mess with the types below!  The "unsigned long" and
+ * "int" types were carefully placed so as to ensure proper operation
+ * of the macros.
+ *
+ * Copyright (C) 1998, 1999, 2002-2003 Hewlett-Pack

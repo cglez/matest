@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<title>MaTest: Referencia del Archivo variables.c</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javaScript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body onload='searchBox.OnSelectItem(0);'>
+<!-- Generado por Doxygen 1.7.1 -->
+<script type="text/javascript"><!--
+var searchBox = new SearchBox("searchBox", "search",false,'Buscar');
+--></script>
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Funciones</a>  </div>
+  <div class="headertitle">
+<h1>Referencia del Archivo variables.c</h1>  </div>
+</div>
+<div class="contents">
+<code>#include &lt;stdlib.h&gt;</code><br/>
+<code>#include &lt;stdio.h&gt;</code><br/>
+<code>#include &lt;string.h&gt;</code><br/>
+<code>#include &quot;<a class="el" href="logics_8h.html">logics.h</a>&quot;</code><br/>
+<div class="dynheader">
+Dependencia gr·fica adjunta para variables.c:</div>
+<div class="dyncontent">
+<div class="center"><img src="variables_8c__incl.png" border="0" usemap="#variables_8c" alt=""/></div>
+<map name="variables_8c" id="variables_8c">
+<area shape="rect" id="node9" href="logics_8h.html" title="logics.h" alt="" coords="312,85,392,117"/></map>
+</div>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Funciones</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LlVar *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#abddccedd286aacabca77231212b0cebe">ll_var_new</a> (char symbol, int value)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#acef67ab48b0113d712917677532f6c92">ll_var_set_value</a> (LlVar *var, int value)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#a2f51b89d970ad134bd074288ddbf8028">ll_var_get_value</a> (LlVar *var)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#abf6aa2fdd7cbce01a7841fdd98be4a4b">ll_var_list_is_empty</a> (<a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> var_list)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#a87241f2cf22c64c66695e290433ad6ad">ll_var_list_free</a> (<a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> *var_list)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LlVar *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#a2ee054c2fae63862d343092daf90c8fe">ll_var_list_get_var_by_symbol</a> (<a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> var_list, char symbol)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#a1974fbdf1c42c3c0e154a57da47aa0fe">ll_var_list_add_var</a> (<a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> *var_list, LlVar *var)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">unsigned int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#ad9cfdfb1dd729a83005961ffd4fae7a3">ll_var_list_length</a> (<a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> var_list)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="variables_8c.html#a949ce8068748f6c48d270f6b58b3183b">ll_logic_add_formula_vars</a> (<a class="el" href="struct_ll_logic.html">LlLogic</a> *logic, char formula[])</td></tr>
+</table>
+<hr/><a name="_details"></a><h2>DescripciÛn detallada</h2>
+<p>Este archivo contiene las funciones encargadas de manejar las variables proposicionales y sus listas. </p>
+<hr/><h2>DocumentaciÛn de las funciones</h2>
+<a class="anchor" id="a949ce8068748f6c48d270f6b58b3183b"></a><!-- doxytag: member="variables.c::ll_logic_add_formula_vars" ref="a949ce8068748f6c48d270f6b58b3183b" args="(LlLogic *logic, char formula[])" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_logic_add_formula_vars </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_ll_logic.html">LlLogic</a> *&nbsp;</td>
+          <td class="paramname"> <em>logic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>formula</em>[]</td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2f51b89d970ad134bd074288ddbf8028"></a><!-- doxytag: member="variables.c::ll_var_get_value" ref="a2f51b89d970ad134bd074288ddbf8028" args="(LlVar *var)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ll_var_get_value </td>
+          <td>(</td>
+          <td class="paramtype">LlVar *&nbsp;</td>
+          <td class="paramname"> <em>var</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Devuelve el valor de una variable proposicional.</p>
+<dl class="return"><dt><b>Devuelve:</b></dt><dd><img class="formulaInl" alt="$n \geq 0$" src="form_10.png"/> : el valor de la variable.<br/>
+ -1: error, la variable no existe. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a1974fbdf1c42c3c0e154a57da47aa0fe"></a><!-- doxytag: member="variables.c::ll_var_list_add_var" ref="a1974fbdf1c42c3c0e154a57da47aa0fe" args="(LlVarList *var_list, LlVar *var)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_var_list_add_var </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> *&nbsp;</td>
+          <td class="paramname"> <em>var_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">LlVar *&nbsp;</td>
+          <td class="paramname"> <em>var</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A√±ade una variable proposicional a una lista si no existe ya una con ese nombre, y la sit√∫a por orden alfab√©tico, con lo que la lista queda ordenada. </p>
+
+</div>
+</div>
+<a class="anchor" id="a87241f2cf22c64c66695e290433ad6ad"></a><!-- doxytag: member="variables.c::ll_var_list_free" ref="a87241f2cf22c64c66695e290433ad6ad" args="(LlVarList *var_list)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_var_list_free </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a> *&nbsp;</td>
+          <td class="paramname"> <em>var_list</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Procedimiento que elimina una lista de variables por completo liberando la memoria reservada. </p>
+
+</div>
+</div>
+<a class="anchor" id="a2ee054c2fae63862d343092daf90c8fe"></a><!-- doxytag: member="variables.c::ll_var_list_get_var_by_symbol" ref="a2ee054c2fae63862d343092daf90c8fe" args="(LlVarList var_list, char symbol)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LlVar* ll_var_list_get_var_by_symbol </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a>&nbsp;</td>
+          <td class="paramname"> <em>var_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Busca una variable dada por su s√≠mbolo en una lista de variables.</p>
+<dl class="return"><dt><b>Devuelve:</b></dt><dd>Puntero a la variable si existe, o el puntero nulo en caso contrario. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="abf6aa2fdd7cbce01a7841fdd98be4a4b"></a><!-- doxytag: member="variables.c::ll_var_list_is_empty" ref="abf6aa2fdd7cbce01a7841fdd98be4a4b" args="(LlVarList var_list)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ll_var_list_is_empty </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a>&nbsp;</td>
+          <td class="paramname"> <em>var_list</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad9cfdfb1dd729a83005961ffd4fae7a3"></a><!-- doxytag: member="variables.c::ll_var_list_length" ref="ad9cfdfb1dd729a83005961ffd4fae7a3" args="(LlVarList var_list)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int ll_var_list_length </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a3e6703e008f32bf79d33d503cc9f2023">LlVarList</a>&nbsp;</td>
+          <td class="paramname"> <em>var_list</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Devuelve el n√∫mero de elementos que contiene una lista de variables. </p>
+
+</div>
+</div>
+<a class="anchor" id="abddccedd286aacabca77231212b0cebe"></a><!-- doxytag: member="variables.c::ll_var_new" ref="abddccedd286aacabca77231212b0cebe" args="(char symbol, int value)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LlVar* ll_var_new </td>
+          <td>(</td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Crea una variable proposicional nueva.</p>
+<dl><dt><b>Par·metros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>symbol</em>&nbsp;</td><td>Letra o s√≠mbolo que representa la variable. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>value</em>&nbsp;</td><td>Valor asignado a la variable. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="acef67ab48b0113d712917677532f6c92"></a><!-- doxytag: member="variables.c::ll_var_set_value" ref="acef67ab48b0113d712917677532f6c92" args="(LlVar *var, int value)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_var_set_value </td>
+          <td>(</td>
+          <td class="paramtype">LlVar *&nbsp;</td>
+          <td class="paramname"> <em>var</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Establece el valor dado en una variable proposicional. </p>
+
+</div>
+</div>
+</div>
+<!--- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&nbsp;</span>Todo</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&nbsp;</span>Estructuras de Datos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&nbsp;</span>Archivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&nbsp;</span>Funciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&nbsp;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&nbsp;</span>&apos;typedefs&apos;</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&nbsp;</span>Enumeraciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&nbsp;</span>Valores de enumeraciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&nbsp;</span>&apos;defines&apos;</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<hr class="footer"/><address class="footer"><small>Generado el Domingo, 31 de Octubre de 2010 01:02:34 para MaTest por&nbsp;
+<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.1 </small></address>
+</body>
+</html>

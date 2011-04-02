@@ -1,0 +1,9 @@
+s.\n", __func__,
+				     intr_context->name);
+			netif_printk(qdev, ifup, KERN_DEBUG, qdev->ndev,
+				     "%s: dev_id = 0x%p.\n", __func__,
+				     &qdev->rx_ring[0]);
+			status =
+			    request_irq(pdev->irq, qlge_isr,
+					test_bit(QL_MSI_ENABLED,
+						 &

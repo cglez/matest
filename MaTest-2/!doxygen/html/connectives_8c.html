@@ -1,0 +1,515 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<title>MaTest: Referencia del Archivo connectives.c</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javaScript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body onload='searchBox.OnSelectItem(0);'>
+<!-- Generado por Doxygen 1.7.1 -->
+<script type="text/javascript"><!--
+var searchBox = new SearchBox("searchBox", "search",false,'Buscar');
+--></script>
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Funciones</a>  </div>
+  <div class="headertitle">
+<h1>Referencia del Archivo connectives.c</h1>  </div>
+</div>
+<div class="contents">
+<code>#include &lt;stdlib.h&gt;</code><br/>
+<code>#include &lt;stdio.h&gt;</code><br/>
+<code>#include &lt;ctype.h&gt;</code><br/>
+<code>#include &quot;<a class="el" href="logics_8h.html">logics.h</a>&quot;</code><br/>
+<div class="dynheader">
+Dependencia gr醘ica adjunta para connectives.c:</div>
+<div class="dyncontent">
+<div class="center"><img src="connectives_8c__incl.png" border="0" usemap="#connectives_8c" alt=""/></div>
+<map name="connectives_8c" id="connectives_8c">
+<area shape="rect" id="node9" href="logics_8h.html" title="logics.h" alt="" coords="309,85,389,117"/></map>
+</div>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Funciones</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LlUCon *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a50e94ead12a8487639aff8f6e720083e">ll_ucon_new</a> (char symbol, int *matrix, int dimension)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LlBCon *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a6096983b11c4b9859034f3779b361376">ll_bcon_new</a> (char symbol, int **matrix, int dimension)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LlUCon *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a87e42e23d8cc96873b54fece4d4884dc">ll_ucon_list_get_ucon_by_symbol</a> (<a class="el" href="logics_8h.html#afd84b5f3f5f594cec38bba108a69a910">LlUConList</a> ucon_list, char symbol)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LlBCon *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a35628773b57c3275fc543d4bebdea9be">ll_bcon_list_get_bcon_by_symbol</a> (<a class="el" href="logics_8h.html#a9d6f525c6b76faeaafbdd589b664103a">LlBConList</a> bcon_list, char symbol)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a610e01a981aed0ce4982fb01ec5ad69c">ll_ucon_list_free</a> (<a class="el" href="logics_8h.html#afd84b5f3f5f594cec38bba108a69a910">LlUConList</a> *ucon_list)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#aebca32c2723b1e28f4af9a13e1d645db">ll_bcon_list_free</a> (<a class="el" href="logics_8h.html#a9d6f525c6b76faeaafbdd589b664103a">LlBConList</a> *bcon_list, int dimension)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#aa4dc029c74a2b8f89fa66f137e100a8b">ll_ucon_list_append_ucon</a> (<a class="el" href="logics_8h.html#afd84b5f3f5f594cec38bba108a69a910">LlUConList</a> *ucon_list, LlUCon *ucon)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#aeb25ca2d80b64f1e65c6c388faa2005f">ll_bcon_list_append_bcon</a> (<a class="el" href="logics_8h.html#a9d6f525c6b76faeaafbdd589b664103a">LlBConList</a> *bcon_list, LlBCon *bcon)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a54ce574fe661cbfe7308b30c37121778">ll_logic_set_default_ucons_lukasiewicz</a> (<a class="el" href="struct_ll_logic.html">LlLogic</a> *logic)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#ae319c7f5c124e9ed465674d582bae2f1">ll_logic_set_default_bcons_lukasiewicz</a> (<a class="el" href="struct_ll_logic.html">LlLogic</a> *logic)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#ade574bfefd947e993af3e86d073de134">ll_con_delete_by_symbol</a> (<a class="el" href="struct_ll_logic.html">LlLogic</a> *logic, char symbol)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a3a70a0c2ab7fbd177b48f52ccacc785d">write_ucon_matrix</a> (FILE *file, LlUCon *ucon, int dimension)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a1126f397f7bf278983877016921cb50a">write_bcon_matrix</a> (FILE *file, LlBCon *bcon, int dimension)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="connectives_8c.html#a6b83aae27063fdc2e85d9a21c87bf75b">write_matrices</a> (FILE *file, <a class="el" href="struct_ll_logic.html">LlLogic</a> *logic)</td></tr>
+</table>
+<hr/><a name="_details"></a><h2>Descripci髇 detallada</h2>
+<p>Este archivo contiene el c贸digo responsable de manejar las conectivas, su creaci贸n, definici贸n, eliminaci贸n... Muchas de las funciones aqu铆 presentes vienen por pares, unas para manejar las conectivas unarias y otras para las conectivas binarias, unas manejan vectores, las otras matrices. </p>
+<hr/><h2>Documentaci髇 de las funciones</h2>
+<a class="anchor" id="aeb25ca2d80b64f1e65c6c388faa2005f"></a><!-- doxytag: member="connectives.c::ll_bcon_list_append_bcon" ref="aeb25ca2d80b64f1e65c6c388faa2005f" args="(LlBConList *bcon_list, LlBCon *bcon)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ll_bcon_list_append_bcon </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a9d6f525c6b76faeaafbdd589b664103a">LlBConList</a> *&nbsp;</td>
+          <td class="paramname"> <em>bcon_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">LlBCon *&nbsp;</td>
+          <td class="paramname"> <em>bcon</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A帽ade una conectiva binaria al final de una lista de conectivas binarias siempre y cuando no exista ya una con el mismo s铆mbolo. </p>
+
+</div>
+</div>
+<a class="anchor" id="aebca32c2723b1e28f4af9a13e1d645db"></a><!-- doxytag: member="connectives.c::ll_bcon_list_free" ref="aebca32c2723b1e28f4af9a13e1d645db" args="(LlBConList *bcon_list, int dimension)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_bcon_list_free </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a9d6f525c6b76faeaafbdd589b664103a">LlBConList</a> *&nbsp;</td>
+          <td class="paramname"> <em>bcon_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>dimension</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Borra una lista de conectivas binarias.</p>
+<p>param bcon_list Lista de conectivas binarias a borrar. </p>
+
+</div>
+</div>
+<a class="anchor" id="a35628773b57c3275fc543d4bebdea9be"></a><!-- doxytag: member="connectives.c::ll_bcon_list_get_bcon_by_symbol" ref="a35628773b57c3275fc543d4bebdea9be" args="(LlBConList bcon_list, char symbol)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LlBCon* ll_bcon_list_get_bcon_by_symbol </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#a9d6f525c6b76faeaafbdd589b664103a">LlBConList</a>&nbsp;</td>
+          <td class="paramname"> <em>bcon_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Busca una conectiva binaria dada por su s铆mbolo asociado dentro de una lista de conectivas binarias.</p>
+<dl><dt><b>Par醡etros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>bcon_list</em>&nbsp;</td><td>Lista de conectivas binarias donde buscar. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>symbol</em>&nbsp;</td><td>S铆mbolo por el que buscar. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Devuelve:</b></dt><dd>Devuelve un puntero a la conectiva, si existe, o el puntero nulo en caso contrario. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a6096983b11c4b9859034f3779b361376"></a><!-- doxytag: member="connectives.c::ll_bcon_new" ref="a6096983b11c4b9859034f3779b361376" args="(char symbol, int **matrix, int dimension)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LlBCon* ll_bcon_new </td>
+          <td>(</td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int **&nbsp;</td>
+          <td class="paramname"> <em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>dimension</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Crea una conectiva binaria nueva.</p>
+<dl><dt><b>Par醡etros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>symbol</em>&nbsp;</td><td>S铆mbolo asociado a la conectiva. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>matrix</em>&nbsp;</td><td>Matriz de la conectiva. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dimension</em>&nbsp;</td><td>Dimensi贸n de contexto para la matriz. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="ade574bfefd947e993af3e86d073de134"></a><!-- doxytag: member="connectives.c::ll_con_delete_by_symbol" ref="ade574bfefd947e993af3e86d073de134" args="(LlLogic *logic, char symbol)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_con_delete_by_symbol </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_ll_logic.html">LlLogic</a> *&nbsp;</td>
+          <td class="paramname"> <em>logic</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Elimina de una l贸gica una conectiva, unaria o binaria indistintamente, dada por su s铆mbolo. </p>
+
+</div>
+</div>
+<a class="anchor" id="ae319c7f5c124e9ed465674d582bae2f1"></a><!-- doxytag: member="connectives.c::ll_logic_set_default_bcons_lukasiewicz" ref="ae319c7f5c124e9ed465674d582bae2f1" args="(LlLogic *logic)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_logic_set_default_bcons_lukasiewicz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_ll_logic.html">LlLogic</a> *&nbsp;</td>
+          <td class="paramname"> <em>logic</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Define las conectivas binarias seg煤n el modelo de las l贸gicas multivaluadas de 艁ukasiewicz. Las conectivas binarias que se definen son las siguientes:</p>
+<ul>
+<li>Implicaci贸n (C): <img class="formulaInl" alt="$ x \rightarrow y =_{def} \min \{n, n - x + y\} $" src="form_1.png"/>.</li>
+<li>Conjunci贸n (K): <img class="formulaInl" alt="$ x \wedge y =_{def} \min \{x, y\} $" src="form_2.png"/>.</li>
+<li>Disyunci贸n (A): <img class="formulaInl" alt="$ x \vee y =_{def} \max \{x, y\} $" src="form_3.png"/>.</li>
+<li>Bicondicional (E): <img class="formulaInl" alt="$ x \leftrightarrow y =_{def} n - | x - y | $" src="form_4.png"/>. </li>
+</ul>
+
+</div>
+</div>
+<a class="anchor" id="a54ce574fe661cbfe7308b30c37121778"></a><!-- doxytag: member="connectives.c::ll_logic_set_default_ucons_lukasiewicz" ref="a54ce574fe661cbfe7308b30c37121778" args="(LlLogic *logic)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_logic_set_default_ucons_lukasiewicz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_ll_logic.html">LlLogic</a> *&nbsp;</td>
+          <td class="paramname"> <em>logic</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Define las conectivas unarias seg煤n el modelo de las l贸gicas multivaluadas de 艁ukasiewicz. S贸lo se define una conectiva unaria, la negaci贸n (N), del siguiente modo: <img class="formulaInl" alt="$ \neg x =_{def} ( 1 - x ) $" src="form_0.png"/>. </p>
+
+</div>
+</div>
+<a class="anchor" id="aa4dc029c74a2b8f89fa66f137e100a8b"></a><!-- doxytag: member="connectives.c::ll_ucon_list_append_ucon" ref="aa4dc029c74a2b8f89fa66f137e100a8b" args="(LlUConList *ucon_list, LlUCon *ucon)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ll_ucon_list_append_ucon </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#afd84b5f3f5f594cec38bba108a69a910">LlUConList</a> *&nbsp;</td>
+          <td class="paramname"> <em>ucon_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">LlUCon *&nbsp;</td>
+          <td class="paramname"> <em>ucon</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>A帽ade una conectiva unaria al final de una lista de conectivas unarias siempre y cuando no exista ya una con el mismo s铆mbolo.</p>
+<dl><dt><b>Par醡etros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>ucon_list</em>&nbsp;</td><td>Una lista de conectivas unarias. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em></em>&nbsp;</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a610e01a981aed0ce4982fb01ec5ad69c"></a><!-- doxytag: member="connectives.c::ll_ucon_list_free" ref="a610e01a981aed0ce4982fb01ec5ad69c" args="(LlUConList *ucon_list)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ll_ucon_list_free </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#afd84b5f3f5f594cec38bba108a69a910">LlUConList</a> *&nbsp;</td>
+          <td class="paramname"> <em>ucon_list</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Borra una lista de conectivas unarias.</p>
+<dl><dt><b>Par醡etros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>ucon_list</em>&nbsp;</td><td>Lista de conectivas unarias a borrar. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a87e42e23d8cc96873b54fece4d4884dc"></a><!-- doxytag: member="connectives.c::ll_ucon_list_get_ucon_by_symbol" ref="a87e42e23d8cc96873b54fece4d4884dc" args="(LlUConList ucon_list, char symbol)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LlUCon* ll_ucon_list_get_ucon_by_symbol </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="logics_8h.html#afd84b5f3f5f594cec38bba108a69a910">LlUConList</a>&nbsp;</td>
+          <td class="paramname"> <em>ucon_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Busca una conectiva unaria dada por su s铆mbolo asociado dentro de una lista de conectivas unarias.</p>
+<dl><dt><b>Par醡etros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>ucon_list</em>&nbsp;</td><td>Lista de conectivas unarias donde buscar. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>symbol</em>&nbsp;</td><td>S铆mbolo por el que buscar. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Devuelve:</b></dt><dd>Devuelve un puntero a la conectiva, si existe, o el puntero nulo en caso contrario. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a50e94ead12a8487639aff8f6e720083e"></a><!-- doxytag: member="connectives.c::ll_ucon_new" ref="a50e94ead12a8487639aff8f6e720083e" args="(char symbol, int *matrix, int dimension)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LlUCon* ll_ucon_new </td>
+          <td>(</td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&nbsp;</td>
+          <td class="paramname"> <em>matrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>dimension</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Crea una conectiva unaria nueva.</p>
+<dl><dt><b>Par醡etros:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>symbol</em>&nbsp;</td><td>S铆mbolo asociado a la conectiva. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>matrix</em>&nbsp;</td><td>Matriz de la conectiva. </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>dimension</em>&nbsp;</td><td>Dimensi贸n de contexto para la matriz. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a1126f397f7bf278983877016921cb50a"></a><!-- doxytag: member="connectives.c::write_bcon_matrix" ref="a1126f397f7bf278983877016921cb50a" args="(FILE *file, LlBCon *bcon, int dimension)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int write_bcon_matrix </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">LlBCon *&nbsp;</td>
+          <td class="paramname"> <em>bcon</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>dimension</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6b83aae27063fdc2e85d9a21c87bf75b"></a><!-- doxytag: member="connectives.c::write_matrices" ref="a6b83aae27063fdc2e85d9a21c87bf75b" args="(FILE *file, LlLogic *logic)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int write_matrices </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="struct_ll_logic.html">LlLogic</a> *&nbsp;</td>
+          <td class="paramname"> <em>logic</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<p>Escribe todas las matrices de todas las conectivas en un archivo externo en forma de tabla simple. Primero se escriben las conectivas unarias y luego las binarias, en el orden en que hayan sido definidas. El formato pretende ser legible tanto por una persona como por el ordenador, editable como texto clano e importable por el programa.</p>
+<dl class="return"><dt><b>Devuelve:</b></dt><dd>0: 茅xito.<br/>
+ 1: error, archivo inv谩lido. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a3a70a0c2ab7fbd177b48f52ccacc785d"></a><!-- doxytag: member="connectives.c::write_ucon_matrix" ref="a3a70a0c2ab7fbd177b48f52ccacc785d" args="(FILE *file, LlUCon *ucon, int dimension)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int write_ucon_matrix </td>
+          <td>(</td>
+          <td class="paramtype">FILE *&nbsp;</td>
+          <td class="paramname"> <em>file</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">LlUCon *&nbsp;</td>
+          <td class="paramname"> <em>ucon</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>dimension</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+</div>
+<!--- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&nbsp;</span>Todo</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&nbsp;</span>Estructuras de Datos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&nbsp;</span>Archivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&nbsp;</span>Funciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&nbsp;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&nbsp;</span>&apos;typedefs&apos;</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&nbsp;</span>Enumeraciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&nbsp;</span>Valores de enumeraciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&nbsp;</span>&apos;defines&apos;</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<hr class="footer"/><address class="footer"><small>Generado el Domingo, 31 de Octubre de 2010 01:02:34 para MaTest por&nbsp;
+<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.1 </small></address>
+</body>
+</html>

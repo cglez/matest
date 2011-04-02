@@ -1,0 +1,225 @@
+>base_addr = 0;
+
+	ret = register_netdev(dev);
+	if (ret)
+		goto out;
+	return 0;
+
+ out:
+	if (rrpriv->rx_ring)
+		pci_free_consistent(pdev, RX_TOTAL_SIZE, rrpriv->rx_ring,
+				    rrpriv->rx_ring_dma);
+	if (rrpriv->tx_ring)
+		pci_free_consistent(pdev, TX_TOTAL_SIZE, rrpriv->tx_ring,
+				    rrpriv->tx_ring_dma);
+	if (rrpriv->regs)
+		iounmap(rrpriv->regs);
+	if (pdev) {
+		pci_release_regions(pdev);
+		pci_set_drvdata(pdev, NULL);
+	}
+ out2:
+	free_netdev(dev);
+ out3:
+	return ret;
+}
+
+static void __devexit rr_remove_one (struct pci_dev *pdev)
+{
+	struct net_device *dev = pci_get_drvdata(pdev);
+
+	if (dev) {
+		struct rr_private *rr = netdev_priv(dev);
+
+		if (!(readl(&rr->regs->HostCtrl) & NIC_HALTED)){
+			printk(KERN_ERR "%s: trying to unload running NIC\n",
+			       dev->name);
+			writel(HALT_NIC, &rr->regs->HostCtrl);
+		}
+
+		pci_free_consistent(pdev, EVT_RING_SIZE, rr->evt_ring,
+				    rr->evt_ring_dma);
+		pci_free_consistent(pdev, RX_TOTAL_SIZE, rr->rx_ring,
+				    rr->rx_ring_dma);
+		pci_free_consistent(pdev, TX_TOTAL_SIZE, rr->tx_ring,
+				    rr->tx_ring_dma);
+		unregister_netdev(dev);
+		iounmap(rr->regs);
+		free_netdev(dev);
+		pci_release_regions(pdev);
+		pci_disable_device(pdev);
+		pci_set_drvdata(pdev, NULL);
+	}
+}
+
+
+/*
+ * Commands are considered to be slow, thus there is no reason to
+ * inline this.
+ */
+static void rr_issue_cmd(struct rr_private *rrpriv, struct cmd *cmd)
+{
+	struct rr_regs __iomem *regs;
+	u32 idx;
+
+	regs = rrpriv->regs;
+	/*
+	 * This is temporary - it will go away in the final version.
+	 * We probably also want to make this function inline.
+	 */
+	if (readl(&regs->HostCtrl) & NIC_HALTED){
+		printk("issuing command for halted NIC, code 0x%x, "
+		       "HostCtrl %08x\n", cmd->code, readl(&regs->HostCtrl));
+		if (readl(&regs->Mode) & FATAL_ERR)
+			printk("error codes Fail1 %02x, Fail2 %02x\n",
+			       readl(&regs->Fail1), readl(&regs->Fail2));
+	}
+
+	idx = rrpriv->info->cmd_ctrl.pi;
+
+	writel(*(u32*)(cmd), &regs->CmdRing[idx]);
+	wmb();
+
+	idx = (idx - 1) % CMD_RING_ENTRIES;
+	rrpriv->info->cmd_ctrl.pi = idx;
+	wmb();
+
+	if (readl(&regs->Mode) & FATAL_ERR)
+		printk("error code %02x\n", readl(&regs->Fail1));
+}
+
+
+/*
+ * Reset the board in a sensible manner. The NIC is already halted
+ * when we get here and a spin-lock is held.
+ */
+static int rr_reset(struct net_device *dev)
+{
+	struct rr_private *rrpriv;
+	struct rr_regs __iomem *regs;
+	u32 start_pc;
+	int i;
+
+	rrpriv = netdev_priv(dev);
+	regs = rrpriv->regs;
+
+	rr_load_firmware(dev);
+
+	writel(0x01000000, &regs->TX_state);
+	writel(0xff800000, &regs->RX_state);
+	writel(0, &regs->AssistState);
+	writel(CLEAR_INTA, &regs->LocalCtrl);
+	writel(0x01, &regs->BrkPt);
+	writel(0, &regs->Timer);
+	writel(0, &regs->TimerRef);
+	writel(RESET_DMA, &regs->DmaReadState);
+	writel(RESET_DMA, &regs->DmaWriteState);
+	writel(0, &regs->DmaWriteHostHi);
+	writel(0, &regs->DmaWriteHostLo);
+	writel(0, &regs->DmaReadHostHi);
+	writel(0, &regs->DmaReadHostLo);
+	writel(0, &regs->DmaReadLen);
+	writel(0, &regs->DmaWriteLen);
+	writel(0, &regs->DmaWriteLcl);
+	writel(0, &regs->DmaWriteIPchecksum);
+	writel(0, &regs->DmaReadLcl);
+	writel(0, &regs->DmaReadIPchecksum);
+	writel(0, &regs->PciState);
+#if (BITS_PER_LONG == 64) && defined __LITTLE_ENDIAN
+	writel(SWAP_DATA | PTR64BIT | PTR_WD_SWAP, &regs->Mode);
+#elif (BITS_PER_LONG == 64)
+	writel(SWAP_DATA | PTR64BIT | PTR_WD_NOSWAP, &regs->Mode);
+#else
+	writel(SWAP_DATA | PTR32BIT | PTR_WD_NOSWAP, &regs->Mode);
+#endif
+
+#if 0
+	/*
+	 * Don't worry, this is just black magic.
+	 */
+	writel(0xdf000, &regs->RxBase);
+	writel(0xdf000, &regs->RxPrd);
+	writel(0xdf000, &regs->RxCon);
+	writel(0xce000, &regs->TxBase);
+	writel(0xce000, &regs->TxPrd);
+	writel(0xce000, &regs->TxCon);
+	writel(0, &regs->RxIndPro);
+	writel(0, &regs->RxIndCon);
+	writel(0, &regs->RxIndRef);
+	writel(0, &regs->TxIndPro);
+	writel(0, &regs->TxIndCon);
+	writel(0, &regs->TxIndRef);
+	writel(0xcc000, &regs->pad10[0]);
+	writel(0, &regs->DrCmndPro);
+	writel(0, &regs->DrCmndCon);
+	writel(0, &regs->DwCmndPro);
+	writel(0, &regs->DwCmndCon);
+	writel(0, &regs->DwCmndRef);
+	writel(0, &regs->DrDataPro);
+	writel(0, &regs->DrDataCon);
+	writel(0, &regs->DrDataRef);
+	writel(0, &regs->DwDataPro);
+	writel(0, &regs->DwDataCon);
+	writel(0, &regs->DwDataRef);
+#endif
+
+	writel(0xffffffff, &regs->MbEvent);
+	writel(0, &regs->Event);
+
+	writel(0, &regs->TxPi);
+	writel(0, &regs->IpRxPi);
+
+	writel(0, &regs->EvtCon);
+	writel(0, &regs->EvtPrd);
+
+	rrpriv->info->evt_ctrl.pi = 0;
+
+	for (i = 0; i < CMD_RING_ENTRIES; i++)
+		writel(0, &regs->CmdRing[i]);
+
+/*
+ * Why 32 ? is this not cache line size dependent?
+ */
+	writel(RBURST_64|WBURST_64, &regs->PciState);
+	wmb();
+
+	start_pc = rr_read_eeprom_word(rrpriv,
+			offsetof(struct eeprom, rncd_info.FwStart));
+
+#if (DEBUG > 1)
+	printk("%s: Executing firmware at address 0x%06x\n",
+	       dev->name, start_pc);
+#endif
+
+	writel(start_pc + 0x800, &regs->Pc);
+	wmb();
+	udelay(5);
+
+	writel(start_pc, &regs->Pc);
+	wmb();
+
+	return 0;
+}
+
+
+/*
+ * Read a string from the EEPROM.
+ */
+static unsigned int rr_read_eeprom(struct rr_private *rrpriv,
+				unsigned long offset,
+				unsigned char *buf,
+				unsigned long length)
+{
+	struct rr_regs __iomem *regs = rrpriv->regs;
+	u32 misc, io, host, i;
+
+	io = readl(&regs->ExtIo);
+	writel(0, &regs->ExtIo);
+	misc = readl(&regs->LocalCtrl);
+	writel(0, &regs->LocalCtrl);
+	host = readl(&regs->HostCtrl);
+	writel(host | HALT_NIC, &regs->HostCtrl);
+	mb();
+
+	for (i = 0; i < length; i++){
+		writel((EEPR

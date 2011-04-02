@@ -1,0 +1,69 @@
+dev->irq == 2)
+	  /* Fixup for users that don't know that IRQ 2 is really IRQ 9,
+	   * or don't know which one to set.
+	   */
+	  dev->irq = 9;
+
+#if 0
+	{
+		 int irqval = request_irq(dev->irq, seeq8005_interrupt, 0, "seeq8005", dev);
+		 if (irqval) {
+			 printk ("%s: unable to get IRQ %d (irqval=%d).\n", dev->name,
+					 dev->irq, irqval);
+			 retval = -EAGAIN;
+			 goto out;
+		 }
+	}
+#endif
+	dev->netdev_ops = &seeq8005_netdev_ops;
+	dev->watchdog_timeo	= HZ/20;
+	dev->flags &= ~IFF_MULTICAST;
+
+	return 0;
+out:
+	release_region(ioaddr, SEEQ8005_IO_EXTENT);
+	return retval;
+}
+
+
+/* Open/initialize the board.  This is called (in the current kernel)
+   sometime after booting when the 'ifconfig' program is run.
+
+   This routine should set everything up anew at each open, even
+   registers that "should" only need to be set once at boot, so that
+   there is non-reboot way to recover if something goes wrong.
+   */
+static int seeq8005_open(struct net_device *dev)
+{
+	struct net_local *lp = netdev_priv(dev);
+
+	{
+		 int irqval = request_irq(dev->irq, seeq8005_interrupt, 0, "seeq8005", dev);
+		 if (irqval) {
+			 printk ("%s: unable to get IRQ %d (irqval=%d).\n", dev->name,
+					 dev->irq, irqval);
+			 return -EAGAIN;
+		 }
+	}
+
+	/* Reset the hardware here.  Don't forget to set the station address. */
+	seeq8005_init(dev, 1);
+
+	lp->open_time = jiffies;
+
+	netif_start_queue(dev);
+	return 0;
+}
+
+static void seeq8005_timeout(struct net_device *dev)
+{
+	int ioaddr = dev->base_addr;
+	printk(KERN_WARNING "%s: transmit timed out, %s?\n", dev->name,
+		   tx_done(dev) ? "IRQ conflict" : "network cable problem");
+	/* Try to restart the adaptor. */
+	seeq8005_init(dev, 1);
+	dev->trans_start = jiffies; /* prevent tx timeout */
+	netif_wake_queue(dev);
+}
+
+stati

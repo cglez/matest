@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<title>MaTest: Referencia del Archivo parser_lifo.c</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javaScript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css"/>
+</head>
+<body onload='searchBox.OnSelectItem(0);'>
+<!-- Generado por Doxygen 1.7.1 -->
+<script type="text/javascript"><!--
+var searchBox = new SearchBox("searchBox", "search",false,'Buscar');
+--></script>
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">Estructuras de datos</a> &#124;
+<a href="#typedef-members">'typedefs'</a> &#124;
+<a href="#func-members">Funciones</a>  </div>
+  <div class="headertitle">
+<h1>Referencia del Archivo parser_lifo.c</h1>  </div>
+</div>
+<div class="contents">
+<code>#include &lt;stdlib.h&gt;</code><br/>
+<code>#include &lt;string.h&gt;</code><br/>
+<code>#include &lt;stdio.h&gt;</code><br/>
+<code>#include &lt;ctype.h&gt;</code><br/>
+<code>#include &quot;<a class="el" href="_ma_test_8h.html">MaTest.h</a>&quot;</code><br/>
+<div class="dynheader">
+Dependencia gráfica adjunta para parser_lifo.c:</div>
+<div class="dyncontent">
+<div class="center"><img src="parser__lifo_8c__incl.png" border="0" usemap="#parser__lifo_8c" alt=""/></div>
+<map name="parser__lifo_8c" id="parser__lifo_8c">
+<area shape="rect" id="node11" href="_ma_test_8h.html" title="MaTest.h" alt="" coords="416,85,504,117"/><area shape="rect" id="node19" href="logics_8h.html" title="logics.h" alt="" coords="583,165,663,197"/></map>
+</div>
+<table class="memberdecls">
+<tr><td colspan="2"><h2><a name="nested-classes"></a>
+Estructuras de datos</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">struct &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_l_i_f_o_type.html">LIFOType</a></td></tr>
+<tr><td colspan="2"><h2><a name="typedef-members"></a>
+'typedefs'</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="struct_l_i_f_o_type.html">LIFOType</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#a09b2c5c4bc07fca9536df30087697e0d">nLIFO</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="struct_l_i_f_o_type.html">LIFOType</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#a85d4cf62a6e6c8d1aa7806fa66ecff0c">LIFO</a></td></tr>
+<tr><td colspan="2"><h2><a name="func-members"></a>
+Funciones</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#a67c81f36831a2b940f8262f9e5c8a8c1">push</a> (<a class="el" href="struct_l_i_f_o_type.html">LIFO</a> *lifo, char ch)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#adb29dc0a81a86a727bdea538a565b7ce">pop</a> (<a class="el" href="struct_l_i_f_o_type.html">LIFO</a> *lifo)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">LogicSymbKind&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#a70050042b7689a2ae54b2d5065211a59">symb_kind_std</a> (char symb)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#ab234ec58a6556c145cd6ff72de315d35">priority</a> (char symb)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#a037dd8c8ae88f3c23d35e4b6ef16386d">parse_std</a> (LogicWFF *wff, char formula[])</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#a3af9025cddc96f81ae3a965c1c93b5fb">print_formula_pn</a> (LogicWFF wff)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#ae894882d2d073bdf5028f4a15b1da5e9">print_formula_rpn</a> (LogicWFF wff)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#ab9e92dc62eab95b88300c5ef320b0c65">print_formula_std</a> (LogicWFF wff)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="parser__lifo_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4">main</a> ()</td></tr>
+</table>
+<hr/><h2>Documentación de los 'typedefs'</h2>
+<a class="anchor" id="a85d4cf62a6e6c8d1aa7806fa66ecff0c"></a><!-- doxytag: member="parser_lifo.c::LIFO" ref="a85d4cf62a6e6c8d1aa7806fa66ecff0c" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="struct_l_i_f_o_type.html">LIFOType</a>* <a class="el" href="struct_l_i_f_o_type.html">LIFO</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a09b2c5c4bc07fca9536df30087697e0d"></a><!-- doxytag: member="parser_lifo.c::nLIFO" ref="a09b2c5c4bc07fca9536df30087697e0d" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef <a class="el" href="struct_l_i_f_o_type.html">LIFOType</a>* <a class="el" href="struct_l_i_f_o_type.html">nLIFO</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<hr/><h2>Documentación de las funciones</h2>
+<a class="anchor" id="ae66f6b31b5ad750f1fe042a706a4e3d4"></a><!-- doxytag: member="parser_lifo.c::main" ref="ae66f6b31b5ad750f1fe042a706a4e3d4" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int main </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a037dd8c8ae88f3c23d35e4b6ef16386d"></a><!-- doxytag: member="parser_lifo.c::parse_std" ref="a037dd8c8ae88f3c23d35e4b6ef16386d" args="(LogicWFF *wff, char formula[])" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void parse_std </td>
+          <td>(</td>
+          <td class="paramtype">LogicWFF *&nbsp;</td>
+          <td class="paramname"> <em>wff</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>formula</em>[]</td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="adb29dc0a81a86a727bdea538a565b7ce"></a><!-- doxytag: member="parser_lifo.c::pop" ref="adb29dc0a81a86a727bdea538a565b7ce" args="(LIFO *lifo)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char pop </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_l_i_f_o_type.html">LIFO</a> *&nbsp;</td>
+          <td class="paramname"> <em>lifo</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3af9025cddc96f81ae3a965c1c93b5fb"></a><!-- doxytag: member="parser_lifo.c::print_formula_pn" ref="a3af9025cddc96f81ae3a965c1c93b5fb" args="(LogicWFF wff)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_formula_pn </td>
+          <td>(</td>
+          <td class="paramtype">LogicWFF&nbsp;</td>
+          <td class="paramname"> <em>wff</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae894882d2d073bdf5028f4a15b1da5e9"></a><!-- doxytag: member="parser_lifo.c::print_formula_rpn" ref="ae894882d2d073bdf5028f4a15b1da5e9" args="(LogicWFF wff)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_formula_rpn </td>
+          <td>(</td>
+          <td class="paramtype">LogicWFF&nbsp;</td>
+          <td class="paramname"> <em>wff</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab9e92dc62eab95b88300c5ef320b0c65"></a><!-- doxytag: member="parser_lifo.c::print_formula_std" ref="ab9e92dc62eab95b88300c5ef320b0c65" args="(LogicWFF wff)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_formula_std </td>
+          <td>(</td>
+          <td class="paramtype">LogicWFF&nbsp;</td>
+          <td class="paramname"> <em>wff</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab234ec58a6556c145cd6ff72de315d35"></a><!-- doxytag: member="parser_lifo.c::priority" ref="ab234ec58a6556c145cd6ff72de315d35" args="(char symb)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int priority </td>
+          <td>(</td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symb</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a67c81f36831a2b940f8262f9e5c8a8c1"></a><!-- doxytag: member="parser_lifo.c::push" ref="a67c81f36831a2b940f8262f9e5c8a8c1" args="(LIFO *lifo, char ch)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void push </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_l_i_f_o_type.html">LIFO</a> *&nbsp;</td>
+          <td class="paramname"> <em>lifo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>ch</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a70050042b7689a2ae54b2d5065211a59"></a><!-- doxytag: member="parser_lifo.c::symb_kind_std" ref="a70050042b7689a2ae54b2d5065211a59" args="(char symb)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">LogicSymbKind symb_kind_std </td>
+          <td>(</td>
+          <td class="paramtype">char&nbsp;</td>
+          <td class="paramname"> <em>symb</em></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+</div>
+<!--- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&nbsp;</span>Todo</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&nbsp;</span>Estructuras de Datos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&nbsp;</span>Archivos</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&nbsp;</span>Funciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&nbsp;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&nbsp;</span>&apos;typedefs&apos;</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&nbsp;</span>Enumeraciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&nbsp;</span>Valores de enumeraciones</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&nbsp;</span>&apos;defines&apos;</a></div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<iframe src="" frameborder="0" 
+        name="MSearchResults" id="MSearchResults">
+</iframe>
+</div>
+
+<hr class="footer"/><address class="footer"><small>Generado el Domingo, 31 de Octubre de 2010 01:02:34 para MaTest por&nbsp;
+<a href="http://www.doxygen.org/index.html">
+<img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.1 </small></address>
+</body>
+</html>

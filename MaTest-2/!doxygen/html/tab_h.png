@@ -1,0 +1,9 @@
+ struct ib_mac_iocb_rsp *ib_mac_rsp,
+				   u16 vlan_id)
+{
+	struct net_device *ndev = qdev->ndev;
+	struct sk_buff *skb = NULL;
+
+	QL_DUMP_IB_MAC_RSP(ib_mac_rsp);
+
+	skb = ql_build_rx_skb(qdev, r

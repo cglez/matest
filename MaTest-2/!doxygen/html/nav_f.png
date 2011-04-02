@@ -1,0 +1,6 @@
+_spinlock(qdev, SEM_MAC_ADDR_MASK);
+	if (status)
+		return;
+	if (ql_set_mac_addr_reg
+	    (qdev, (u8 *) &enable_bit, MAC_ADDR_TYPE_VLAN, vid)) {
+		netif_err(qde

@@ -1,0 +1,25 @@
+g_ctrl	evt_ctrl;
+	struct ring_ctrl	cmd_ctrl;
+	struct ring_ctrl	tx_ctrl;
+	u8			pad[464];
+	u8			trace[3072];
+};
+
+/*
+ * The linux structure for the RoadRunner.
+ *
+ * RX/TX descriptors are put first to make sure they are properly
+ * aligned and do not cross cache-line boundaries.
+ */
+
+struct rr_private
+{
+	struct rx_desc		*rx_ring;
+	struct tx_desc		*tx_ring;
+	struct event		*evt_ring;
+	dma_addr_t 		tx_ring_dma;
+	dma_addr_t 		rx_ring_dma;
+	dma_addr_t 		evt_ring_dma;
+	/* Alignment ok ? */
+	struct sk_buff		*rx_skbuff[RX_RING_ENTRIES];
+	struct sk_buff		*tx_skbuff[TX_

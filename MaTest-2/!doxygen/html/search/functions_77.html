@@ -1,0 +1,135 @@
+IO_XENA_MAX_MC_ADDRESSES	64	/* multicast addresses */
+#define S2IO_HERC_MAX_MC_ADDRESSES	256
+
+#define S2IO_XENA_MAX_MAC_ADDRESSES	16
+#define S2IO_HERC_MAX_MAC_ADDRESSES	64
+
+#define S2IO_XENA_MC_ADDR_START_OFFSET	16
+#define S2IO_HERC_MC_ADDR_START_OFFSET	64
+
+	u64 rmac_addr_cmd_mem;
+#define RMAC_ADDR_CMD_MEM_WE                    s2BIT(7)
+#define RMAC_ADDR_CMD_MEM_RD                    0
+#define RMAC_ADDR_CMD_MEM_STROBE_NEW_CMD        s2BIT(15)
+#define RMAC_ADDR_CMD_MEM_STROBE_CMD_EXECUTING  s2BIT(15)
+#define RMAC_ADDR_CMD_MEM_OFFSET(n)             vBIT(n,26,6)
+
+	u64 rmac_addr_data0_mem;
+#define RMAC_ADDR_DATA0_MEM_ADDR(n)    vBIT(n,0,48)
+#define RMAC_ADDR_DATA0_MEM_USER       s2BIT(48)
+
+	u64 rmac_addr_data1_mem;
+#define RMAC_ADDR_DATA1_MEM_MASK(n)    vBIT(n,0,48)
+
+	u8 unused15[0x8];
+
+/*
+        u64 rmac_addr_cfg;
+#define RMAC_ADDR_UCASTn_EN(n)     mBIT(0)_n(n)
+#define RMAC_ADDR_MCASTn_EN(n)     mBIT(0)_n(n)
+#define RMAC_ADDR_BCAST_EN         vBIT(0)_48
+#define RMAC_ADDR_ALL_ADDR_EN      vBIT(0)_49
+*/
+	u64 tmac_ipg_cfg;
+
+	u64 rmac_pause_cfg;
+#define RMAC_PAUSE_GEN             s2BIT(0)
+#define RMAC_PAUSE_GEN_ENABLE      s2BIT(0)
+#define RMAC_PAUSE_RX              s2BIT(1)
+#define RMAC_PAUSE_RX_ENABLE       s2BIT(1)
+#define RMAC_PAUSE_HG_PTIME_DEF    vBIT(0xFFFF,16,16)
+#define RMAC_PAUSE_HG_PTIME(val)    vBIT(val,16,16)
+
+	u64 rmac_red_cfg;
+
+	u64 rmac_red_rate_q0q3;
+	u64 rmac_red_rate_q4q7;
+
+	u64 mac_link_util;
+#define MAC_TX_LINK_UTIL           vBIT(0xFE,1,7)
+#define MAC_TX_LINK_UTIL_DISABLE   vBIT(0xF, 8,4)
+#define MAC_TX_LINK_UTIL_VAL( n )  vBIT(n,8,4)
+#define MAC_RX_LINK_UTIL           vBIT(0xFE,33,7)
+#define MAC_RX_LINK_UTIL_DISABLE   vBIT(0xF,40,4)
+#define MAC_RX_LINK_UTIL_VAL( n )  vBIT(n,40,4)
+
+#define MAC_LINK_UTIL_DISABLE      MAC_TX_LINK_UTIL_DISABLE | \
+                                   MAC_RX_LINK_UTIL_DISABLE
+
+	u64 rmac_invalid_ipg;
+
+/* rx traffic steering */
+#define	MAC_RTS_FRM_LEN_SET(len)	vBIT(len,2,14)
+	u64 rts_frm_len_n[8];
+
+	u64 rts_qos_steering;
+
+#define MAX_DIX_MAP                         4
+	u64 rts_dix_map_n[MAX_DIX_MAP];
+#define RTS_DIX_MAP_ETYPE(val)             vBIT(val,0,16)
+#define RTS_DIX_MAP_SCW(val)               s2BIT(val,21)
+
+	u64 rts_q_alternates;
+	u64 rts_default_q;
+
+	u64 rts_ctrl;
+#define RTS_CTRL_IGNORE_SNAP_OUI           s2BIT(2)
+#define RTS_CTRL_IGNORE_LLC_CTRL           s2BIT(3)
+
+	u64 rts_pn_cam_ctrl;
+#define RTS_PN_CAM_CTRL_WE                 s2BIT(7)
+#define RTS_PN_CAM_CTRL_STROBE_NEW_CMD     s2BIT(15)
+#define RTS_PN_CAM_CTRL_STROBE_BEING_EXECUTED   s2BIT(15)
+#define RTS_PN_CAM_CTRL_OFFSET(n)          vBIT(n,24,8)
+	u64 rts_pn_cam_data;
+#define RTS_PN_CAM_DATA_TCP_SELECT         s2BIT(7)
+#define RTS_PN_CAM_DATA_PORT(val)          vBIT(val,8,16)
+#define RTS_PN_CAM_DATA_SCW(val)           vBIT(val,24,8)
+
+	u64 rts_ds_mem_ctrl;
+#define RTS_DS_MEM_CTRL_WE                 s2BIT(7)
+#define RTS_DS_MEM_CTRL_STROBE_NEW_CMD     s2BIT(15)
+#define RTS_DS_MEM_CTRL_STROBE_CMD_BEING_EXECUTED   s2BIT(15)
+#define RTS_DS_MEM_CTRL_OFFSET(n)          vBIT(n,26,6)
+	u64 rts_ds_mem_data;
+#define RTS_DS_MEM_DATA(n)                 vBIT(n,0,8)
+
+	u8 unused16[0x700 - 0x220];
+
+	u64 mac_debug_ctrl;
+#define MAC_DBG_ACTIVITY_VALUE		   0x411040400000000ULL
+
+	u8 unused17[0x2800 - 0x2708];
+
+/* memory controller registers */
+	u64 mc_int_status;
+#define MC_INT_STATUS_MC_INT               s2BIT(0)
+	u64 mc_int_mask;
+#define MC_INT_MASK_MC_INT                 s2BIT(0)
+
+	u64 mc_err_reg;
+#define MC_ERR_REG_ECC_DB_ERR_L            s2BIT(14)
+#define MC_ERR_REG_ECC_DB_ERR_U            s2BIT(15)
+#define MC_ERR_REG_MIRI_ECC_DB_ERR_0       s2BIT(18)
+#define MC_ERR_REG_MIRI_ECC_DB_ERR_1       s2BIT(20)
+#define MC_ERR_REG_MIRI_CRI_ERR_0          s2BIT(22)
+#define MC_ERR_REG_MIRI_CRI_ERR_1          s2BIT(23)
+#define MC_ERR_REG_SM_ERR                  s2BIT(31)
+#define MC_ERR_REG_ECC_ALL_SNG		   (s2BIT(2) | s2BIT(3) | s2BIT(4) | s2BIT(5) |\
+					s2BIT(17) | s2BIT(19))
+#define MC_ERR_REG_ECC_ALL_DBL		   (s2BIT(10) | s2BIT(11) | s2BIT(12) |\
+					s2BIT(13) | s2BIT(18) | s2BIT(20))
+#define PLL_LOCK_N			s2BIT(39)
+	u64 mc_err_mask;
+	u64 mc_err_alarm;
+
+	u8 unused18[0x100 - 0x28];
+
+/* MC configuration */
+	u64 rx_queue_cfg;
+#define RX_QUEUE_CFG_Q0_SZ(n)              vBIT(n,0,8)
+#define RX_QUEUE_CFG_Q1_SZ(n)              vBIT(n,8,8)
+#define RX_QUEUE_CFG_Q2_SZ(n)              vBIT(n,16,8)
+#define RX_QUEUE_CFG_Q3_SZ(n)              vBIT(n,24,8)
+#define RX_QUEUE_CFG_Q4_SZ(n)              vBIT(n,32,8)
+#define RX_QUEUE_CFG_Q5_

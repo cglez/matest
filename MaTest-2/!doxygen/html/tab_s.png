@@ -1,0 +1,6 @@
+ Tack it on to our GRO skb and let it go.
+		 */
+		ql_process_mac_rx_gro_page(qdev, rx_ring, ib_mac_rsp,
+						length, vlan_id);
+	} else if (ib_mac_rsp->flags3 & IB_MAC_IOCB_RSP_DL) {
+		/* N

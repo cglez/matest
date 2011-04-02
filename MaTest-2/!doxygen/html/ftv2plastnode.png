@@ -1,0 +1,9 @@
+ STS_FUNC_ID_SHIFT;
+	if (qdev->func > 3)
+		return -EIO;
+
+	status = ql_get_alt_pcie_func(qdev);
+	if (status)
+		return status;
+
+	qdev->port = (qdev->func < qdev->alt_f

@@ -1,0 +1,51 @@
+rx_tcode_rda_fail_cnt"},
+	{"rx_tcode_unkn_prot_cnt"},
+	{"rx_tcode_fcs_err_cnt"},
+	{"rx_tcode_buf_size_err_cnt"},
+	{"rx_tcode_rxd_corrupt_cnt"},
+	{"rx_tcode_unkn_err_cnt"},
+	{"tda_err_cnt"},
+	{"pfc_err_cnt"},
+	{"pcc_err_cnt"},
+	{"tti_err_cnt"},
+	{"tpa_err_cnt"},
+	{"sm_err_cnt"},
+	{"lso_err_cnt"},
+	{"mac_tmac_err_cnt"},
+	{"mac_rmac_err_cnt"},
+	{"xgxs_txgxs_err_cnt"},
+	{"xgxs_rxgxs_err_cnt"},
+	{"rc_err_cnt"},
+	{"prc_pcix_err_cnt"},
+	{"rpa_err_cnt"},
+	{"rda_err_cnt"},
+	{"rti_err_cnt"},
+	{"mc_err_cnt"}
+};
+
+#define S2IO_XENA_STAT_LEN	ARRAY_SIZE(ethtool_xena_stats_keys)
+#define S2IO_ENHANCED_STAT_LEN	ARRAY_SIZE(ethtool_enhanced_stats_keys)
+#define S2IO_DRIVER_STAT_LEN	ARRAY_SIZE(ethtool_driver_stats_keys)
+
+#define XFRAME_I_STAT_LEN (S2IO_XENA_STAT_LEN + S2IO_DRIVER_STAT_LEN)
+#define XFRAME_II_STAT_LEN (XFRAME_I_STAT_LEN + S2IO_ENHANCED_STAT_LEN)
+
+#define XFRAME_I_STAT_STRINGS_LEN (XFRAME_I_STAT_LEN * ETH_GSTRING_LEN)
+#define XFRAME_II_STAT_STRINGS_LEN (XFRAME_II_STAT_LEN * ETH_GSTRING_LEN)
+
+#define S2IO_TEST_LEN	ARRAY_SIZE(s2io_gstrings)
+#define S2IO_STRINGS_LEN	(S2IO_TEST_LEN * ETH_GSTRING_LEN)
+
+#define S2IO_TIMER_CONF(timer, handle, arg, exp)	\
+	init_timer(&timer);				\
+	timer.function = handle;			\
+	timer.data = (unsigned long)arg;		\
+	mod_timer(&timer, (jiffies + exp))		\
+
+/* copy mac addr to def_mac_addr array */
+static void do_s2io_copy_mac_addr(struct s2io_nic *sp, int offset, u64 mac_addr)
+{
+	sp->def_mac_addr[offset].mac_addr[5] = (u8) (mac_addr);
+	sp->def_mac_addr[offset].mac_addr[4] = (u8) (mac_addr >> 8);
+	sp->def_mac_addr[offset].mac_addr[3] = (u8) (mac_addr >> 16);
+	sp->def_mac_add

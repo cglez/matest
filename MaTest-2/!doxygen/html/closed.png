@@ -1,0 +1,6 @@
+tic void ql_init_lbq_ring(struct ql_adapter *qdev,
+				struct rx_ring *rx_ring)
+{
+	int i;
+	struct bq_desc *lbq_desc;
+	__le64 *

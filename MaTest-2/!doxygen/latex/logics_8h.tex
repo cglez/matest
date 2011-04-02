@@ -1,0 +1,584 @@
+\hypertarget{logics_8h}{
+\section{Referencia del Archivo logics.h}
+\label{logics_8h}\index{logics.h@{logics.h}}
+}
+{\ttfamily \#include $<$stdbool.h$>$}\par
+Dependencia gr�fica adjunta para logics.h:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=150pt]{logics_8h__incl}
+\end{center}
+\end{figure}
+Gr�fico de los archivos que directa o indirectamente incluyen a este archivo:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=400pt]{logics_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{Estructuras de datos}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct___ll_var}{LlVar}
+\item 
+struct \hyperlink{struct___ll_u_con}{LlUCon}
+\item 
+struct \hyperlink{struct___ll_b_con}{LlBCon}
+\item 
+struct \hyperlink{struct___ll_w_f_f_node}{LlWFFNode}
+\item 
+struct \hyperlink{struct_ll_logic}{LlLogic}
+\end{DoxyCompactItemize}
+\subsection*{'defines'}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{logics_8h_afa99ec4acc4ecb2dc3c2d05da15d0e3f}{MAX}(a, b)~(((a) $>$ (b)) ? (a) : (b))
+\item 
+\#define \hyperlink{logics_8h_a3acffbd305ee72dcd4593c0d8af64a4f}{MIN}(a, b)~(((a) $<$ (b)) ? (a) : (b))
+\item 
+\#define \hyperlink{logics_8h_ac25189db92959bff3c6c2adf4c34b50a}{DIM}~logic-\/$>$dimension
+\item 
+\#define \hyperlink{logics_8h_a44e92045e9d9f90900de59eb336853f3}{MDV}~logic-\/$>$mdv
+\item 
+\#define \hyperlink{logics_8h_a5dd13af014b612f67220ddd841479c5b}{MAXV}~logic-\/$>$dimension -\/ 1
+\end{DoxyCompactItemize}
+\subsection*{'typedefs'}
+\begin{DoxyCompactItemize}
+\item 
+typedef LlVar $\ast$ \hyperlink{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{LlVarList}
+\item 
+typedef LlUCon $\ast$ \hyperlink{logics_8h_afd84b5f3f5f594cec38bba108a69a910}{LlUConList}
+\item 
+typedef LlBCon $\ast$ \hyperlink{logics_8h_a9d6f525c6b76faeaafbdd589b664103a}{LlBConList}
+\item 
+typedef LlWFFNode $\ast$ \hyperlink{logics_8h_a6470128a56509787301d136c99688bb6}{LlWFF}
+\end{DoxyCompactItemize}
+\subsection*{Enumeraciones}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3ce}{LlSymbolType} \{ \par
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea25e4ac1a36fe8c1697a9e09ce94fd906}{LL\_\-SYMBOL\_\-VAR}, 
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea0647b09db79ad81eef6a9d0bf3c0c991}{LL\_\-SYMBOL\_\-U\_\-CON}, 
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea75539cd9a3cdb07ab880f84280b0f5bc}{LL\_\-SYMBOL\_\-B\_\-CON}, 
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea5b4013485e5ca3263bd463a9ac632bc0}{LL\_\-SYMBOL\_\-AUX\_\-OPEN}, 
+\par
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea30002bcbe9cd4db8a0d7da9702a93a7d}{LL\_\-SYMBOL\_\-AUX\_\-CLOSE}, 
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea748d06c3ad371f3694b97d0dd908c1fe}{LL\_\-SYMBOL\_\-NONE}
+ \}
+\item 
+enum \hyperlink{logics_8h_aa84541050947d3c4419dd564b493d749}{LlWFFNodeType} \{ \hyperlink{logics_8h_aa84541050947d3c4419dd564b493d749a268b5c734738fc201944776966d0e5d2}{LL\_\-WFF\_\-NODE\_\-VAR}, 
+\hyperlink{logics_8h_aa84541050947d3c4419dd564b493d749a52e254577df292bb14625dddc80b9112}{LL\_\-WFF\_\-NODE\_\-U\_\-CON}, 
+\hyperlink{logics_8h_aa84541050947d3c4419dd564b493d749aaba507d65fb49b2410ec46f4cf8e36f1}{LL\_\-WFF\_\-NODE\_\-B\_\-CON}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Funciones}
+\begin{DoxyCompactItemize}
+\item 
+LlVar $\ast$ \hyperlink{logics_8h_abddccedd286aacabca77231212b0cebe}{ll\_\-var\_\-new} (char symbol, int value)
+\item 
+void \hyperlink{logics_8h_acef67ab48b0113d712917677532f6c92}{ll\_\-var\_\-set\_\-value} (LlVar $\ast$var, int value)
+\item 
+int \hyperlink{logics_8h_a2f51b89d970ad134bd074288ddbf8028}{ll\_\-var\_\-get\_\-value} (LlVar $\ast$var)
+\item 
+bool \hyperlink{logics_8h_abf6aa2fdd7cbce01a7841fdd98be4a4b}{ll\_\-var\_\-list\_\-is\_\-empty} (\hyperlink{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{LlVarList} var\_\-list)
+\item 
+void \hyperlink{logics_8h_a87241f2cf22c64c66695e290433ad6ad}{ll\_\-var\_\-list\_\-free} (\hyperlink{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{LlVarList} $\ast$var\_\-list)
+\item 
+LlVar $\ast$ \hyperlink{logics_8h_a2ee054c2fae63862d343092daf90c8fe}{ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol} (\hyperlink{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{LlVarList} var\_\-list, char symbol)
+\item 
+unsigned int \hyperlink{logics_8h_ad9cfdfb1dd729a83005961ffd4fae7a3}{ll\_\-var\_\-list\_\-length} (\hyperlink{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{LlVarList} var\_\-list)
+\item 
+void \hyperlink{logics_8h_a1974fbdf1c42c3c0e154a57da47aa0fe}{ll\_\-var\_\-list\_\-add\_\-var} (\hyperlink{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{LlVarList} $\ast$var\_\-list, LlVar $\ast$var)
+\item 
+LlUCon $\ast$ \hyperlink{logics_8h_a50e94ead12a8487639aff8f6e720083e}{ll\_\-ucon\_\-new} (char symbol, int $\ast$matrix, int dimension)
+\item 
+LlBCon $\ast$ \hyperlink{logics_8h_a6096983b11c4b9859034f3779b361376}{ll\_\-bcon\_\-new} (char symbol, int $\ast$$\ast$matrix, int dimension)
+\item 
+LlUCon $\ast$ \hyperlink{logics_8h_a87e42e23d8cc96873b54fece4d4884dc}{ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol} (\hyperlink{logics_8h_afd84b5f3f5f594cec38bba108a69a910}{LlUConList} ucon\_\-list, char symbol)
+\item 
+LlBCon $\ast$ \hyperlink{logics_8h_a35628773b57c3275fc543d4bebdea9be}{ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol} (\hyperlink{logics_8h_a9d6f525c6b76faeaafbdd589b664103a}{LlBConList} bcon\_\-list, char symbol)
+\item 
+int \hyperlink{logics_8h_aa4dc029c74a2b8f89fa66f137e100a8b}{ll\_\-ucon\_\-list\_\-append\_\-ucon} (\hyperlink{logics_8h_afd84b5f3f5f594cec38bba108a69a910}{LlUConList} $\ast$ucon\_\-list, LlUCon $\ast$ucon)
+\item 
+int \hyperlink{logics_8h_aeb25ca2d80b64f1e65c6c388faa2005f}{ll\_\-bcon\_\-list\_\-append\_\-bcon} (\hyperlink{logics_8h_a9d6f525c6b76faeaafbdd589b664103a}{LlBConList} $\ast$bcon\_\-list, LlBCon $\ast$bcon)
+\item 
+void \hyperlink{logics_8h_ade574bfefd947e993af3e86d073de134}{ll\_\-con\_\-delete\_\-by\_\-symbol} (\hyperlink{struct_ll_logic}{LlLogic} $\ast$logic, char symbol)
+\item 
+void \hyperlink{logics_8h_a54ce574fe661cbfe7308b30c37121778}{ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz} (\hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+void \hyperlink{logics_8h_ae319c7f5c124e9ed465674d582bae2f1}{ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz} (\hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+void \hyperlink{logics_8h_a610e01a981aed0ce4982fb01ec5ad69c}{ll\_\-ucon\_\-list\_\-free} (\hyperlink{logics_8h_afd84b5f3f5f594cec38bba108a69a910}{LlUConList} $\ast$ucon\_\-list)
+\item 
+void \hyperlink{logics_8h_aebca32c2723b1e28f4af9a13e1d645db}{ll\_\-bcon\_\-list\_\-free} (\hyperlink{logics_8h_a9d6f525c6b76faeaafbdd589b664103a}{LlBConList} $\ast$bcon\_\-list, int dimension)
+\item 
+void \hyperlink{logics_8h_a231bd0a00a1c9c0ce1e26be5cc0cc9ba}{ll\_\-wff\_\-free} (\hyperlink{logics_8h_a6470128a56509787301d136c99688bb6}{LlWFF} $\ast$wff)
+\item 
+bool \hyperlink{logics_8h_a6cd981325d65ea3b0c8207ca3c51e29c}{ll\_\-wff\_\-add\_\-node} (\hyperlink{logics_8h_a6470128a56509787301d136c99688bb6}{LlWFF} $\ast$wff, \hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3ce}{LlSymbolType} symbol\_\-type, char symbol, int $\ast$value)
+\item 
+int \hyperlink{logics_8h_a2835808384cc3292c2e9356c9be11427}{ll\_\-wff\_\-get\_\-value} (\hyperlink{logics_8h_a6470128a56509787301d136c99688bb6}{LlWFF} wff, \hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+\hyperlink{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3ce}{LlSymbolType} \hyperlink{logics_8h_a6aacc22a3639726a8e7f614d4cf2d3a9}{ll\_\-symbol\_\-pn\_\-get\_\-type} (char symbol, \hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+bool \hyperlink{logics_8h_a4598342e9afb385c16394c362d292a2d}{ll\_\-formula\_\-is\_\-wff\_\-pn} (char formula\mbox{[}$\,$\mbox{]}, \hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\item 
+void \hyperlink{logics_8h_a815a24ce04de659e7ec64a35f6853871}{ll\_\-wff\_\-parse\_\-formula\_\-pn} (\hyperlink{logics_8h_a6470128a56509787301d136c99688bb6}{LlWFF} $\ast$tree, char formula\_\-pn\mbox{[}$\,$\mbox{]}, \hyperlink{struct_ll_logic}{LlLogic} $\ast$logic)
+\end{DoxyCompactItemize}
+
+
+\subsection{Documentaci�n de los 'defines'}
+\hypertarget{logics_8h_ac25189db92959bff3c6c2adf4c34b50a}{
+\index{logics.h@{logics.h}!DIM@{DIM}}
+\index{DIM@{DIM}!logics.h@{logics.h}}
+\subsubsection[{DIM}]{\setlength{\rightskip}{0pt plus 5cm}\#define DIM~logic-\/$>$dimension}}
+\label{logics_8h_ac25189db92959bff3c6c2adf4c34b50a}
+\hypertarget{logics_8h_afa99ec4acc4ecb2dc3c2d05da15d0e3f}{
+\index{logics.h@{logics.h}!MAX@{MAX}}
+\index{MAX@{MAX}!logics.h@{logics.h}}
+\subsubsection[{MAX}]{\setlength{\rightskip}{0pt plus 5cm}\#define MAX(
+\begin{DoxyParamCaption}
+\item[{}]{a, }
+\item[{}]{b}
+\end{DoxyParamCaption}
+)~(((a) $>$ (b)) ? (a) : (b))}}
+\label{logics_8h_afa99ec4acc4ecb2dc3c2d05da15d0e3f}
+\hypertarget{logics_8h_a5dd13af014b612f67220ddd841479c5b}{
+\index{logics.h@{logics.h}!MAXV@{MAXV}}
+\index{MAXV@{MAXV}!logics.h@{logics.h}}
+\subsubsection[{MAXV}]{\setlength{\rightskip}{0pt plus 5cm}\#define MAXV~logic-\/$>$dimension -\/ 1}}
+\label{logics_8h_a5dd13af014b612f67220ddd841479c5b}
+\hypertarget{logics_8h_a44e92045e9d9f90900de59eb336853f3}{
+\index{logics.h@{logics.h}!MDV@{MDV}}
+\index{MDV@{MDV}!logics.h@{logics.h}}
+\subsubsection[{MDV}]{\setlength{\rightskip}{0pt plus 5cm}\#define MDV~logic-\/$>$mdv}}
+\label{logics_8h_a44e92045e9d9f90900de59eb336853f3}
+\hypertarget{logics_8h_a3acffbd305ee72dcd4593c0d8af64a4f}{
+\index{logics.h@{logics.h}!MIN@{MIN}}
+\index{MIN@{MIN}!logics.h@{logics.h}}
+\subsubsection[{MIN}]{\setlength{\rightskip}{0pt plus 5cm}\#define MIN(
+\begin{DoxyParamCaption}
+\item[{}]{a, }
+\item[{}]{b}
+\end{DoxyParamCaption}
+)~(((a) $<$ (b)) ? (a) : (b))}}
+\label{logics_8h_a3acffbd305ee72dcd4593c0d8af64a4f}
+
+
+\subsection{Documentaci�n de los 'typedefs'}
+\hypertarget{logics_8h_a9d6f525c6b76faeaafbdd589b664103a}{
+\index{logics.h@{logics.h}!LlBConList@{LlBConList}}
+\index{LlBConList@{LlBConList}!logics.h@{logics.h}}
+\subsubsection[{LlBConList}]{\setlength{\rightskip}{0pt plus 5cm}typedef LlBCon$\ast$ {\bf LlBConList}}}
+\label{logics_8h_a9d6f525c6b76faeaafbdd589b664103a}
+Declaración de listas de conectivas binarias. \hypertarget{logics_8h_afd84b5f3f5f594cec38bba108a69a910}{
+\index{logics.h@{logics.h}!LlUConList@{LlUConList}}
+\index{LlUConList@{LlUConList}!logics.h@{logics.h}}
+\subsubsection[{LlUConList}]{\setlength{\rightskip}{0pt plus 5cm}typedef LlUCon$\ast$ {\bf LlUConList}}}
+\label{logics_8h_afd84b5f3f5f594cec38bba108a69a910}
+Declaración de listas de conectivas unarias. \hypertarget{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}{
+\index{logics.h@{logics.h}!LlVarList@{LlVarList}}
+\index{LlVarList@{LlVarList}!logics.h@{logics.h}}
+\subsubsection[{LlVarList}]{\setlength{\rightskip}{0pt plus 5cm}typedef LlVar$\ast$ {\bf LlVarList}}}
+\label{logics_8h_a3e6703e008f32bf79d33d503cc9f2023}
+Declaración de listas de variables. \hypertarget{logics_8h_a6470128a56509787301d136c99688bb6}{
+\index{logics.h@{logics.h}!LlWFF@{LlWFF}}
+\index{LlWFF@{LlWFF}!logics.h@{logics.h}}
+\subsubsection[{LlWFF}]{\setlength{\rightskip}{0pt plus 5cm}typedef LlWFFNode$\ast$ {\bf LlWFF}}}
+\label{logics_8h_a6470128a56509787301d136c99688bb6}
+Declaración de una fórmula bien formada. 
+
+\subsection{Documentaci�n de las enumeraciones}
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3ce}{
+\index{logics.h@{logics.h}!LlSymbolType@{LlSymbolType}}
+\index{LlSymbolType@{LlSymbolType}!logics.h@{logics.h}}
+\subsubsection[{LlSymbolType}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf LlSymbolType}}}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3ce}
+\begin{Desc}
+\item[Valores de enumeraciones: ]\par
+\begin{description}
+\index{LL\_\-SYMBOL\_\-VAR@{LL\_\-SYMBOL\_\-VAR}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-SYMBOL\_\-VAR@{LL\_\-SYMBOL\_\-VAR}}\item[{\em 
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea25e4ac1a36fe8c1697a9e09ce94fd906}{
+LL\_\-SYMBOL\_\-VAR}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea25e4ac1a36fe8c1697a9e09ce94fd906}
+}]Variable. \index{LL\_\-SYMBOL\_\-U\_\-CON@{LL\_\-SYMBOL\_\-U\_\-CON}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-SYMBOL\_\-U\_\-CON@{LL\_\-SYMBOL\_\-U\_\-CON}}\item[{\em 
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea0647b09db79ad81eef6a9d0bf3c0c991}{
+LL\_\-SYMBOL\_\-U\_\-CON}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea0647b09db79ad81eef6a9d0bf3c0c991}
+}]Conectiva unaria. \index{LL\_\-SYMBOL\_\-B\_\-CON@{LL\_\-SYMBOL\_\-B\_\-CON}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-SYMBOL\_\-B\_\-CON@{LL\_\-SYMBOL\_\-B\_\-CON}}\item[{\em 
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea75539cd9a3cdb07ab880f84280b0f5bc}{
+LL\_\-SYMBOL\_\-B\_\-CON}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea75539cd9a3cdb07ab880f84280b0f5bc}
+}]Conectiva binaria. \index{LL\_\-SYMBOL\_\-AUX\_\-OPEN@{LL\_\-SYMBOL\_\-AUX\_\-OPEN}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-SYMBOL\_\-AUX\_\-OPEN@{LL\_\-SYMBOL\_\-AUX\_\-OPEN}}\item[{\em 
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea5b4013485e5ca3263bd463a9ac632bc0}{
+LL\_\-SYMBOL\_\-AUX\_\-OPEN}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea5b4013485e5ca3263bd463a9ac632bc0}
+}]Símbolo auxiliar de apertura. \index{LL\_\-SYMBOL\_\-AUX\_\-CLOSE@{LL\_\-SYMBOL\_\-AUX\_\-CLOSE}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-SYMBOL\_\-AUX\_\-CLOSE@{LL\_\-SYMBOL\_\-AUX\_\-CLOSE}}\item[{\em 
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea30002bcbe9cd4db8a0d7da9702a93a7d}{
+LL\_\-SYMBOL\_\-AUX\_\-CLOSE}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea30002bcbe9cd4db8a0d7da9702a93a7d}
+}]Símbolo auxiliar de cierre. \index{LL\_\-SYMBOL\_\-NONE@{LL\_\-SYMBOL\_\-NONE}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-SYMBOL\_\-NONE@{LL\_\-SYMBOL\_\-NONE}}\item[{\em 
+\hypertarget{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea748d06c3ad371f3694b97d0dd908c1fe}{
+LL\_\-SYMBOL\_\-NONE}
+\label{logics_8h_a1b849bb66e8ce5f6c4fcb3c25353c3cea748d06c3ad371f3694b97d0dd908c1fe}
+}]Tipo nulo, para el control de errores. \end{description}
+\end{Desc}
+
+\hypertarget{logics_8h_aa84541050947d3c4419dd564b493d749}{
+\index{logics.h@{logics.h}!LlWFFNodeType@{LlWFFNodeType}}
+\index{LlWFFNodeType@{LlWFFNodeType}!logics.h@{logics.h}}
+\subsubsection[{LlWFFNodeType}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf LlWFFNodeType}}}
+\label{logics_8h_aa84541050947d3c4419dd564b493d749}
+\begin{Desc}
+\item[Valores de enumeraciones: ]\par
+\begin{description}
+\index{LL\_\-WFF\_\-NODE\_\-VAR@{LL\_\-WFF\_\-NODE\_\-VAR}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-WFF\_\-NODE\_\-VAR@{LL\_\-WFF\_\-NODE\_\-VAR}}\item[{\em 
+\hypertarget{logics_8h_aa84541050947d3c4419dd564b493d749a268b5c734738fc201944776966d0e5d2}{
+LL\_\-WFF\_\-NODE\_\-VAR}
+\label{logics_8h_aa84541050947d3c4419dd564b493d749a268b5c734738fc201944776966d0e5d2}
+}]Variable. \index{LL\_\-WFF\_\-NODE\_\-U\_\-CON@{LL\_\-WFF\_\-NODE\_\-U\_\-CON}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-WFF\_\-NODE\_\-U\_\-CON@{LL\_\-WFF\_\-NODE\_\-U\_\-CON}}\item[{\em 
+\hypertarget{logics_8h_aa84541050947d3c4419dd564b493d749a52e254577df292bb14625dddc80b9112}{
+LL\_\-WFF\_\-NODE\_\-U\_\-CON}
+\label{logics_8h_aa84541050947d3c4419dd564b493d749a52e254577df292bb14625dddc80b9112}
+}]Conectiva unaria. \index{LL\_\-WFF\_\-NODE\_\-B\_\-CON@{LL\_\-WFF\_\-NODE\_\-B\_\-CON}!logics.h@{logics.h}}\index{logics.h@{logics.h}!LL\_\-WFF\_\-NODE\_\-B\_\-CON@{LL\_\-WFF\_\-NODE\_\-B\_\-CON}}\item[{\em 
+\hypertarget{logics_8h_aa84541050947d3c4419dd564b493d749aaba507d65fb49b2410ec46f4cf8e36f1}{
+LL\_\-WFF\_\-NODE\_\-B\_\-CON}
+\label{logics_8h_aa84541050947d3c4419dd564b493d749aaba507d65fb49b2410ec46f4cf8e36f1}
+}]Conectiva binaria. \end{description}
+\end{Desc}
+
+
+
+\subsection{Documentaci�n de las funciones}
+\hypertarget{logics_8h_aeb25ca2d80b64f1e65c6c388faa2005f}{
+\index{logics.h@{logics.h}!ll\_\-bcon\_\-list\_\-append\_\-bcon@{ll\_\-bcon\_\-list\_\-append\_\-bcon}}
+\index{ll\_\-bcon\_\-list\_\-append\_\-bcon@{ll\_\-bcon\_\-list\_\-append\_\-bcon}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-bcon\_\-list\_\-append\_\-bcon}]{\setlength{\rightskip}{0pt plus 5cm}int ll\_\-bcon\_\-list\_\-append\_\-bcon (
+\begin{DoxyParamCaption}
+\item[{{\bf LlBConList} $\ast$}]{ bcon\_\-list, }
+\item[{LlBCon $\ast$}]{ bcon}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_aeb25ca2d80b64f1e65c6c388faa2005f}
+Añade una conectiva binaria al final de una lista de conectivas binarias siempre y cuando no exista ya una con el mismo símbolo. \hypertarget{logics_8h_aebca32c2723b1e28f4af9a13e1d645db}{
+\index{logics.h@{logics.h}!ll\_\-bcon\_\-list\_\-free@{ll\_\-bcon\_\-list\_\-free}}
+\index{ll\_\-bcon\_\-list\_\-free@{ll\_\-bcon\_\-list\_\-free}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-bcon\_\-list\_\-free}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-bcon\_\-list\_\-free (
+\begin{DoxyParamCaption}
+\item[{{\bf LlBConList} $\ast$}]{ bcon\_\-list, }
+\item[{int}]{ dimension}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_aebca32c2723b1e28f4af9a13e1d645db}
+Borra una lista de conectivas binarias.
+
+param bcon\_\-list Lista de conectivas binarias a borrar. \hypertarget{logics_8h_a35628773b57c3275fc543d4bebdea9be}{
+\index{logics.h@{logics.h}!ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol@{ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol}}
+\index{ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol@{ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol}]{\setlength{\rightskip}{0pt plus 5cm}LlBCon$\ast$ ll\_\-bcon\_\-list\_\-get\_\-bcon\_\-by\_\-symbol (
+\begin{DoxyParamCaption}
+\item[{{\bf LlBConList}}]{ bcon\_\-list, }
+\item[{char}]{ symbol}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a35628773b57c3275fc543d4bebdea9be}
+Busca una conectiva binaria dada por su símbolo asociado dentro de una lista de conectivas binarias.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em bcon\_\-list}]Lista de conectivas binarias donde buscar. \item[{\em symbol}]Símbolo por el que buscar. \end{DoxyParams}
+\begin{DoxyReturn}{Devuelve}
+Devuelve un puntero a la conectiva, si existe, o el puntero nulo en caso contrario. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_a6096983b11c4b9859034f3779b361376}{
+\index{logics.h@{logics.h}!ll\_\-bcon\_\-new@{ll\_\-bcon\_\-new}}
+\index{ll\_\-bcon\_\-new@{ll\_\-bcon\_\-new}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-bcon\_\-new}]{\setlength{\rightskip}{0pt plus 5cm}LlBCon$\ast$ ll\_\-bcon\_\-new (
+\begin{DoxyParamCaption}
+\item[{char}]{ symbol, }
+\item[{int $\ast$$\ast$}]{ matrix, }
+\item[{int}]{ dimension}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a6096983b11c4b9859034f3779b361376}
+Crea una conectiva binaria nueva.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em symbol}]Símbolo asociado a la conectiva. \item[{\em matrix}]Matriz de la conectiva. \item[{\em dimension}]Dimensión de contexto para la matriz. \end{DoxyParams}
+\hypertarget{logics_8h_ade574bfefd947e993af3e86d073de134}{
+\index{logics.h@{logics.h}!ll\_\-con\_\-delete\_\-by\_\-symbol@{ll\_\-con\_\-delete\_\-by\_\-symbol}}
+\index{ll\_\-con\_\-delete\_\-by\_\-symbol@{ll\_\-con\_\-delete\_\-by\_\-symbol}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-con\_\-delete\_\-by\_\-symbol}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-con\_\-delete\_\-by\_\-symbol (
+\begin{DoxyParamCaption}
+\item[{{\bf LlLogic} $\ast$}]{ logic, }
+\item[{char}]{ symbol}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_ade574bfefd947e993af3e86d073de134}
+Elimina de una lógica una conectiva, unaria o binaria indistintamente, dada por su símbolo. \hypertarget{logics_8h_a4598342e9afb385c16394c362d292a2d}{
+\index{logics.h@{logics.h}!ll\_\-formula\_\-is\_\-wff\_\-pn@{ll\_\-formula\_\-is\_\-wff\_\-pn}}
+\index{ll\_\-formula\_\-is\_\-wff\_\-pn@{ll\_\-formula\_\-is\_\-wff\_\-pn}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-formula\_\-is\_\-wff\_\-pn}]{\setlength{\rightskip}{0pt plus 5cm}bool ll\_\-formula\_\-is\_\-wff\_\-pn (
+\begin{DoxyParamCaption}
+\item[{char}]{ formula\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a4598342e9afb385c16394c362d292a2d}
+Comprueba que la fórmula dada sea una fórmula bien formada en notación polaca, según una lógica de contexto. Los símbolos admitidos son sólo letras mayúsculas o minúsculas. Aquí se sigue una convención, en una fbf en notación polaca toda letra mayúscula es una conectiva y toda letra minúscula es una variable; se comprueba que las conectivas estén en efecto definidas en la lógica de contexto dada.
+
+\begin{DoxyReturn}{Devuelve}
+true: si es una fbf en notación polaca, false en caso contrario. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_ae319c7f5c124e9ed465674d582bae2f1}{
+\index{logics.h@{logics.h}!ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz@{ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz}}
+\index{ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz@{ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-logic\_\-set\_\-default\_\-bcons\_\-lukasiewicz (
+\begin{DoxyParamCaption}
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_ae319c7f5c124e9ed465674d582bae2f1}
+Define las conectivas binarias según el modelo de las lógicas multivaluadas de Łukasiewicz. Las conectivas binarias que se definen son las siguientes:
+\begin{DoxyItemize}
+\item Implicación (C): $ x \rightarrow y =_{def} \min \{n, n - x + y\} $.
+\item Conjunción (K): $ x \wedge y =_{def} \min \{x, y\} $.
+\item Disyunción (A): $ x \vee y =_{def} \max \{x, y\} $.
+\item Bicondicional (E): $ x \leftrightarrow y =_{def} n - | x - y | $. 
+\end{DoxyItemize}\hypertarget{logics_8h_a54ce574fe661cbfe7308b30c37121778}{
+\index{logics.h@{logics.h}!ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz@{ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz}}
+\index{ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz@{ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-logic\_\-set\_\-default\_\-ucons\_\-lukasiewicz (
+\begin{DoxyParamCaption}
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a54ce574fe661cbfe7308b30c37121778}
+Define las conectivas unarias según el modelo de las lógicas multivaluadas de Łukasiewicz. Sólo se define una conectiva unaria, la negación (N), del siguiente modo: $ \neg x =_{def} ( 1 - x ) $. \hypertarget{logics_8h_a6aacc22a3639726a8e7f614d4cf2d3a9}{
+\index{logics.h@{logics.h}!ll\_\-symbol\_\-pn\_\-get\_\-type@{ll\_\-symbol\_\-pn\_\-get\_\-type}}
+\index{ll\_\-symbol\_\-pn\_\-get\_\-type@{ll\_\-symbol\_\-pn\_\-get\_\-type}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-symbol\_\-pn\_\-get\_\-type}]{\setlength{\rightskip}{0pt plus 5cm}{\bf LlSymbolType} ll\_\-symbol\_\-pn\_\-get\_\-type (
+\begin{DoxyParamCaption}
+\item[{char}]{ symbol, }
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a6aacc22a3639726a8e7f614d4cf2d3a9}
+Categoriza el símbolo dado según una lógica de contexto (según las conectivas definidas) y según la siguiente convención: toda letra minúscula se considera una variable, toda letra mayúscula se considera una conectiva.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em symbol}]símbolo a categorizar \item[{\em logic}]lógica de contexto \end{DoxyParams}
+\hypertarget{logics_8h_aa4dc029c74a2b8f89fa66f137e100a8b}{
+\index{logics.h@{logics.h}!ll\_\-ucon\_\-list\_\-append\_\-ucon@{ll\_\-ucon\_\-list\_\-append\_\-ucon}}
+\index{ll\_\-ucon\_\-list\_\-append\_\-ucon@{ll\_\-ucon\_\-list\_\-append\_\-ucon}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-ucon\_\-list\_\-append\_\-ucon}]{\setlength{\rightskip}{0pt plus 5cm}int ll\_\-ucon\_\-list\_\-append\_\-ucon (
+\begin{DoxyParamCaption}
+\item[{{\bf LlUConList} $\ast$}]{ ucon\_\-list, }
+\item[{LlUCon $\ast$}]{ ucon}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_aa4dc029c74a2b8f89fa66f137e100a8b}
+Añade una conectiva unaria al final de una lista de conectivas unarias siempre y cuando no exista ya una con el mismo símbolo.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em ucon\_\-list}]Una lista de conectivas unarias. \item[{\em }]\end{DoxyParams}
+\hypertarget{logics_8h_a610e01a981aed0ce4982fb01ec5ad69c}{
+\index{logics.h@{logics.h}!ll\_\-ucon\_\-list\_\-free@{ll\_\-ucon\_\-list\_\-free}}
+\index{ll\_\-ucon\_\-list\_\-free@{ll\_\-ucon\_\-list\_\-free}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-ucon\_\-list\_\-free}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-ucon\_\-list\_\-free (
+\begin{DoxyParamCaption}
+\item[{{\bf LlUConList} $\ast$}]{ ucon\_\-list}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a610e01a981aed0ce4982fb01ec5ad69c}
+Borra una lista de conectivas unarias.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em ucon\_\-list}]Lista de conectivas unarias a borrar. \end{DoxyParams}
+\hypertarget{logics_8h_a87e42e23d8cc96873b54fece4d4884dc}{
+\index{logics.h@{logics.h}!ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol@{ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol}}
+\index{ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol@{ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol}]{\setlength{\rightskip}{0pt plus 5cm}LlUCon$\ast$ ll\_\-ucon\_\-list\_\-get\_\-ucon\_\-by\_\-symbol (
+\begin{DoxyParamCaption}
+\item[{{\bf LlUConList}}]{ ucon\_\-list, }
+\item[{char}]{ symbol}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a87e42e23d8cc96873b54fece4d4884dc}
+Busca una conectiva unaria dada por su símbolo asociado dentro de una lista de conectivas unarias.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em ucon\_\-list}]Lista de conectivas unarias donde buscar. \item[{\em symbol}]Símbolo por el que buscar. \end{DoxyParams}
+\begin{DoxyReturn}{Devuelve}
+Devuelve un puntero a la conectiva, si existe, o el puntero nulo en caso contrario. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_a50e94ead12a8487639aff8f6e720083e}{
+\index{logics.h@{logics.h}!ll\_\-ucon\_\-new@{ll\_\-ucon\_\-new}}
+\index{ll\_\-ucon\_\-new@{ll\_\-ucon\_\-new}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-ucon\_\-new}]{\setlength{\rightskip}{0pt plus 5cm}LlUCon$\ast$ ll\_\-ucon\_\-new (
+\begin{DoxyParamCaption}
+\item[{char}]{ symbol, }
+\item[{int $\ast$}]{ matrix, }
+\item[{int}]{ dimension}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a50e94ead12a8487639aff8f6e720083e}
+Crea una conectiva unaria nueva.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em symbol}]Símbolo asociado a la conectiva. \item[{\em matrix}]Matriz de la conectiva. \item[{\em dimension}]Dimensión de contexto para la matriz. \end{DoxyParams}
+\hypertarget{logics_8h_a2f51b89d970ad134bd074288ddbf8028}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-get\_\-value@{ll\_\-var\_\-get\_\-value}}
+\index{ll\_\-var\_\-get\_\-value@{ll\_\-var\_\-get\_\-value}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-get\_\-value}]{\setlength{\rightskip}{0pt plus 5cm}int ll\_\-var\_\-get\_\-value (
+\begin{DoxyParamCaption}
+\item[{LlVar $\ast$}]{ var}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a2f51b89d970ad134bd074288ddbf8028}
+Devuelve el valor de una variable proposicional.
+
+\begin{DoxyReturn}{Devuelve}
+$n \geq 0$ : el valor de la variable.\par
+ -\/1: error, la variable no existe. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_a1974fbdf1c42c3c0e154a57da47aa0fe}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-list\_\-add\_\-var@{ll\_\-var\_\-list\_\-add\_\-var}}
+\index{ll\_\-var\_\-list\_\-add\_\-var@{ll\_\-var\_\-list\_\-add\_\-var}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-list\_\-add\_\-var}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-var\_\-list\_\-add\_\-var (
+\begin{DoxyParamCaption}
+\item[{{\bf LlVarList} $\ast$}]{ var\_\-list, }
+\item[{LlVar $\ast$}]{ var}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a1974fbdf1c42c3c0e154a57da47aa0fe}
+Añade una variable proposicional a una lista si no existe ya una con ese nombre, y la sitúa por orden alfabético, con lo que la lista queda ordenada. \hypertarget{logics_8h_a87241f2cf22c64c66695e290433ad6ad}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-list\_\-free@{ll\_\-var\_\-list\_\-free}}
+\index{ll\_\-var\_\-list\_\-free@{ll\_\-var\_\-list\_\-free}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-list\_\-free}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-var\_\-list\_\-free (
+\begin{DoxyParamCaption}
+\item[{{\bf LlVarList} $\ast$}]{ var\_\-list}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a87241f2cf22c64c66695e290433ad6ad}
+Procedimiento que elimina una lista de variables por completo liberando la memoria reservada. \hypertarget{logics_8h_a2ee054c2fae63862d343092daf90c8fe}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol@{ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol}}
+\index{ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol@{ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol}]{\setlength{\rightskip}{0pt plus 5cm}LlVar$\ast$ ll\_\-var\_\-list\_\-get\_\-var\_\-by\_\-symbol (
+\begin{DoxyParamCaption}
+\item[{{\bf LlVarList}}]{ var\_\-list, }
+\item[{char}]{ symbol}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a2ee054c2fae63862d343092daf90c8fe}
+Busca una variable dada por su símbolo en una lista de variables.
+
+\begin{DoxyReturn}{Devuelve}
+Puntero a la variable si existe, o el puntero nulo en caso contrario. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_abf6aa2fdd7cbce01a7841fdd98be4a4b}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-list\_\-is\_\-empty@{ll\_\-var\_\-list\_\-is\_\-empty}}
+\index{ll\_\-var\_\-list\_\-is\_\-empty@{ll\_\-var\_\-list\_\-is\_\-empty}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-list\_\-is\_\-empty}]{\setlength{\rightskip}{0pt plus 5cm}bool ll\_\-var\_\-list\_\-is\_\-empty (
+\begin{DoxyParamCaption}
+\item[{{\bf LlVarList}}]{ var\_\-list}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_abf6aa2fdd7cbce01a7841fdd98be4a4b}
+\hypertarget{logics_8h_ad9cfdfb1dd729a83005961ffd4fae7a3}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-list\_\-length@{ll\_\-var\_\-list\_\-length}}
+\index{ll\_\-var\_\-list\_\-length@{ll\_\-var\_\-list\_\-length}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-list\_\-length}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int ll\_\-var\_\-list\_\-length (
+\begin{DoxyParamCaption}
+\item[{{\bf LlVarList}}]{ var\_\-list}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_ad9cfdfb1dd729a83005961ffd4fae7a3}
+Devuelve el número de elementos que contiene una lista de variables. \hypertarget{logics_8h_abddccedd286aacabca77231212b0cebe}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-new@{ll\_\-var\_\-new}}
+\index{ll\_\-var\_\-new@{ll\_\-var\_\-new}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-new}]{\setlength{\rightskip}{0pt plus 5cm}LlVar$\ast$ ll\_\-var\_\-new (
+\begin{DoxyParamCaption}
+\item[{char}]{ symbol, }
+\item[{int}]{ value}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_abddccedd286aacabca77231212b0cebe}
+Crea una variable proposicional nueva.
+
+
+\begin{DoxyParams}{Par�metros}
+\item[{\em symbol}]Letra o símbolo que representa la variable. \item[{\em value}]Valor asignado a la variable. \end{DoxyParams}
+\hypertarget{logics_8h_acef67ab48b0113d712917677532f6c92}{
+\index{logics.h@{logics.h}!ll\_\-var\_\-set\_\-value@{ll\_\-var\_\-set\_\-value}}
+\index{ll\_\-var\_\-set\_\-value@{ll\_\-var\_\-set\_\-value}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-var\_\-set\_\-value}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-var\_\-set\_\-value (
+\begin{DoxyParamCaption}
+\item[{LlVar $\ast$}]{ var, }
+\item[{int}]{ value}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_acef67ab48b0113d712917677532f6c92}
+Establece el valor dado en una variable proposicional. \hypertarget{logics_8h_a6cd981325d65ea3b0c8207ca3c51e29c}{
+\index{logics.h@{logics.h}!ll\_\-wff\_\-add\_\-node@{ll\_\-wff\_\-add\_\-node}}
+\index{ll\_\-wff\_\-add\_\-node@{ll\_\-wff\_\-add\_\-node}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-wff\_\-add\_\-node}]{\setlength{\rightskip}{0pt plus 5cm}bool ll\_\-wff\_\-add\_\-node (
+\begin{DoxyParamCaption}
+\item[{{\bf LlWFF} $\ast$}]{ wff, }
+\item[{{\bf LlSymbolType}}]{ symbol\_\-type, }
+\item[{char}]{ symbol, }
+\item[{int $\ast$}]{ value}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a6cd981325d65ea3b0c8207ca3c51e29c}
+Busca recursivamente el primer argumento libre en el árbol de fbf dado. Después establece el nombre del elemento, el tipo y el puntero al valor correspondiente si se trata de una variable.
+
+\begin{DoxyReturn}{Devuelve}
+true: si tiene éxito, false: en caso contrario. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_a231bd0a00a1c9c0ce1e26be5cc0cc9ba}{
+\index{logics.h@{logics.h}!ll\_\-wff\_\-free@{ll\_\-wff\_\-free}}
+\index{ll\_\-wff\_\-free@{ll\_\-wff\_\-free}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-wff\_\-free}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-wff\_\-free (
+\begin{DoxyParamCaption}
+\item[{{\bf LlWFF} $\ast$}]{ wff}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a231bd0a00a1c9c0ce1e26be5cc0cc9ba}
+Elimina el árbol de fórmula bien formada dado como argumento liberando su memoria. \hypertarget{logics_8h_a2835808384cc3292c2e9356c9be11427}{
+\index{logics.h@{logics.h}!ll\_\-wff\_\-get\_\-value@{ll\_\-wff\_\-get\_\-value}}
+\index{ll\_\-wff\_\-get\_\-value@{ll\_\-wff\_\-get\_\-value}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-wff\_\-get\_\-value}]{\setlength{\rightskip}{0pt plus 5cm}int ll\_\-wff\_\-get\_\-value (
+\begin{DoxyParamCaption}
+\item[{{\bf LlWFF}}]{ wff, }
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a2835808384cc3292c2e9356c9be11427}
+Calcula recursivamente y devuelve el valor que se asigna a una fórmula recorriendo el árbol de la fbf, basándose en los valores que toman sus variables y la semántica de las contectivas contenidas en una lógica de contexto.
+
+\begin{DoxyReturn}{Devuelve}
+n $>$= 0: el valor que toma la fórmula.\par
+ -\/1: error, el árbol de la fbf está vacío.\par
+ -\/2: error inesperado. 
+\end{DoxyReturn}
+\hypertarget{logics_8h_a815a24ce04de659e7ec64a35f6853871}{
+\index{logics.h@{logics.h}!ll\_\-wff\_\-parse\_\-formula\_\-pn@{ll\_\-wff\_\-parse\_\-formula\_\-pn}}
+\index{ll\_\-wff\_\-parse\_\-formula\_\-pn@{ll\_\-wff\_\-parse\_\-formula\_\-pn}!logics.h@{logics.h}}
+\subsubsection[{ll\_\-wff\_\-parse\_\-formula\_\-pn}]{\setlength{\rightskip}{0pt plus 5cm}void ll\_\-wff\_\-parse\_\-formula\_\-pn (
+\begin{DoxyParamCaption}
+\item[{{\bf LlWFF} $\ast$}]{ tree, }
+\item[{char}]{ formula\_\-pn\mbox{[}$\,$\mbox{]}, }
+\item[{{\bf LlLogic} $\ast$}]{ logic}
+\end{DoxyParamCaption}
+)}}
+\label{logics_8h_a815a24ce04de659e7ec64a35f6853871}
+Transforma una fbf en notación polaca en un árbol de fórmula bien formada. Aquí se lee la fórmula de izquierda a derecha, estableciendo cada elemento uno a uno, de la conectiva principal a sus argumentos. Esto da como resultado un árbol de fórmula bien formada correcto, como es propio de la notación polaca. 

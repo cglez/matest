@@ -1,0 +1,40 @@
+truct net_device *dev)
+{
+	struct net_local *lp = netdev_priv(dev);
+	int boguscount = 10;
+	int pkt_hdr;
+	int ioaddr = dev->base_addr;
+
+	do {
+		int next_packet;
+		int pkt_len;
+		int i;
+		int status;
+
+		status = inw(SEEQ_STATUS);
+	  	outw( lp->receive_ptr, SEEQ_DMAAR);
+		outw(SEEQCMD_FIFO_READ | SEEQCMD_RX_INT_ACK | (status & SEEQCMD_INT_MASK), SEEQ_CMD);
+	  	wait_for_buffer(dev);
+	  	next_packet = ntohs(inw(SEEQ_BUFFER));
+	  	pkt_hdr = inw(SEEQ_BUFFER);
+
+		if (net_debug>2) {
+			printk("%s: 0x%04x recv next=0x%04x, hdr=0x%04x\n",dev->name,lp->receive_ptr,next_packet,pkt_hdr);
+		}
+
+		if ((next_packet == 0) || ((pkt_hdr & SEEQPKTH_CHAIN)==0)) {	/* Read all the frames? */
+			return;							/* Done for now */
+		}
+
+		if ((pkt_hdr & SEEQPKTS_DONE)==0)
+			break;
+
+		if (next_packet < lp->receive_ptr) {
+			pkt_len = (next_packet + 0x10000 - ((DEFAULT_TEA+1)<<8)) - lp->receive_ptr - 4;
+		} else {
+			pkt_len = next_packet - lp->receive_ptr - 4;
+		}
+
+		if (next_packet < ((DEFAULT_TEA+1)<<8)) {			/* is the next_packet address sane? */
+			printk("%s: recv packet ring corrupt, resetting board\n",dev->name);
+			seeq8005_init(dev,1);

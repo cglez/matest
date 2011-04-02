@@ -1,0 +1,264 @@
+name);
+			goto drop;
+		case E_PKT_LN_ERR:
+			printk(KERN_WARNING "%s: Receive packet length "
+			       "error\n", dev->name);
+			goto drop;
+		case E_DTA_CKSM_ERR:
+			printk(KERN_WARNING "%s: Data checksum error\n",
+			       dev->name);
+			goto drop;
+		case E_SHT_BST:
+			printk(KERN_WARNING "%s: Unexpected short burst "
+			       "error\n", dev->name);
+			goto drop;
+		case E_STATE_ERR:
+			printk(KERN_WARNING "%s: Recv. state transition"
+			       " error\n", dev->name);
+			goto drop;
+		case E_UNEXP_DATA:
+			printk(KERN_WARNING "%s: Unexpected data error\n",
+			       dev->name);
+			goto drop;
+		case E_LST_LNK_ERR:
+			printk(KERN_WARNING "%s: Link lost error\n",
+			       dev->name);
+			goto drop;
+		case E_FRM_ERR:
+			printk(KERN_WARNING "%s: Framming Error\n",
+			       dev->name);
+			goto drop;
+		case E_FLG_SYN_ERR:
+			printk(KERN_WARNING "%s: Flag sync. lost during "
+			       "packet\n", dev->name);
+			goto drop;
+		case E_RX_INV_BUF:
+			printk(KERN_ERR "%s: Invalid receive buffer "
+			       "address\n", dev->name);
+			writel(readl(&regs->HostCtrl)|HALT_NIC|RR_CLEAR_INT,
+			       &regs->HostCtrl);
+			wmb();
+			break;
+		case E_RX_INV_DSC:
+			printk(KERN_ERR "%s: Invalid receive descriptor "
+			       "address\n", dev->name);
+			writel(readl(&regs->HostCtrl)|HALT_NIC|RR_CLEAR_INT,
+			       &regs->HostCtrl);
+			wmb();
+			break;
+		case E_RNG_BLK:
+			printk(KERN_ERR "%s: Invalid ring block\n",
+			       dev->name);
+			writel(readl(&regs->HostCtrl)|HALT_NIC|RR_CLEAR_INT,
+			       &regs->HostCtrl);
+			wmb();
+			break;
+		drop:
+			/* Label packet to be dropped.
+			 * Actual dropping occurs in rx
+			 * handling.
+			 *
+			 * The index of packet we get to drop is
+			 * the index of the packet following
+			 * the bad packet. -kbf
+			 */
+			{
+				u16 index = rrpriv->evt_ring[eidx].index;
+				index = (index + (RX_RING_ENTRIES - 1)) %
+					RX_RING_ENTRIES;
+				rrpriv->rx_ring[index].mode |=
+					(PACKET_BAD | PACKET_END);
+			}
+			break;
+		default:
+			printk(KERN_WARNING "%s: Unhandled event 0x%02x\n",
+			       dev->name, rrpriv->evt_ring[eidx].code);
+		}
+		eidx = (eidx + 1) % EVT_RING_ENTRIES;
+	}
+
+	rrpriv->info->evt_ctrl.pi = eidx;
+	wmb();
+	return eidx;
+}
+
+
+static void rx_int(struct net_device *dev, u32 rxlimit, u32 index)
+{
+	struct rr_private *rrpriv = netdev_priv(dev);
+	struct rr_regs __iomem *regs = rrpriv->regs;
+
+	do {
+		struct rx_desc *desc;
+		u32 pkt_len;
+
+		desc = &(rrpriv->rx_ring[index]);
+		pkt_len = desc->size;
+#if (DEBUG > 2)
+		printk("index %i, rxlimit %i\n", index, rxlimit);
+		printk("len %x, mode %x\n", pkt_len, desc->mode);
+#endif
+		if ( (rrpriv->rx_ring[index].mode & PACKET_BAD) == PACKET_BAD){
+			dev->stats.rx_dropped++;
+			goto defer;
+		}
+
+		if (pkt_len > 0){
+			struct sk_buff *skb, *rx_skb;
+
+			rx_skb = rrpriv->rx_skbuff[index];
+
+			if (pkt_len < PKT_COPY_THRESHOLD) {
+				skb = alloc_skb(pkt_len, GFP_ATOMIC);
+				if (skb == NULL){
+					printk(KERN_WARNING "%s: Unable to allocate skb (%i bytes), deferring packet\n", dev->name, pkt_len);
+					dev->stats.rx_dropped++;
+					goto defer;
+				} else {
+					pci_dma_sync_single_for_cpu(rrpriv->pci_dev,
+								    desc->addr.addrlo,
+								    pkt_len,
+								    PCI_DMA_FROMDEVICE);
+
+					memcpy(skb_put(skb, pkt_len),
+					       rx_skb->data, pkt_len);
+
+					pci_dma_sync_single_for_device(rrpriv->pci_dev,
+								       desc->addr.addrlo,
+								       pkt_len,
+								       PCI_DMA_FROMDEVICE);
+				}
+			}else{
+				struct sk_buff *newskb;
+
+				newskb = alloc_skb(dev->mtu + HIPPI_HLEN,
+					GFP_ATOMIC);
+				if (newskb){
+					dma_addr_t addr;
+
+	        			pci_unmap_single(rrpriv->pci_dev,
+						desc->addr.addrlo, dev->mtu +
+						HIPPI_HLEN, PCI_DMA_FROMDEVICE);
+					skb = rx_skb;
+					skb_put(skb, pkt_len);
+					rrpriv->rx_skbuff[index] = newskb;
+	        			addr = pci_map_single(rrpriv->pci_dev,
+						newskb->data,
+						dev->mtu + HIPPI_HLEN,
+						PCI_DMA_FROMDEVICE);
+					set_rraddr(&desc->addr, addr);
+				} else {
+					printk("%s: Out of memory, deferring "
+					       "packet\n", dev->name);
+					dev->stats.rx_dropped++;
+					goto defer;
+				}
+			}
+			skb->protocol = hippi_type_trans(skb, dev);
+
+			netif_rx(skb);		/* send it up */
+
+			dev->stats.rx_packets++;
+			dev->stats.rx_bytes += pkt_len;
+		}
+	defer:
+		desc->mode = 0;
+		desc->size = dev->mtu + HIPPI_HLEN;
+
+		if ((index & 7) == 7)
+			writel(index, &regs->IpRxPi);
+
+		index = (index + 1) % RX_RING_ENTRIES;
+	} while(index != rxlimit);
+
+	rrpriv->cur_rx = index;
+	wmb();
+}
+
+
+static irqreturn_t rr_interrupt(int irq, void *dev_id)
+{
+	struct rr_private *rrpriv;
+	struct rr_regs __iomem *regs;
+	struct net_device *dev = (struct net_device *)dev_id;
+	u32 prodidx, rxindex, eidx, txcsmr, rxlimit, txcon;
+
+	rrpriv = netdev_priv(dev);
+	regs = rrpriv->regs;
+
+	if (!(readl(&regs->HostCtrl) & RR_INT))
+		return IRQ_NONE;
+
+	spin_lock(&rrpriv->lock);
+
+	prodidx = readl(&regs->EvtPrd);
+	txcsmr = (prodidx >> 8) & 0xff;
+	rxlimit = (prodidx >> 16) & 0xff;
+	prodidx &= 0xff;
+
+#if (DEBUG > 2)
+	printk("%s: interrupt, prodidx = %i, eidx = %i\n", dev->name,
+	       prodidx, rrpriv->info->evt_ctrl.pi);
+#endif
+	/*
+	 * Order here is important.  We must handle events
+	 * before doing anything else in order to catch
+	 * such things as LLRC errors, etc -kbf
+	 */
+
+	eidx = rrpriv->info->evt_ctrl.pi;
+	if (prodidx != eidx)
+		eidx = rr_handle_event(dev, prodidx, eidx);
+
+	rxindex = rrpriv->cur_rx;
+	if (rxindex != rxlimit)
+		rx_int(dev, rxlimit, rxindex);
+
+	txcon = rrpriv->dirty_tx;
+	if (txcsmr != txcon) {
+		do {
+			/* Due to occational firmware TX producer/consumer out
+			 * of sync. error need to check entry in ring -kbf
+			 */
+			if(rrpriv->tx_skbuff[txcon]){
+				struct tx_desc *desc;
+				struct sk_buff *skb;
+
+				desc = &(rrpriv->tx_ring[txcon]);
+				skb = rrpriv->tx_skbuff[txcon];
+
+				dev->stats.tx_packets++;
+				dev->stats.tx_bytes += skb->len;
+
+				pci_unmap_single(rrpriv->pci_dev,
+						 desc->addr.addrlo, skb->len,
+						 PCI_DMA_TODEVICE);
+				dev_kfree_skb_irq(skb);
+
+				rrpriv->tx_skbuff[txcon] = NULL;
+				desc->size = 0;
+				set_rraddr(&rrpriv->tx_ring[txcon].addr, 0);
+				desc->mode = 0;
+			}
+			txcon = (txcon + 1) % TX_RING_ENTRIES;
+		} while (txcsmr != txcon);
+		wmb();
+
+		rrpriv->dirty_tx = txcon;
+		if (rrpriv->tx_full && rr_if_busy(dev) &&
+		    (((rrpriv->info->tx_ctrl.pi + 1) % TX_RING_ENTRIES)
+		     != rrpriv->dirty_tx)){
+			rrpriv->tx_full = 0;
+			netif_wake_queue(dev);
+		}
+	}
+
+	eidx |= ((txcsmr << 8) | (rxlimit << 16));
+	writel(eidx, &regs->EvtCon);
+	wmb();
+
+	spin_unlock(&rrpriv->lock);
+	return IRQ_HANDLED;
+}
+
+static inline

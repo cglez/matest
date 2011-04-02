@@ -1,0 +1,154 @@
+transmit traffic interrupts
+ *  Return Value:  SUCCESS on success and
+ *  '-1' on failure
+ */
+
+static int init_tti(struct s2io_nic *nic, int link)
+{
+	struct XENA_dev_config __iomem *bar0 = nic->bar0;
+	register u64 val64 = 0;
+	int i;
+	struct config_param *config = &nic->config;
+
+	for (i = 0; i < config->tx_fifo_num; i++) {
+		/*
+		 * TTI Initialization. Default Tx timer gets us about
+		 * 250 interrupts per sec. Continuous interrupts are enabled
+		 * by default.
+		 */
+		if (nic->device_type == XFRAME_II_DEVICE) {
+			int count = (nic->config.bus_speed * 125)/2;
+			val64 = TTI_DATA1_MEM_TX_TIMER_VAL(count);
+		} else
+			val64 = TTI_DATA1_MEM_TX_TIMER_VAL(0x2078);
+
+		val64 |= TTI_DATA1_MEM_TX_URNG_A(0xA) |
+			TTI_DATA1_MEM_TX_URNG_B(0x10) |
+			TTI_DATA1_MEM_TX_URNG_C(0x30) |
+			TTI_DATA1_MEM_TX_TIMER_AC_EN;
+		if (i == 0)
+			if (use_continuous_tx_intrs && (link == LINK_UP))
+				val64 |= TTI_DATA1_MEM_TX_TIMER_CI_EN;
+		writeq(val64, &bar0->tti_data1_mem);
+
+		if (nic->config.intr_type == MSI_X) {
+			val64 = TTI_DATA2_MEM_TX_UFC_A(0x10) |
+				TTI_DATA2_MEM_TX_UFC_B(0x100) |
+				TTI_DATA2_MEM_TX_UFC_C(0x200) |
+				TTI_DATA2_MEM_TX_UFC_D(0x300);
+		} else {
+			if ((nic->config.tx_steering_type ==
+			     TX_DEFAULT_STEERING) &&
+			    (config->tx_fifo_num > 1) &&
+			    (i >= nic->udp_fifo_idx) &&
+			    (i < (nic->udp_fifo_idx +
+				  nic->total_udp_fifos)))
+				val64 = TTI_DATA2_MEM_TX_UFC_A(0x50) |
+					TTI_DATA2_MEM_TX_UFC_B(0x80) |
+					TTI_DATA2_MEM_TX_UFC_C(0x100) |
+					TTI_DATA2_MEM_TX_UFC_D(0x120);
+			else
+				val64 = TTI_DATA2_MEM_TX_UFC_A(0x10) |
+					TTI_DATA2_MEM_TX_UFC_B(0x20) |
+					TTI_DATA2_MEM_TX_UFC_C(0x40) |
+					TTI_DATA2_MEM_TX_UFC_D(0x80);
+		}
+
+		writeq(val64, &bar0->tti_data2_mem);
+
+		val64 = TTI_CMD_MEM_WE |
+			TTI_CMD_MEM_STROBE_NEW_CMD |
+			TTI_CMD_MEM_OFFSET(i);
+		writeq(val64, &bar0->tti_command_mem);
+
+		if (wait_for_cmd_complete(&bar0->tti_command_mem,
+					  TTI_CMD_MEM_STROBE_NEW_CMD,
+					  S2IO_BIT_RESET) != SUCCESS)
+			return FAILURE;
+	}
+
+	return SUCCESS;
+}
+
+/**
+ *  init_nic - Initialization of hardware
+ *  @nic: device private variable
+ *  Description: The function sequentially configures every block
+ *  of the H/W from their reset values.
+ *  Return Value:  SUCCESS on success and
+ *  '-1' on failure (endian settings incorrect).
+ */
+
+static int init_nic(struct s2io_nic *nic)
+{
+	struct XENA_dev_config __iomem *bar0 = nic->bar0;
+	struct net_device *dev = nic->dev;
+	register u64 val64 = 0;
+	void __iomem *add;
+	u32 time;
+	int i, j;
+	int dtx_cnt = 0;
+	unsigned long long mem_share;
+	int mem_size;
+	struct config_param *config = &nic->config;
+	struct mac_info *mac_control = &nic->mac_control;
+
+	/* to set the swapper controle on the card */
+	if (s2io_set_swapper(nic)) {
+		DBG_PRINT(ERR_DBG, "ERROR: Setting Swapper failed\n");
+		return -EIO;
+	}
+
+	/*
+	 * Herc requires EOI to be removed from reset before XGXS, so..
+	 */
+	if (nic->device_type & XFRAME_II_DEVICE) {
+		val64 = 0xA500000000ULL;
+		writeq(val64, &bar0->sw_reset);
+		msleep(500);
+		val64 = readq(&bar0->sw_reset);
+	}
+
+	/* Remove XGXS from reset state */
+	val64 = 0;
+	writeq(val64, &bar0->sw_reset);
+	msleep(500);
+	val64 = readq(&bar0->sw_reset);
+
+	/* Ensure that it's safe to access registers by checking
+	 * RIC_RUNNING bit is reset. Check is valid only for XframeII.
+	 */
+	if (nic->device_type == XFRAME_II_DEVICE) {
+		for (i = 0; i < 50; i++) {
+			val64 = readq(&bar0->adapter_status);
+			if (!(val64 & ADAPTER_STATUS_RIC_RUNNING))
+				break;
+			msleep(10);
+		}
+		if (i == 50)
+			return -ENODEV;
+	}
+
+	/*  Enable Receiving broadcasts */
+	add = &bar0->mac_cfg;
+	val64 = readq(&bar0->mac_cfg);
+	val64 |= MAC_RMAC_BCAST_ENABLE;
+	writeq(RMAC_CFG_KEY(0x4C0D), &bar0->rmac_cfg_key);
+	writel((u32)val64, add);
+	writeq(RMAC_CFG_KEY(0x4C0D), &bar0->rmac_cfg_key);
+	writel((u32) (val64 >> 32), (add + 4));
+
+	/* Read registers in all blocks */
+	val64 = readq(&bar0->mac_int_mask);
+	val64 = readq(&bar0->mc_int_mask);
+	val64 = readq(&bar0->xgxs_int_mask);
+
+	/*  Set MTU */
+	val64 = dev->mtu;
+	writeq(vBIT(val64, 2, 14), &bar0->rmac_max_pyld_len);
+
+	if (nic->device_type & XFRAME_II_DEVICE) {
+		while (herc_act_dtx_cfg[dtx_cnt] != END_SIGN) {
+			SPECIAL_REG_WRITE(herc_act_dtx_cfg[dtx_cnt],
+					  &bar0->dtx_control, UF);
+	

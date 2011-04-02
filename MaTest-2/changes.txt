@@ -1,0 +1,2 @@
+En el modo texto pulsar Enter sin introducir nada significa cancelar.
+Añadidos consejos en los widgets.

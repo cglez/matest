@@ -1,0 +1,190 @@
+s |= RxMulticast;
+
+	if (dev->flags & IFF_BROADCAST)
+		rx_config_bits |= RxBroadcast;
+
+	priv->rx_config &= ~(RxSmall | RxHuge | RxErr | RxBroadcast
+			| RxMulticast | RxAllphys);
+	priv->rx_config |= rx_config_bits;
+
+	priv->mc_flags = dev->flags & (IFF_PROMISC | IFF_ALLMULTI
+			| IFF_MULTICAST | IFF_BROADCAST);
+
+	if (netif_carrier_ok(dev) && priv->mc_flags != old_mc_flags)
+		iowrite32(priv->rx_config, port_base + RxConfig);
+}
+
+static bool _sc92031_check_media(struct net_device *dev)
+{
+	struct sc92031_priv *priv = netdev_priv(dev);
+	void __iomem *port_base = priv->port_base;
+	u16 bmsr;
+
+	bmsr = _sc92031_mii_read(port_base, MII_BMSR);
+	rmb();
+	if (bmsr & BMSR_LSTATUS) {
+		bool speed_100, duplex_full;
+		u32 flow_ctrl_config = 0;
+		u16 output_status = _sc92031_mii_read(port_base,
+				MII_OutputStatus);
+		_sc92031_mii_scan(port_base);
+
+		speed_100 = output_status & 0x2;
+		duplex_full = output_status & 0x4;
+
+		/* Initial Tx/Rx configuration */
+		priv->rx_config = (0x40 << LowThresholdShift) | (0x1c0 << HighThresholdShift);
+		priv->tx_config = 0x48800000;
+
+		/* NOTE: vendor driver had dead code here to enable tx padding */
+
+		if (!speed_100)
+			priv->tx_config |= 0x80000;
+
+		// configure rx mode
+		_sc92031_set_rx_config(dev);
+
+		if (duplex_full) {
+			priv->rx_config |= RxFullDx;
+			priv->tx_config |= TxFullDx;
+			flow_ctrl_config = FlowCtrlFullDX | FlowCtrlEnb;
+		} else {
+			priv->rx_config &= ~RxFullDx;
+			priv->tx_config &= ~TxFullDx;
+		}
+
+		_sc92031_set_mar(dev);
+		_sc92031_set_rx_config(dev);
+		_sc92031_enable_tx_rx(dev);
+		iowrite32(flow_ctrl_config, port_base + FlowCtrlConfig);
+
+		netif_carrier_on(dev);
+
+		if (printk_ratelimit())
+			printk(KERN_INFO "%s: link up, %sMbps, %s-duplex\n",
+				dev->name,
+				speed_100 ? "100" : "10",
+				duplex_full ? "full" : "half");
+		return true;
+	} else {
+		_sc92031_mii_scan(port_base);
+
+		netif_carrier_off(dev);
+
+		_sc92031_disable_tx_rx(dev);
+
+		if (printk_ratelimit())
+			printk(KERN_INFO "%s: link down\n", dev->name);
+		return false;
+	}
+}
+
+static void _sc92031_phy_reset(struct net_device *dev)
+{
+	struct sc92031_priv *priv = netdev_priv(dev);
+	void __iomem *port_base = priv->port_base;
+	u32 phy_ctrl;
+
+	phy_ctrl = ioread32(port_base + PhyCtrl);
+	phy_ctrl &= ~(PhyCtrlDux | PhyCtrlSpd100 | PhyCtrlSpd10);
+	phy_ctrl |= PhyCtrlAne | PhyCtrlReset;
+
+	switch (media) {
+	default:
+	case AUTOSELECT:
+		phy_ctrl |= PhyCtrlDux | PhyCtrlSpd100 | PhyCtrlSpd10;
+		break;
+	case M10_HALF:
+		phy_ctrl |= PhyCtrlSpd10;
+		break;
+	case M10_FULL:
+		phy_ctrl |= PhyCtrlDux | PhyCtrlSpd10;
+		break;
+	case M100_HALF:
+		phy_ctrl |= PhyCtrlSpd100;
+		break;
+	case M100_FULL:
+		phy_ctrl |= PhyCtrlDux | PhyCtrlSpd100;
+		break;
+	}
+
+	iowrite32(phy_ctrl, port_base + PhyCtrl);
+	mdelay(10);
+
+	phy_ctrl &= ~PhyCtrlReset;
+	iowrite32(phy_ctrl, port_base + PhyCtrl);
+	mdelay(1);
+
+	_sc92031_mii_write(port_base, MII_JAB,
+			PHY_16_JAB_ENB | PHY_16_PORT_ENB);
+	_sc92031_mii_scan(port_base);
+
+	netif_carrier_off(dev);
+	netif_stop_queue(dev);
+}
+
+static void _sc92031_reset(struct net_device *dev)
+{
+	struct sc92031_priv *priv = netdev_priv(dev);
+	void __iomem *port_base = priv->port_base;
+
+	/* disable PM */
+	iowrite32(0, port_base + PMConfig);
+
+	/* soft reset the chip */
+	iowrite32(Cfg0_Reset, port_base + Config0);
+	mdelay(200);
+
+	iowrite32(0, port_base + Config0);
+	mdelay(10);
+
+	/* disable interrupts */
+	iowrite32(0, port_base + IntrMask);
+
+	/* clear multicast address */
+	iowrite32(0, port_base + MAR0);
+	iowrite32(0, port_base + MAR0 + 4);
+
+	/* init rx ring */
+	iowrite32(priv->rx_ring_dma_addr, port_base + RxbufAddr);
+	priv->rx_ring_tail = priv->rx_ring_dma_addr;
+
+	/* init tx ring */
+	_sc92031_tx_clear(dev);
+
+	/* clear old register values */
+	priv->intr_status = 0;
+	atomic_set(&priv->intr_mask, 0);
+	priv->rx_config = 0;
+	priv->tx_config = 0;
+	priv->mc_flags = 0;
+
+	/* configure rx buffer size */
+	/* NOTE: vendor driver had dead code here to enable early tx/rx */
+	iowrite32(Cfg1_Rcv64K, port_base + Config1);
+
+	_sc92031_phy_reset(dev);
+	_sc92031_check_media(dev);
+
+	/* calculate rx fifo overflow */
+	priv->rx_value = 0;
+
+	/* enable PM */
+	iowrite32(priv->pm_config, port_base + PMConfig);
+
+	/* clear intr register */
+	ioread32(port_base + IntrStatus);
+}
+
+static void _sc92031_tx_tasklet(struct net_device *dev)
+{
+	struct sc92031_priv *priv = netdev_priv(dev);
+	void __iomem *port_base = priv->port_base;
+
+	unsigned old_tx_tail;
+	unsigned entry;
+	u32 tx_status;
+
+	old_tx_tail = priv->tx_tail;
+	while (priv->tx_head - priv->tx_tail > 0) {
+		entry = priv->tx_tail % N

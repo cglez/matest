@@ -1,0 +1,4 @@
+t s2io_nic *sp)
+{
+	int i;
+	u16 m

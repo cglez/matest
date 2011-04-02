@@ -1,0 +1,10 @@
+interrupts(qdev);
+	netif_tx_start_all_queues(qdev->ndev);
+
+	return 0;
+err_init:
+	ql_adapter_reset(qdev);
+	return err;
+}
+
+static void ql_release_adapter_resource

@@ -1,0 +1,91 @@
+this way for the GigE version of this
+	 * card and it's shorter and more portable than any
+	 * other method I've seen.  -VAL
+	 */
+
+	*(__be16 *)(dev->dev_addr) =
+	  htons(rr_read_eeprom_word(rrpriv, offsetof(struct eeprom, manf.BoardULA)));
+	*(__be32 *)(dev->dev_addr+2) =
+	  htonl(rr_read_eeprom_word(rrpriv, offsetof(struct eeprom, manf.BoardULA[4])));
+
+	printk("  MAC: %pM\n", dev->dev_addr);
+
+	sram_size = rr_read_eeprom_word(rrpriv, 8);
+	printk("  SRAM size 0x%06x\n", sram_size);
+
+	return 0;
+}
+
+
+static int rr_init1(struct net_device *dev)
+{
+	struct rr_private *rrpriv;
+	struct rr_regs __iomem *regs;
+	unsigned long myjif, flags;
+	struct cmd cmd;
+	u32 hostctrl;
+	int ecode = 0;
+	short i;
+
+	rrpriv = netdev_priv(dev);
+	regs = rrpriv->regs;
+
+	spin_lock_irqsave(&rrpriv->lock, flags);
+
+	hostctrl = readl(&regs->HostCtrl);
+	writel(hostctrl | HALT_NIC | RR_CLEAR_INT, &regs->HostCtrl);
+	wmb();
+
+	if (hostctrl & PARITY_ERR){
+		printk("%s: Parity error halting NIC - this is serious!\n",
+		       dev->name);
+		spin_unlock_irqrestore(&rrpriv->lock, flags);
+		ecode = -EFAULT;
+		goto error;
+	}
+
+	set_rxaddr(regs, rrpriv->rx_ctrl_dma);
+	set_infoaddr(regs, rrpriv->info_dma);
+
+	rrpriv->info->evt_ctrl.entry_size = sizeof(struct event);
+	rrpriv->info->evt_ctrl.entries = EVT_RING_ENTRIES;
+	rrpriv->info->evt_ctrl.mode = 0;
+	rrpriv->info->evt_ctrl.pi = 0;
+	set_rraddr(&rrpriv->info->evt_ctrl.rngptr, rrpriv->evt_ring_dma);
+
+	rrpriv->info->cmd_ctrl.entry_size = sizeof(struct cmd);
+	rrpriv->info->cmd_ctrl.entries = CMD_RING_ENTRIES;
+	rrpriv->info->cmd_ctrl.mode = 0;
+	rrpriv->info->cmd_ctrl.pi = 15;
+
+	for (i = 0; i < CMD_RING_ENTRIES; i++) {
+		writel(0, &regs->CmdRing[i]);
+	}
+
+	for (i = 0; i < TX_RING_ENTRIES; i++) {
+		rrpriv->tx_ring[i].size = 0;
+		set_rraddr(&rrpriv->tx_ring[i].addr, 0);
+		rrpriv->tx_skbuff[i] = NULL;
+	}
+	rrpriv->info->tx_ctrl.entry_size = sizeof(struct tx_desc);
+	rrpriv->info->tx_ctrl.entries = TX_RING_ENTRIES;
+	rrpriv->info->tx_ctrl.mode = 0;
+	rrpriv->info->tx_ctrl.pi = 0;
+	set_rraddr(&rrpriv->info->tx_ctrl.rngptr, rrpriv->tx_ring_dma);
+
+	/*
+	 * Set dirty_tx before we start receiving interrupts, otherwise
+	 * the interrupt handler might think it is supposed to process
+	 * tx ints before we are up and running, which may cause a null
+	 * pointer access in the int handler.
+	 */
+	rrpriv->tx_full = 0;
+	rrpriv->cur_rx = 0;
+	rrpriv->dirty_rx = rrpriv->dirty_tx = 0;
+
+	rr_reset(dev);
+
+	/* Tuning values */
+	writel(0x5000, &regs->ConRetry);
+	writel(0x100, &regs->ConRetryTmr);
+	writel(0

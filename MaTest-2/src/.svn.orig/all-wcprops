@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 39
+/svn/cusl3-matest/!svn/ver/32/trunk/src
+END
+user.c
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/svn/cusl3-matest/!svn/ver/38/trunk/src/user.c
+END
+callbacks.c
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/cusl3-matest/!svn/ver/38/trunk/src/callbacks.c
+END
+user_tui.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/cusl3-matest/!svn/ver/39/trunk/src/user_tui.c
+END
+MaTest.h
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/cusl3-matest/!svn/ver/38/trunk/src/MaTest.h
+END
+user_gui.c
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/cusl3-matest/!svn/ver/38/trunk/src/user_gui.c
+END
+callbacks.h
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/cusl3-matest/!svn/ver/38/trunk/src/callbacks.h
+END
+about.ui
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/cusl3-matest/!svn/ver/37/trunk/src/about.ui
+END
+evaluation.c
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/cusl3-matest/!svn/ver/38/trunk/src/evaluation.c
+END
+matest.ui
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/cusl3-matest/!svn/ver/38/trunk/src/matest.ui
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/cusl3-matest/!svn/ver/40/trunk/src/CMakeLists.txt
+END
+MaTest.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/cusl3-matest/!svn/ver/38/trunk/src/MaTest.c
+END

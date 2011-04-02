@@ -1,0 +1,12 @@
+X_SET_OWORD_FIELD(reg, FRF_AB_RST_EM, 1);
+	efx_writeo(efx, &reg, FR_AB_GLB_CTL);
+
+	count = 0;
+	while (1) {
+		efx_reado(efx, &reg, FR_AB_GLB_CTL);
+		if (!EFX_OWORD_FIELD(reg, FRF_AB_RST_XGTX) &&
+		    !EFX_OWORD_FIELD(reg, FRF_AB_RST_XGRX) &&
+		    !EFX_OWORD_FIELD(reg, FRF_AB_RST_EM)) {
+			netif_dbg(efx, hw, efx->net_dev,
+				  "Completed MAC reset after %d loops\n",
+				  count)

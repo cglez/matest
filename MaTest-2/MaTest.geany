@@ -1,0 +1,53 @@
+
+[project]
+name=MaTest
+base_path=/home/cgg/Proyectos/MaTest/build/src/
+make_in_base_path=true
+description=Tester de matrices lógicas.
+run_cmd=/home/cgg/Proyectos/MaTest/build/src/matest
+
+[files]
+current_page=5
+FILE_NAME_0=12225;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/logics/logics.h;0;2
+FILE_NAME_1=4974;C;0;16;1;1;1;/home/cgg/Proyectos/MaTest/src/MaTest.h;0;2
+FILE_NAME_2=1210;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/callbacks.h;0;2
+FILE_NAME_3=5193;C;0;16;1;1;1;/home/cgg/Proyectos/MaTest/src/MaTest.c;0;2
+FILE_NAME_4=3841;C;0;16;1;1;1;/home/cgg/Proyectos/MaTest/src/evaluation.c;0;2
+FILE_NAME_5=3199;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/user.c;0;2
+FILE_NAME_6=13775;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/user_tui.c;0;2
+FILE_NAME_7=22950;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/user_gui.c;0;2
+FILE_NAME_8=11527;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/callbacks.c;0;2
+FILE_NAME_9=6269;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/logics/connectives.c;0;2
+FILE_NAME_10=2129;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/logics/variables.c;0;2
+FILE_NAME_11=981;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/logics/wffs.c;0;2
+FILE_NAME_12=5945;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/logics/wffs_pn.c;0;2
+FILE_NAME_13=3085;C;0;16;1;1;0;/home/cgg/Proyectos/MaTest/src/logics/wffs_std.c;0;2
+FILE_NAME_14=20595;C;0;16;2;1;0;/usr/include/stdio.h;0;2
+
+[indentation]
+indent_width=2
+indent_type=1
+indent_hard_tab_width=8
+detect_indent=true
+indent_mode=2
+
+[long line marker]
+long_line_behaviour=1
+long_line_column=72
+
+[build-menu]
+NF_00_LB=_Compilar
+NF_00_CM=make
+NF_00_WD=/home/cgg/Proyectos/MaTest/build/
+NF_01_LB=Compilar obje_tivo personalizado
+NF_01_CM=make 
+NF_01_WD=
+NF_02_LB=Compilar _objeto
+NF_02_CM=make %e.o
+NF_02_WD=
+EX_01_LB=Ejecutar en modo texto
+EX_01_CM=/home/cgg/Proyectos/MaTest/build/src/matest --text
+EX_01_WD=/home/cgg/Proyectos/MaTest/build/src/
+EX_00_LB=_Ejecutar
+EX_00_CM=/home/cgg/Proyectos/MaTest/build/src/matest
+EX_00_WD=/home/cgg/Proyectos/MaTest/build/src/

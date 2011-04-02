@@ -1,0 +1,72 @@
+G, "%s: index: %d failed\n",
+				  __func__, msix_index);
+			continue;
+		}
+		addr = readq(&bar0->xmsi_address);
+		data = readq(&bar0->xmsi_data);
+		if (addr && data) {
+			nic->msix_info[i].addr = addr;
+			nic->msix_info[i].data = data;
+		}
+	}
+}
+
+static int s2io_enable_msi_x(struct s2io_nic *nic)
+{
+	struct XENA_dev_config __iomem *bar0 = nic->bar0;
+	u64 rx_mat;
+	u16 msi_control; /* Temp variable */
+	int ret, i, j, msix_indx = 1;
+	int size;
+	struct stat_block *stats = nic->mac_control.stats_info;
+	struct swStat *swstats = &stats->sw_stat;
+
+	size = nic->num_entries * sizeof(struct msix_entry);
+	nic->entries = kzalloc(size, GFP_KERNEL);
+	if (!nic->entries) {
+		DBG_PRINT(INFO_DBG, "%s: Memory allocation failed\n",
+			  __func__);
+		swstats->mem_alloc_fail_cnt++;
+		return -ENOMEM;
+	}
+	swstats->mem_allocated += size;
+
+	size = nic->num_entries * sizeof(struct s2io_msix_entry);
+	nic->s2io_entries = kzalloc(size, GFP_KERNEL);
+	if (!nic->s2io_entries) {
+		DBG_PRINT(INFO_DBG, "%s: Memory allocation failed\n",
+			  __func__);
+		swstats->mem_alloc_fail_cnt++;
+		kfree(nic->entries);
+		swstats->mem_freed
+			+= (nic->num_entries * sizeof(struct msix_entry));
+		return -ENOMEM;
+	}
+	swstats->mem_allocated += size;
+
+	nic->entries[0].entry = 0;
+	nic->s2io_entries[0].entry = 0;
+	nic->s2io_entries[0].in_use = MSIX_FLG;
+	nic->s2io_entries[0].type = MSIX_ALARM_TYPE;
+	nic->s2io_entries[0].arg = &nic->mac_control.fifos;
+
+	for (i = 1; i < nic->num_entries; i++) {
+		nic->entries[i].entry = ((i - 1) * 8) + 1;
+		nic->s2io_entries[i].entry = ((i - 1) * 8) + 1;
+		nic->s2io_entries[i].arg = NULL;
+		nic->s2io_entries[i].in_use = 0;
+	}
+
+	rx_mat = readq(&bar0->rx_mat);
+	for (j = 0; j < nic->config.rx_ring_num; j++) {
+		rx_mat |= RX_MAT_SET(j, msix_indx);
+		nic->s2io_entries[j+1].arg = &nic->mac_control.rings[j];
+		nic->s2io_entries[j+1].type = MSIX_RING_TYPE;
+		nic->s2io_entries[j+1].in_use = MSIX_FLG;
+		msix_indx += 8;
+	}
+	writeq(rx_mat, &bar0->rx_mat);
+	readq(&bar0->rx_mat);
+
+	ret = pci_enable_msix(nic->pdev, nic->entries, nic->num_entries);
+	/* We fail init if error or we get less v

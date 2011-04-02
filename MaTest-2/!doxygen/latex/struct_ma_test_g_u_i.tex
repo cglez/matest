@@ -1,0 +1,278 @@
+ return code indicates
+ * that we were unable to reinitialise the hardware, and the
+ * driver should be disabled. If ok is false, then the rx and tx
+ * engines are not restarted, pending a RESET_DISABLE. */
+int efx_reset_up(struct efx_nic *efx, enum reset_type method, bool ok)
+{
+	int rc;
+
+	EFX_ASSERT_RESET_SERIALISED(efx);
+
+	rc = efx->type->init(efx);
+	if (rc) {
+		netif_err(efx, drv, efx->net_dev, "failed to initialise NIC\n");
+		goto fail;
+	}
+
+	if (!ok)
+		goto fail;
+
+	if (efx->port_initialized && method != RESET_TYPE_INVISIBLE) {
+		rc = efx->phy_op->init(efx);
+		if (rc)
+			goto fail;
+		if (efx->phy_op->reconfigure(efx))
+			netif_err(efx, drv, efx->net_dev,
+				  "could not restore PHY settings\n");
+	}
+
+	efx->mac_op->reconfigure(efx);
+
+	efx_init_channels(efx);
+
+	mutex_unlock(&efx->spi_lock);
+	mutex_unlock(&efx->mac_lock);
+
+	efx_start_all(efx);
+
+	return 0;
+
+fail:
+	efx->port_initialized = false;
+
+	mutex_unlock(&efx->spi_lock);
+	mutex_unlock(&efx->mac_lock);
+
+	return rc;
+}
+
+/* Reset the NIC using the specified method.  Note that the reset may
+ * fail, in which case the card will be left in an unusable state.
+ *
+ * Caller must hold the rtnl_lock.
+ */
+int efx_reset(struct efx_nic *efx, enum reset_type method)
+{
+	int rc, rc2;
+	bool disabled;
+
+	netif_info(efx, drv, efx->net_dev, "resetting (%s)\n",
+		   RESET_TYPE(method));
+
+	efx_reset_down(efx, method);
+
+	rc = efx->type->reset(efx, method);
+	if (rc) {
+		netif_err(efx, drv, efx->net_dev, "failed to reset hardware\n");
+		goto out;
+	}
+
+	/* Allow resets to be rescheduled. */
+	efx->reset_pending = RESET_TYPE_NONE;
+
+	/* Reinitialise bus-mastering, which may have been turned off before
+	 * the reset was scheduled. This is still appropriate, even in the
+	 * RESET_TYPE_DISABLE since this driver generally assumes the hardware
+	 * can respond to requests. */
+	pci_set_master(efx->pci_dev);
+
+out:
+	/* Leave device stopped if necessary */
+	disabled = rc || method == RESET_TYPE_DISABLE;
+	rc2 = efx_reset_up(efx, method, !disabled);
+	if (rc2) {
+		disabled = true;
+		if (!rc)
+			rc = rc2;
+	}
+
+	if (disabled) {
+		dev_close(efx->net_dev);
+		netif_err(efx, drv, efx->net_dev, "has been disabled\n");
+		efx->state = STATE_DISABLED;
+	} else {
+		netif_dbg(efx, drv, efx->net_dev, "reset complete\n");
+	}
+	return rc;
+}
+
+/* The worker thread exists so that code that cannot sleep can
+ * schedule a reset for later.
+ */
+static void efx_reset_work(struct work_struct *data)
+{
+	struct efx_nic *efx = container_of(data, struct efx_nic, reset_work);
+
+	if (efx->reset_pending == RESET_TYPE_NONE)
+		return;
+
+	/* If we're not RUNNING then don't reset. Leave the reset_pending
+	 * flag set so that efx_pci_probe_main will be retried */
+	if (efx->state != STATE_RUNNING) {
+		netif_info(efx, drv, efx->net_dev,
+			   "scheduled reset quenched. NIC not RUNNING\n");
+		return;
+	}
+
+	rtnl_lock();
+	(void)efx_reset(efx, efx->reset_pending);
+	rtnl_unlock();
+}
+
+void efx_schedule_reset(struct efx_nic *efx, enum reset_type type)
+{
+	enum reset_type method;
+
+	if (efx->reset_pending != RESET_TYPE_NONE) {
+		netif_info(efx, drv, efx->net_dev,
+			   "quenching already scheduled reset\n");
+		return;
+	}
+
+	switch (type) {
+	case RESET_TYPE_INVISIBLE:
+	case RESET_TYPE_ALL:
+	case RESET_TYPE_WORLD:
+	case RESET_TYPE_DISABLE:
+		method = type;
+		break;
+	case RESET_TYPE_RX_RECOVERY:
+	case RESET_TYPE_RX_DESC_FETCH:
+	case RESET_TYPE_TX_DESC_FETCH:
+	case RESET_TYPE_TX_SKIP:
+		method = RESET_TYPE_INVISIBLE;
+		break;
+	case RESET_TYPE_MC_FAILURE:
+	default:
+		method = RESET_TYPE_ALL;
+		break;
+	}
+
+	if (method != type)
+		netif_dbg(efx, drv, efx->net_dev,
+			  "scheduling %s reset for %s\n",
+			  RESET_TYPE(method), RESET_TYPE(type));
+	else
+		netif_dbg(efx, drv, efx->net_dev, "scheduling %s reset\n",
+			  RESET_TYPE(method));
+
+	efx->reset_pending = method;
+
+	/* efx_process_channel() will no longer read events once a
+	 * reset is scheduled. So switch back to poll'd MCDI completions. */
+	efx_mcdi_mode_poll(efx);
+
+	queue_work(reset_workqueue, &efx->reset_work);
+}
+
+/**************************************************************************
+ *
+ * List of NICs we support
+ *
+ **************************************************************************/
+
+/* PCI device ID table */
+static DEFINE_PCI_DEVICE_TABLE(efx_pci_table) = {
+	{PCI_DEVICE(EFX_VENDID_SFC, FALCON_A_P_DEVID),
+	 .driver_data = (unsigned long) &falcon_a1_nic_type},
+	{PCI_DEVICE(EFX_VENDID_SFC, FALCON_B_P_DEVID),
+	 .driver_data = (unsigned long) &falcon_b0_nic_type},
+	{PCI_DEVICE(EFX_VENDID_SFC, BETHPAGE_A_P_DEVID),
+	 .driver_data = (unsigned long) &siena_a0_nic_type},
+	{PCI_DEVICE(EFX_VENDID_SFC, SIENA_A_P_DEVID),
+	 .driver_data = (unsigned long) &siena_a0_nic_type},
+	{0}			/* end of list */
+};
+
+/**************************************************************************
+ *
+ * Dummy PHY/MAC operations
+ *
+ * Can be used for some unimplemented operations
+ * Needed so all function pointers are valid and do not have to be tested
+ * before use
+ *
+ **************************************************************************/
+int efx_port_dummy_op_int(struct efx_nic *efx)
+{
+	return 0;
+}
+void efx_port_dummy_op_void(struct efx_nic *efx) {}
+void efx_port_dummy_op_set_id_led(struct efx_nic *efx, enum efx_led_mode mode)
+{
+}
+bool efx_port_dummy_op_poll(struct efx_nic *efx)
+{
+	return false;
+}
+
+static struct efx_phy_operations efx_dummy_phy_operations = {
+	.init		 = efx_port_dummy_op_int,
+	.reconfigure	 = efx_port_dummy_op_int,
+	.poll		 = efx_port_dummy_op_poll,
+	.fini		 = efx_port_dummy_op_void,
+};
+
+/**************************************************************************
+ *
+ * Data housekeeping
+ *
+ **************************************************************************/
+
+/* This zeroes out and then fills in the invariants in a struct
+ * efx_nic (including all sub-structures).
+ */
+static int efx_init_struct(struct efx_nic *efx, struct efx_nic_type *type,
+			   struct pci_dev *pci_dev, struct net_device *net_dev)
+{
+	struct efx_channel *channel;
+	struct efx_tx_queue *tx_queue;
+	struct efx_rx_queue *rx_queue;
+	int i;
+
+	/* Initialise common structures */
+	memset(efx, 0, sizeof(*efx));
+	spin_lock_init(&efx->biu_lock);
+	mutex_init(&efx->mdio_lock);
+	mutex_init(&efx->spi_lock);
+#ifdef CONFIG_SFC_MTD
+	INIT_LIST_HEAD(&efx->mtd_list);
+#endif
+	INIT_WORK(&efx->reset_work, efx_reset_work);
+	INIT_DELAYED_WORK(&efx->monitor_work, efx_monitor);
+	efx->pci_dev = pci_dev;
+	efx->msg_enable = debug;
+	efx->state = STATE_INIT;
+	efx->reset_pending = RESET_TYPE_NONE;
+	strlcpy(efx->name, pci_name(pci_dev), sizeof(efx->name));
+
+	efx->net_dev = net_dev;
+	efx->rx_checksum_enabled = true;
+	spin_lock_init(&efx->stats_lock);
+	mutex_init(&efx->mac_lock);
+	efx->mac_op = type->default_mac_ops;
+	efx->phy_op = &efx_dummy_phy_operations;
+	efx->mdio.dev = net_dev;
+	INIT_WORK(&efx->mac_work, efx_mac_work);
+
+	for (i = 0; i < EFX_MAX_CHANNELS; i++) {
+		channel = &efx->channel[i];
+		channel->efx = efx;
+		channel->channel = i;
+		channel->work_pending = false;
+		spin_lock_init(&channel->tx_stop_lock);
+		atomic_set(&channel->tx_stop_count, 1);
+	}
+	for (i = 0; i < EFX_MAX_TX_QUEUES; i++) {
+		tx_queue = &efx->tx_queue[i];
+		tx_queue->efx = efx;
+		tx_queue->queue = i;
+		tx_queue->buffer = NULL;
+		tx_queue->channel = &efx->channel[0]; /* for safety */
+		tx_queue->tso_headers_free = NULL;
+	}
+	for (i = 0; i < EFX_MAX_RX_QUEUES; i++) {
+		rx_queue = &efx->rx_queue[i];
+		rx_queue->efx = efx;
+		rx_queue->queue = i;
+		rx_queue->chan

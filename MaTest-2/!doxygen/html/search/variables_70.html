@@ -1,0 +1,77 @@
+r = ring->rx_blocks[j].block_virt_addr;
+			tmp_p_addr = ring->rx_blocks[j].block_dma_addr;
+			if (tmp_v_addr == NULL)
+				break;
+			pci_free_consistent(nic->pdev, size,
+					    tmp_v_addr, tmp_p_addr);
+			swstats->mem_freed += size;
+			kfree(ring->rx_blocks[j].rxds);
+			swstats->mem_freed += sizeof(struct rxd_info) *
+				rxd_count[nic->rxd_mode];
+		}
+	}
+
+	if (nic->rxd_mode == RXD_MODE_3B) {
+		/* Freeing buffer storage addresses in 2BUFF mode. */
+		for (i = 0; i < config->rx_ring_num; i++) {
+			struct rx_ring_config *rx_cfg = &config->rx_cfg[i];
+			struct ring_info *ring = &mac_control->rings[i];
+
+			blk_cnt = rx_cfg->num_rxd /
+				(rxd_count[nic->rxd_mode] + 1);
+			for (j = 0; j < blk_cnt; j++) {
+				int k = 0;
+				if (!ring->ba[j])
+					continue;
+				while (k != rxd_count[nic->rxd_mode]) {
+					struct buffAdd *ba = &ring->ba[j][k];
+					kfree(ba->ba_0_org);
+					swstats->mem_freed +=
+						BUF0_LEN + ALIGN_SIZE;
+					kfree(ba->ba_1_org);
+					swstats->mem_freed +=
+						BUF1_LEN + ALIGN_SIZE;
+					k++;
+				}
+				kfree(ring->ba[j]);
+				swstats->mem_freed += sizeof(struct buffAdd) *
+					(rxd_count[nic->rxd_mode] + 1);
+			}
+			kfree(ring->ba);
+			swstats->mem_freed += sizeof(struct buffAdd *) *
+				blk_cnt;
+		}
+	}
+
+	for (i = 0; i < nic->config.tx_fifo_num; i++) {
+		struct fifo_info *fifo = &mac_control->fifos[i];
+		struct tx_fifo_config *tx_cfg = &config->tx_cfg[i];
+
+		if (fifo->ufo_in_band_v) {
+			swstats->mem_freed += tx_cfg->fifo_len *
+				sizeof(u64);
+			kfree(fifo->ufo_in_band_v);
+		}
+	}
+
+	if (mac_control->stats_mem) {
+		swstats->mem_freed += mac_control->stats_mem_sz;
+		pci_free_consistent(nic->pdev,
+				    mac_control->stats_mem_sz,
+				    mac_control->stats_mem,
+				    mac_control->stats_mem_phy);
+	}
+}
+
+/**
+ * s2io_verify_pci_mode -
+ */
+
+static int s2io_verify_pci_mode(struct s2io_nic *nic)
+{
+	struct XENA_dev_config __iomem *bar0 = nic->bar0;
+	register u64 val64 = 0;
+	int     mode;
+
+	val64 = readq(&bar0->pci_mode);
+	mode = (u8)GET_PCI_MODE(val6

@@ -1,0 +1,75 @@
+o_start_all_tx_queue(struct s2io_nic *sp)
+{
+	if (!sp->config.multiq) {
+		int i;
+
+		for (i = 0; i < sp->config.tx_fifo_num; i++)
+			sp->mac_control.fifos[i].queue_state = FIFO_QUEUE_START;
+	}
+	netif_tx_start_all_queues(sp->dev);
+}
+
+static inline void s2io_start_tx_queue(struct s2io_nic *sp, int fifo_no)
+{
+	if (!sp->config.multiq)
+		sp->mac_control.fifos[fifo_no].queue_state =
+			FIFO_QUEUE_START;
+
+	netif_tx_start_all_queues(sp->dev);
+}
+
+static inline void s2io_wake_all_tx_queue(struct s2io_nic *sp)
+{
+	if (!sp->config.multiq) {
+		int i;
+
+		for (i = 0; i < sp->config.tx_fifo_num; i++)
+			sp->mac_control.fifos[i].queue_state = FIFO_QUEUE_START;
+	}
+	netif_tx_wake_all_queues(sp->dev);
+}
+
+static inline void s2io_wake_tx_queue(
+	struct fifo_info *fifo, int cnt, u8 multiq)
+{
+
+	if (multiq) {
+		if (cnt && __netif_subqueue_stopped(fifo->dev, fifo->fifo_no))
+			netif_wake_subqueue(fifo->dev, fifo->fifo_no);
+	} else if (cnt && (fifo->queue_state == FIFO_QUEUE_STOP)) {
+		if (netif_queue_stopped(fifo->dev)) {
+			fifo->queue_state = FIFO_QUEUE_START;
+			netif_wake_queue(fifo->dev);
+		}
+	}
+}
+
+/**
+ * init_shared_mem - Allocation and Initialization of Memory
+ * @nic: Device private variable.
+ * Description: The function allocates all the memory areas shared
+ * between the NIC and the driver. This includes Tx descriptors,
+ * Rx descriptors and the statistics block.
+ */
+
+static int init_shared_mem(struct s2io_nic *nic)
+{
+	u32 size;
+	void *tmp_v_addr, *tmp_v_addr_next;
+	dma_addr_t tmp_p_addr, tmp_p_addr_next;
+	struct RxD_block *pre_rxd_blk = NULL;
+	int i, j, blk_cnt;
+	int lst_size, lst_per_page;
+	struct net_device *dev = nic->dev;
+	unsigned long tmp;
+	struct buffAdd *ba;
+	struct config_param *config = &nic->config;
+	struct mac_info *mac_control = &nic->mac_control;
+	unsigned long long mem_allocated = 0;
+
+	/* Allocation and initialization of TXDLs in FIFOs */
+	size = 0;
+	for (i = 0; i < config->tx_fifo_num; i++) {
+		struct tx_fifo_config *tx_cfg = &config->tx_cfg[i];
+
+		s
