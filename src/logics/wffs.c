@@ -112,7 +112,7 @@ ll_wff_get_avail_node (LlWFF *wff)
  * @param value Valor del nodo.
  * @return true: si tiene éxito, false: en caso contrario.
  */
-bool
+gboolean
 ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 {
 	LlWFF *father = NULL;

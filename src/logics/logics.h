@@ -26,13 +26,13 @@
 #define __LOGICS_H__
 
 
-#include <string.h>
-#include <stdbool.h>
 #include <glib.h>
+#define GETTEXT_PACKAGE any
+#include <glib/gi18n-lib.h>
 
 /* Algunas abreviaciones útiles */
-#define MAX(a, b)	(((a) > (b)) ? (a) : (b))
-#define MIN(a, b)	(((a) < (b)) ? (a) : (b))
+//#define MAX(a, b)	(((a) > (b)) ? (a) : (b))
+//#define MIN(a, b)	(((a) < (b)) ? (a) : (b))
 #define DIM logic->dimension
 #define MDV logic->mdv
 #define MAXV logic->dimension - 1
@@ -42,13 +42,13 @@
 /** @enum Tipos de símbolos de una fórmula */
 typedef enum
 {
-	LL_SYMBOL_VAR,         /**< Variable.                                       */
-	LL_SYMBOL_CONST,       /**< Constante.                                      */
-	LL_SYMBOL_U_CON,       /**< Conectiva unaria.                               */
-	LL_SYMBOL_B_CON,       /**< Conectiva binaria.                              */
-	LL_SYMBOL_AUX_OPEN,    /**< Símbolo auxiliar de apertura.                   */
-	LL_SYMBOL_AUX_CLOSE,   /**< Símbolo auxiliar de cierre.                     */
-	LL_SYMBOL_NONE         /**< Tipo nulo, para el control de errores.          */
+	LL_SYMBOL_VAR,         /**< Variable.                              */
+	LL_SYMBOL_CONST,       /**< Constante.                             */
+	LL_SYMBOL_U_CON,       /**< Conectiva unaria.                      */
+	LL_SYMBOL_B_CON,       /**< Conectiva binaria.                     */
+	LL_SYMBOL_AUX_OPEN,    /**< Símbolo auxiliar de apertura.          */
+	LL_SYMBOL_AUX_CLOSE,   /**< Símbolo auxiliar de cierre.            */
+	LL_SYMBOL_NONE         /**< Tipo nulo, para el control de errores. */
 }
 LlSymbolType;
 
@@ -56,9 +56,10 @@ LlSymbolType;
 /** @enum Tipos de nodos de una fórmula bien formada */
 typedef enum
 {
-	LL_WFF_NODE_VAR,       /**< Variable.                                       */
-	LL_WFF_NODE_U_CON,     /**< Conectiva unaria.                               */
-	LL_WFF_NODE_B_CON      /**< Conectiva binaria.                              */
+	LL_WFF_NODE_VAR,       /**< Variable.          */
+	LL_WFF_NODE_CONST,     /**< Constante.         */
+	LL_WFF_NODE_U_CON,     /**< Conectiva unaria.  */
+	LL_WFF_NODE_B_CON      /**< Conectiva binaria. */
 }
 LlWFFType;
 
@@ -66,9 +67,9 @@ LlWFFType;
 /** @enum Tipos de notación */
 typedef enum
 {
-	LL_STDN,               /**< Notación estándar.                              */
-	LL_PN,                 /**< Notación polaca.                                */
-	LL_RPN                 /**< Notación polaca inversa.                        */
+	LL_STDN,               /**< Notación estándar.       */
+	LL_PN,                 /**< Notación polaca.         */
+	LL_RPN                 /**< Notación polaca inversa. */
 }
 LlNotation;
 
@@ -76,16 +77,14 @@ LlNotation;
 /** @struct
  * Nodo variable proposicional.
  *
- * Entendemos aquí por variable proposicional a un tipo de dato que tiene
- * asociado un símbolo que la identifica, que puede tomar distintos valores
- * numéricos y que forma un grupo, una lista, con los otros elementos de la
- * misma clase que se hayan en uso.
+ * Una variable proposicional es un tipo de dato que tiene asociado un símbolo
+ * que la identifica y un valor numérico.
  */
 typedef struct _LlVar LlVar;
 struct _LlVar
 {
-	char     symbol[2];   /**< Nombre de la variable o letra que la designa.    */
-	int      value;       /**< Valor de la variable.                            */
+	gchar      *symbol;  /**< Símbolo de la variable. */
+	gpointer    value;   /**< Valor de la variable.   */
 };
 
 
@@ -175,11 +174,11 @@ struct _LlWFF
  */
 typedef struct
 {
-	int      dimension;   /**< Dimensión de las matrices.           */
-	int      mdv;         /**< Mínimo Valor Designado.              */
-	GList    *vars;       /**< Lista de variables proposicionales.  */
-	GList    *ucons;      /**< Lista de conectivas unarias.         */
-	GList    *bcons;      /**< Lista de conectivas binarias.        */
+	int      dimension;   /**< Dimensión de las matrices.          */
+	int      mdv;         /**< Mínimo Valor Designado.             */
+	GList    *vars;       /**< Lista de variables proposicionales. */
+	GList    *ucons;      /**< Lista de conectivas unarias.        */
+	GList    *bcons;      /**< Lista de conectivas binarias.       */
 }
 LlLogic;
 
@@ -190,7 +189,7 @@ LlVar*        ll_var_new                        (char          *symbol,
 void          ll_var_set_value                  (LlVar         *var,
                                                  int            value);
 int           ll_var_get_value                  (LlVar         *var);
-bool          ll_var_list_is_empty              (GList         *var_list);
+gboolean      ll_var_list_is_empty              (GList         *var_list);
 void          ll_var_list_free                  (GList         *var_list);
 LlVar*        ll_var_list_get_var_by_symbol     (GList         *var_list,
                                                  char          *symbol);
@@ -229,7 +228,7 @@ void          ll_bcon_list_free                 (GList         *bcon_list,
 void          ll_wff_free                       (LlWFF         *wff);
 void          ll_wff_valuate                    (LlWFF         *wff,
                                                  LlLogic       *logic);
-bool          ll_wff_add_node                   (LlWFF         **wff,
+gboolean          ll_wff_add_node                   (LlWFF         **wff,
                                                  LlWFFType      node_type,
                                                  char          *symbol,
                                                  int            value);
@@ -239,7 +238,7 @@ int           ll_wff_get_value                  (LlWFF         *wff,
 /* Fórmulas bien formadas en notación polaca */
 LlSymbolType  ll_symbol_pn_get_type             (char           symbol,
                                                  LlLogic       *logic);
-bool          ll_formula_is_wff_pn              (char          *formula,
+gboolean          ll_formula_is_wff_pn              (char          *formula,
                                                  LlLogic       *logic);
 LlWFF*        ll_wff_parse_formula_pn           (LlWFF         *tree,
                                                  char          *formula_pn,

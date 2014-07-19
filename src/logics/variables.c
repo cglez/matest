@@ -27,84 +27,100 @@
  * sus listas.
  */
 
-
 #include "logics.h"
+
 
 /**
  * Crea una variable proposicional nueva.
  *
- * @param symbol Letra o símbolo que representa la variable.
+ * @param symbol Símbolo que representa la variable.
  * @param value Valor asignado a la variable.
- * @return La nueva variable proposicional.
+ * @return Una variable proposicional nueva.
  */
 LlVar*
-ll_var_new (char* symbol, int value)
+ll_var_new_int (const gchar *symbol, gint value)
 {
-	LlVar    *var;
+	LlVar  *var = NULL;
 
-	var = g_slice_new (LlVar);
-
-	if (!var) {
-		perror ("liblogics: Error al reservar memoria para una variable proposicional.\n");
-		return NULL;
+	if (strlen (symbol) == 1 && g_ascii_isalpha (symbol[0])) {
+		var = g_new (LlVar, 1);
+		var->symbol = g_strdup (symbol);
+		var->value = GINT_TO_POINTER(value);
 	}
-	else {
-		var->value = value;
-		strcpy (var->symbol, symbol);
-		return var;
+	else if (strlen (symbol) > 2 &&
+	         g_ascii_isalpha (symbol[0]) &&
+	         symbol[1] == '_'
+	         ) {
 	}
+	return var;
 }
 
 
 /**
- * @brief Libera la memoria de una variable proposicional.
+ * Libera la memoria de una variable proposicional.
+ * 
  * @param var Una variable proposicional.
- * 
- * 
  */
 void
 ll_var_free (LlVar* var)
 {
-	g_slice_free (LlVar, var);
+	g_free (var->symbol);
+	g_free (var);
 }
 
 
 /**
- * Establece el valor dado en una variable proposicional.
+ * Establece el valor entero dado en una variable proposicional.
+ *
+ * @param var Una variable proposicional.
+ * @param value Un valor entero.
  */
 void
-ll_var_set_value (LlVar *var, int value)
+ll_var_set_value_int (LlVar *var, gint value)
 {
-	if (var)
-		var->value = value;
-	else
-    perror ("liblogics: La variable no existe.\n");
+	if (!var) {
+		g_error ("La variable no existe.\n");
+	}
+	else {
+		var->value = GINT_TO_POINTER(value);
+	}
 }
 
 
 /**
  * Devuelve el valor de una variable proposicional.
  *
+ * @param var Una variable proposicional.
+ *
  * @return \f$n \geq 0\f$ : el valor de la variable.\n
  *         -1: error, la variable no existe.
  */
-int
-ll_var_get_value (LlVar *var)
+gint
+ll_var_get_value_int (LlVar *var)
 {
-	if (var)
-		return var->value;
+	if (!var) {
+		g_error ("La variable no existe.\n");
+	}
 	else {
-		perror ("liblogics: La variable no existe.\n");
-		return -1;
+		return GPOINTER_TO_INT(var->value);
 	}
 }
 
 
-bool
-ll_var_list_is_empty (GList *var_list)
-{
-	return (var_list == NULL);
-}
+//FIXME Escribir como macro.
+/**
+ * Evalúa si una lista de variables está vacía o no.
+ *
+ * @param var_list Una lista de variables.
+ *
+ * @return true si la lista de variables está vacía, false en caso contrario.
+ */
+#define ll_var_list_is_empty(var_list) (var_list == NULL)
+//~ gboolean
+//~ ll_var_list_is_empty (GList *var_list)
+//~ {
+	//~ return (var_list == NULL);
+//~ }
 
 
 /**
@@ -130,13 +146,12 @@ ll_var_list_get_var_by_symbol (GList* var_list, char symbol[])
 	GList    *iter = NULL;
 	LlVar    *var;
 
-	for (iter = var_list; iter; iter = iter->next)
-		{
-			var = (LlVar*) iter->data;
-			if (!g_ascii_strcasecmp (symbol, var->symbol)) {
-				return var;
-			}
+	for (iter = var_list; iter; iter = iter->next) {
+		var = (LlVar*) iter->data;
+		if (!g_ascii_strcasecmp (symbol, var->symbol)) {
+			return var;
 		}
+	}
 
 	return NULL;
 }
@@ -189,14 +204,11 @@ ll_logic_add_formula_vars (LlLogic* logic, char formula[])
 		ll_var_list_free (logic->vars);
 		logic->vars = NULL;
 	}
-
-	for (i = 0; i < (int) strlen (formula); i++)
-		{
-			g_sprintf (symbol, "%c", formula[i]);
-			if (ll_symbol_type (symbol, logic) == LL_SYMBOL_VAR)
-				{
-					var = ll_var_new (symbol, 0);
-			    logic->vars = ll_var_list_add_var (logic->vars, var);
-				}
+	for (i = 0; i < (int) strlen (formula); i++) {
+		g_sprintf (symbol, "%c", formula[i]);
+		if (ll_symbol_type (symbol, logic) == LL_SYMBOL_VAR) {
+			var = ll_var_new (symbol, 0);
+	    logic->vars = ll_var_list_add_var (logic->vars, var);
 		}
+	}
 }

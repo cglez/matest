@@ -5,7 +5,7 @@ project (MaTest C)
 set (MaTest_VERSION_MAJOR 1)
 set (MaTest_VERSION_MINOR 3)
 
-OPTION( BUILD_SHARED_LIBS "Set to OFF to build static libraries" OFF )
+OPTION( BUILD_SHARED_LIBS "Set to OFF to build static libraries" ON )
 OPTION( INSTALL_DOC "Set to OFF to skip build/install Documentation" ON )
 
 IF(NOT CMAKE_BUILD_TYPE)

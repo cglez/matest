@@ -181,8 +181,8 @@ tui_bcon_add_custom (LlLogic* logic, const char *symbol)
 void
 print_matrices (LlLogic* logic)
 {
-	GList   *iter;
-	gchar   *straux;
+	GList    *iter;
+	gchar    *straux;
 
 	for (iter = logic->ucons; iter; iter = iter->next) {
 		straux = sprint_ucon_matrix ((LlUCon*) iter->data, logic);
@@ -242,8 +242,8 @@ void menu_info (Work* work)
 		printf ("%s ", ((LlBCon*) iter->data)->symbol);
 	}
 
-	if (work->formula_pn[0]) {
-		printf (_("\n  Fórmula:                    %s"), work->formula_pn);
+	if (work->formula[0]) {
+		printf (_("\n  Fórmula:                    %s"), work->formula);
 	}
 	else {
 		printf (_("\n  Fórmula:                    Sin definir"));

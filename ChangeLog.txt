@@ -14,8 +14,8 @@
  *  Nueva representación de los resultados de la evaluación.
 
  *  Los tipos de datos definidos y las funciones adquieren una estructura más
-    nítida al diferenciar en los tipos de datos el contenido de éstos de su
-    implementación para el manejo dentro del programa. Se relega a Glib la admi-
+    nítida al diferenciar en los tipos de datos su contenido de su
+    implementación para su uso dentro del programa. Se relega a Glib la admi-
     nistración de memoria y el manejo de listas. liblogics depende de Glib.
 
  *  Manejo de texto basado en buffers.
@@ -60,7 +60,6 @@
     Hay una entrada para introducir fórmulas en notación polaca.
     En la barra de menús se puede seleccionar el tipo de evaluación. En el menú
     Archivo hay una opción para guardar las matrices.
-    La evaluación se realiza pulsando Evaluar.
 
 
 
@@ -92,7 +91,7 @@
  
  *  Las variables son registradas por demanda.
  
- *  Menús rediseñados. Mejorada la robustez de la entrada de datos.
+ *  Menús rediseñados. Entrada de datos más robusta.
  
  *  La detección de las fórmulas bien formadas en notación polaca se efectúa en
     función de los datos proporcionados por el usuario según la siguiente con-

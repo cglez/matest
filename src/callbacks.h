@@ -28,6 +28,7 @@
 #include <gtk/gtk.h>
 #include "MaTest.h"
 #define UI_FILE "matest.ui"
+//TODO Incluir el diálogo Acerca de en el archivo de interfaz principal
 #define ABOUT_DIALOG_FILE "about.ui"
 
 void        on_window_destroy                   (GtkObject    *object,

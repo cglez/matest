@@ -159,6 +159,7 @@ mode_gui (int argc, char *argv[], Work* work)
 		g_free (label);
 		g_signal_connect (G_OBJECT (b_con), "clicked",
 	                    G_CALLBACK (on_b_ucon_clicked), (gpointer) gui);
+	  gtk_button_set_relief (b_con, GTK_RELIEF_NONE);
 	  gtk_container_add (GTK_CONTAINER (gui->hb_ucons), b_con);
 		gtk_widget_show (b_con);
 	}
@@ -168,6 +169,7 @@ mode_gui (int argc, char *argv[], Work* work)
 		g_free (label);
 		g_signal_connect (G_OBJECT (b_con), "clicked",
 		                  G_CALLBACK (on_b_bcon_clicked), gui);
+		gtk_button_set_relief (b_con, GTK_RELIEF_NONE);
 		gtk_container_add (GTK_CONTAINER (gui->hb_bcons), b_con);
 		gtk_widget_show (b_con);
 	}
@@ -486,7 +488,6 @@ dialog_bcon_new (MaTestGUI *gui)
 	input_symbol = gtk_entry_new ();
 	gtk_entry_set_max_length (GTK_ENTRY (input_symbol), SLEN);
 	gtk_entry_set_width_chars (GTK_ENTRY (input_symbol), SLEN);
-	gtk_entry_set_alignment (GTK_ENTRY (input_symbol), 1);
 	gtk_table_attach_defaults (GTK_TABLE (table), input_symbol,
 	                           0, 1,
 	                           0, 1);

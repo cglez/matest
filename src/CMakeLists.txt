@@ -1,11 +1,8 @@
-find_package(PkgConfig)
-pkg_check_modules(GTK gtk+-2.0)
-include_directories(${GTK_INCLUDE_DIRS})
-include_directories(/home/cgg/Proyectos/gtk-win32)
-#find_package(GTK 2.6 REQUIRED gtk)
-#find_package(GTK2 2.6 REQUIRED gtk)
-#include_directories(${GTK_INCLUDE_DIRS})
-#include_directories(${GTK2_INCLUDE_DIRS})
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+include_directories(${GTK3_INCLUDE_DIRS})
+link_directories(${GTK3_LIBRARY_DIRS})
+
 INCLUDE_DIRECTORIES(${MaTest_SOURCE_DIR}/src/logics)
 SET(SRC
     MaTest.c
@@ -16,8 +13,7 @@ SET(SRC
     user_tui.c)
 SET(LIBSRC
     logics
-    ${GTK_LIBRARIES})
-#    ${GTK2_LIBRARIES})
+    ${GTK3_LIBRARIES})
 #SET(CMAKE_C_FLAGS "${GTK_CFLAGS} ${GTHREAD_CFLAGS}")
 #STRING(REGEX REPLACE "-l" "" GTK_LIBRARIES "${GTK_LINK_FLAGS} ${GTHREAD_LINK_FLAGS}")
 ADD_EXECUTABLE(matest ${SRC})

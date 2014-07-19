@@ -37,6 +37,7 @@
  */
 
 #include <stdbool.h>
+#include <libintl.h>
 #include <gtk/gtk.h>
 #include "logics/logics.h"
 
@@ -48,16 +49,19 @@
 ***	Definición de tipos de datos
  */
 
+// TODO Añadir el modo de comprobación de una regla
 /** @enum Enumeración con los tipos de evaluación. */
 typedef enum
 {
-	ALL,            /**< Se muestran todos los valores. */
-	DESIGNATED,     /**< Se muestran sólo los valores designados. */
-	NOT_DESIGNATED  /**< Se muestran sólo los valores no designados. */
+	ALL,             /**< Se muestran todos los valores. */
+	DESIGNATED,      /**< Se muestran sólo los valores designados. */
+	NOT_DESIGNATED,  /**< Se muestran sólo los valores no designados. */
+	RULE
 }
 EvaluationStyle;
 
 
+//TODO Sólo contar las evaluaciones designadas
 /** @struct
  * Registro general con todos los datos necesarios para la evaluación, esto es,
  * contiene el trabajo definido actualmente tal y como se evaluará.
@@ -66,10 +70,9 @@ typedef struct _Work Work;
 struct _Work
 {
 	LlLogic*           logic;    /**< Una lógica definida como se quiera. */
-	char               formula_pn[MAX_FORMULA_LENGHT];    /**< Fórmula en notación polaca. */
-	char               formula[MAX_FORMULA_LENGHT];   /**< Fórmula en notación estándar. */
-	LlWFF             *wff;    /**< Una fórmula bien formada como estructura en árbol. */
-	EvaluationStyle    evaluation_style;    /**< El tipo de evaluación a realizar. */
+	char               formula[MAX_FORMULA_LENGHT];  /**< Fórmula en notación polaca. */
+	LlWFF             *wff;      /**< Una fórmula bien formada como estructura en árbol. */
+	EvaluationStyle    evaluation_style;  /**< El tipo de evaluación a realizar. */
 	int                valuations_all,
 	                   valuations_desig;
 	bool               logic_modified;
@@ -102,67 +105,67 @@ MaTestGUI;
  */
 
 /* Modos interactivos */
-int            mode_tui                   (Work*         work);
-int            mode_gui                   (int           argc,
-                                           char**        argv,
-                                           Work*         work);
+int        mode_tui                     (Work        *work);
+int        mode_gui                     (int          argc,
+                                         char       **argv,
+                                         Work        *work);
 
 /* Manejo de conectivas */
-void           tui_ucon_add_custom        (LlLogic*      logic,
-                                           const char*   symbol);
-void           tui_bcon_add_custom        (LlLogic*      logic,
-                                           const char*   symbol);
-gchar*         sprint_ucon_matrix         (LlUCon*       ucon,
-                                           LlLogic*      logic);
-gchar*         sprint_bcon_matrix         (LlBCon*       bcon,
-                                           LlLogic*      logic);
-void           print_matrices             (LlLogic*      logic);
-int            write_ucon_matrix          (FILE*         file,
-                                           LlUCon*       ucon,
-                                           int           dimension);
-int            write_bcon_matrix          (FILE*         file,
-                                           LlBCon*       bcon,
-                                           int           dimension);
-int            write_matrices             (FILE*         file,
-                                           LlLogic*      logic);
+void       tui_ucon_add_custom          (LlLogic     *logic,
+                                         const char *symbol);
+void       tui_bcon_add_custom          (LlLogic     *logic,
+                                         const char *symbol);
+gchar*     sprint_ucon_matrix           (LlUCon      *ucon,
+                                         LlLogic     *logic);
+gchar*     sprint_bcon_matrix           (LlBCon      *bcon,
+                                         LlLogic     *logic);
+void       print_matrices               (LlLogic     *logic);
+int        write_ucon_matrix            (FILE        *file,
+                                         LlUCon      *ucon,
+                                         int          dimension);
+int        write_bcon_matrix            (FILE        *file,
+                                         LlBCon      *bcon,
+                                         int          dimension);
+int        write_matrices               (FILE        *file,
+                                         LlLogic     *logic);
 
 /* Manejo de variables */
-void           ll_logic_add_formula_vars  (LlLogic*      logic,
-                                           const char    formula[]);
+void       ll_logic_add_formula_vars    (LlLogic     *logic,
+                                         const char *formula);
 
 /* Funciones relacionadas con la evaluación */
-void           print_ll_wff_get_value     (const char    formula[],
-                                           LlLogic*      logic);
-void           evaluation                 (FILE*         output,
-                                           Work*         work);
+void       print_ll_wff_get_value       (const char *formula,
+                                         LlLogic     *logic);
+void       evaluation                   (FILE        *output,
+                                         Work        *work);
 
 /* Funciones del modo texto */
-char           readin                     (char*         str,
-                                           const char*   pattern);
-void           screen_clear               (void);
-void           make_pause                 (void);
-void           menu_usage                 (void);
-void           menu_version               (void);
-void           menu_header                (void);
-void           menu_info                  (Work*         work);
-void           menu_options               (void);
-void           menu_init                  (void);
-void           menu_dimension             (void);
-void           menu_about                 (void);
-void           menu_help                  (void);
-void           menu_index                 (Work*         work);
+char       readin                       (char        *str,
+                                         const char  *pattern);
+void       screen_clear                 (void);
+void       make_pause                   (void);
+void       menu_usage                   (void);
+void       menu_version                 (void);
+void       menu_header                  (void);
+void       menu_info                    (Work        *work);
+void       menu_options                 (void);
+void       menu_init                    (void);
+void       menu_dimension               (void);
+void       menu_about                   (void);
+void       menu_help                    (void);
+void       menu_index                   (Work        *work);
 
 /* Funciones del modo gráfico. */
-gboolean       init_gui                   (MaTestGUI*    gui);
-void           dialog_error               (const gchar*  message);
-gchar*         show_matrices_gui          (LlLogic*      logic);
-gchar*         evaluation_gui             (MaTestGUI*    gui);
-gint           dialog_ucon_new            (MaTestGUI*    gui);
-gint           dialog_ucon_edit           (MaTestGUI*    gui,
-                                           const gchar*  symbol);
-gint           dialog_bcon_new            (MaTestGUI*    gui);
-gint           dialog_bcon_edit           (MaTestGUI*    gui,
-                                           const gchar*  symbol);
+gboolean   init_gui                     (MaTestGUI     *gui);
+void       dialog_error                 (const gchar   *message);
+gchar*     show_matrices_gui            (LlLogic       *logic);
+gchar*     evaluation_gui               (MaTestGUI     *gui);
+gint       dialog_ucon_new              (MaTestGUI     *gui);
+gint       dialog_ucon_edit             (MaTestGUI     *gui,
+                                         const gchar  *symbol);
+gint       dialog_bcon_new              (MaTestGUI     *gui);
+gint       dialog_bcon_edit             (MaTestGUI     *gui,
+                                         const gchar  *symbol);
 
 
 #endif /* __MATEST_H__ */
