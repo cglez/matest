@@ -27,7 +27,7 @@
 
 
 #include <glib.h>
-#define GETTEXT_PACKAGE any
+#define GETTEXT_PACKAGE "any"
 #include <glib/gi18n-lib.h>
 
 /* Algunas abreviaciones útiles */
@@ -184,8 +184,8 @@ LlLogic;
 
 
 /* Variables proposicionales */
-LlVar*        ll_var_new                        (char          *symbol,
-                                                 int            value);
+LlVar*        ll_var_new                        (const gchar   *symbol,
+                                                 gint           value);
 void          ll_var_set_value                  (LlVar         *var,
                                                  int            value);
 int           ll_var_get_value                  (LlVar         *var);
@@ -228,7 +228,7 @@ void          ll_bcon_list_free                 (GList         *bcon_list,
 void          ll_wff_free                       (LlWFF         *wff);
 void          ll_wff_valuate                    (LlWFF         *wff,
                                                  LlLogic       *logic);
-gboolean          ll_wff_add_node                   (LlWFF         **wff,
+gboolean      ll_wff_add_node                   (LlWFF         **wff,
                                                  LlWFFType      node_type,
                                                  char          *symbol,
                                                  int            value);
@@ -238,7 +238,7 @@ int           ll_wff_get_value                  (LlWFF         *wff,
 /* Fórmulas bien formadas en notación polaca */
 LlSymbolType  ll_symbol_pn_get_type             (char           symbol,
                                                  LlLogic       *logic);
-gboolean          ll_formula_is_wff_pn              (char          *formula,
+gboolean      ll_formula_is_wff_pn              (char          *formula,
                                                  LlLogic       *logic);
 LlWFF*        ll_wff_parse_formula_pn           (LlWFF         *tree,
                                                  char          *formula_pn,

@@ -110,7 +110,7 @@ ll_wff_get_avail_node (LlWFF *wff)
  * @param symbol_type Tipo de nodo.
  * @param symbol Símbolo del nodo.
  * @param value Valor del nodo.
- * @return true: si tiene éxito, false: en caso contrario.
+ * @return TRUE: si tiene éxito, FALSE: en caso contrario.
  */
 gboolean
 ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
@@ -130,15 +130,15 @@ ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 			else if (node->type == LL_WFF_NODE_B_CON)
 				{
 					if (ll_wff_add_node (&node->prearg, symbol_type, symbol, value))
-						return true;
+						return TRUE;
 					else if (ll_wff_add_node (&node->postarg, symbol_type, symbol, value))
-						return true;
+						return TRUE;
 					else
-						return false;
+						return FALSE;
 				}
 			/* Las variables carecen de argumentos */
 			else if (node->type == LL_WFF_NODE_VAR)
-				return false;
+				return FALSE;
 		}
 
 	/* Si el árbol está vacío, reservamos memoria y establecemos los valores */
@@ -149,7 +149,7 @@ ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 			strcpy ((*wff)->symbol, symbol);
 			(*wff)->value = value;
 			(*wff)->prearg = (*wff)->postarg = NULL;
-			return true;
+			return TRUE;
 		}
 	else if (father->type == LL_WFF_NODE_U_CON)
 		{
@@ -159,7 +159,7 @@ ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 			strcpy (node->symbol, symbol);
 			node->value = value;
 			node->prearg = node->postarg = NULL;
-			return true;
+			return TRUE;
 		}
 	else if (father->type == LL_WFF_NODE_B_CON)
 		{
@@ -171,7 +171,7 @@ ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 					strcpy (node->symbol, symbol);
 					node->value = value;
 					node->prearg = node->postarg = NULL;
-					return true;
+					return TRUE;
 				}
 			else
 				{
@@ -181,13 +181,13 @@ ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 					strcpy (node->symbol, symbol);
 					node->value = value;
 					node->prearg = node->postarg = NULL;
-					return true;
+					return TRUE;
 				}
 		}
 	else
 		{
 			perror ("* Estableciendo el elemento de una fbf... Error inesperado.\n");
-			return false;
+			return FALSE;
 		}
 }
 //LlWFF*
@@ -268,7 +268,7 @@ ll_wff_add_node (LlWFF **wff, LlWFFType symbol_type, char *symbol, int value)
 	//else
 		//{
 			//perror ("Estableciendo el elemento de una fbf... Error inesperado.\n");
-			//return false;
+			//return FALSE;
 		//}
 //}
 //LlWFF*

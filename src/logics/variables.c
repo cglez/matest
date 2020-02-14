@@ -38,7 +38,7 @@
  * @return Una variable proposicional nueva.
  */
 LlVar*
-ll_var_new_int (const gchar *symbol, gint value)
+ll_var_new (const gchar *symbol, gint value)
 {
 	LlVar  *var = NULL;
 
@@ -76,7 +76,7 @@ ll_var_free (LlVar* var)
  * @param value Un valor entero.
  */
 void
-ll_var_set_value_int (LlVar *var, gint value)
+ll_var_set_value (LlVar *var, gint value)
 {
 	if (!var) {
 		g_error ("La variable no existe.\n");
@@ -96,7 +96,7 @@ ll_var_set_value_int (LlVar *var, gint value)
  *         -1: error, la variable no existe.
  */
 gint
-ll_var_get_value_int (LlVar *var)
+ll_var_get_value (LlVar *var)
 {
 	if (!var) {
 		g_error ("La variable no existe.\n");

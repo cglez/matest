@@ -31,30 +31,30 @@
 //TODO Incluir el diálogo Acerca de en el archivo de interfaz principal
 #define ABOUT_DIALOG_FILE "about.ui"
 
-void        on_window_destroy                   (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-gboolean    on_window_delete_event              (GtkWidget    *widget,
-                                                 GdkEvent     *event,
-                                                 MaTestGUI    *gui);
-void        on_m_file_quit_activate             (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_b_print_matrices_activate        (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_b_ucon_clicked                   (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_b_ucon_del_clicked               (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_b_bcon_clicked                   (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_b_new_formula_clicked            (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_m_view_all_toggled               (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_m_view_desig_toggled             (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_m_view_notdesig_toggled          (GtkObject    *object,
-                                                 MaTestGUI    *gui);
-void        on_spin_value_changed               (GtkObject    *object,
-                                                 gpointer     *value);
+void        on_window_destroy                   (GObject    *object,
+                                                 MaTestGUI  *gui);
+gboolean    on_window_delete_event              (GtkWidget  *widget,
+                                                 GdkEvent   *event,
+                                                 MaTestGUI  *gui);
+void        on_m_file_quit_activate             (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_b_print_matrices_activate        (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_b_ucon_clicked                   (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_b_ucon_del_clicked               (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_b_bcon_clicked                   (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_b_new_formula_clicked            (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_m_view_all_toggled               (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_m_view_desig_toggled             (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_m_view_notdesig_toggled          (GObject    *object,
+                                                 MaTestGUI  *gui);
+void        on_spin_value_changed               (GObject    *object,
+                                                 gpointer   *value);
 
 #endif /* __CALLBACKS_H__ */

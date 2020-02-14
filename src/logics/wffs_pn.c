@@ -74,9 +74,9 @@ ll_symbol_pn_get_type (char symbol, LlLogic* logic)
  * variable; se comprueba que las conectivas estén en efecto definidas en la
  * lógica de contexto dada.
  *
- * @return true: si es una fbf en notación polaca, false en caso contrario.
+ * @return TRUE: si es una fbf en notación polaca, FALSE en caso contrario.
  */
-bool
+gboolean
 ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 {
 	int    deep = 1,
@@ -86,7 +86,7 @@ ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 	for (i = 0; i < (int) strlen (formula); i++) {
 		if (!isalpha (formula[i])) {
 			perror ("* La fórmula dada contiene caracteres no válidos.\n");
-			return false;
+			return FALSE;
 		}
 	}
 
@@ -103,7 +103,7 @@ ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 		/* Sino la conectiva no está definida */
 		else if (ll_symbol_pn_get_type (formula[i], logic) == LL_SYMBOL_NONE) {
 			fprintf (stderr, "* La conectiva %c no está definida.\n", formula[i]);
-			return false;
+			return FALSE;
 		}
 
 		/* Si en este punto las conectivas tienen completos sus argumentos pero aún
@@ -116,16 +116,16 @@ ll_formula_is_wff_pn (char formula[], LlLogic* logic)
 			else if (ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_U_CON ||
 			         ll_symbol_pn_get_type (formula[i + 1], logic) == LL_SYMBOL_B_CON)
 				perror ("* Hay varias fórmulas juntas.\n");
-			return false;
+			return FALSE;
 		}
 	}
 	/* Si después de recorrer la fórmula aún restan argumentos, faltan variables */
 	if (deep != 0) {
 		perror ("* Profundidad insuficiente; muy pocas variables. Revise la fórmula.\n");
-		return false;
+		return FALSE;
 	}
 	else
-		return true;
+		return TRUE;
 }
 
 

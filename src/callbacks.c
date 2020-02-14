@@ -62,7 +62,7 @@ on_window_delete_event (GtkWidget *widget, GdkEvent *event, MaTestGUI *gui)
 
 
 //void
-//on_window_destroy (GtkObject *object, MaTestGUI *gui)
+//on_window_destroy (GObject   *object, MaTestGUI *gui)
 //{
 	//gtk_main_quit ();
 //}
@@ -70,7 +70,7 @@ on_window_delete_event (GtkWidget *widget, GdkEvent *event, MaTestGUI *gui)
 
 /* Menú > Archivo > Salir : sale del programa. */
 void
-on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui)
+on_m_file_quit_activate (GObject   *object, MaTestGUI *gui)
 {
 
 }
@@ -78,7 +78,7 @@ on_m_file_quit_activate (GtkObject *object, MaTestGUI *gui)
 
 /* Botón evaluar */
 void
-on_b_evaluate_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_evaluate_clicked (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *buffer;
 
@@ -92,7 +92,7 @@ on_b_evaluate_clicked (GtkObject *object, MaTestGUI *gui)
 
 /* Botón imprimir matrices */
 void
-on_b_print_matrices_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_print_matrices_clicked (GObject   *object, MaTestGUI *gui)
 {
 	GList      *iter;
 	GString    *buffer;
@@ -124,7 +124,7 @@ on_b_print_matrices_clicked (GtkObject *object, MaTestGUI *gui)
 
 /* Pulsar Enter en la entrada de la fórmula o pulsar el botón correspondiente */
 void
-on_entry_formula_activate (GtkObject *object, MaTestGUI *gui)
+on_entry_formula_activate (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *formula,
 	         *straux;
@@ -179,7 +179,7 @@ on_entry_formula_activate (GtkObject *object, MaTestGUI *gui)
 /* FIXME Estas dos funciones se pueden reducir a una sola */
 /* Botón de una conectiva unaria cualquiera */
 void
-on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_ucon_clicked (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *label;
 
@@ -190,7 +190,7 @@ on_b_ucon_clicked (GtkObject *object, MaTestGUI *gui)
 
 /* Botón de una conectiva binaria cualquiera */
 void
-on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_bcon_clicked (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *label;
 
@@ -201,14 +201,14 @@ on_b_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 
 /* Botón añadir conectiva unaria */
 void
-on_b_add_ucon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_add_ucon_clicked (GObject   *object, MaTestGUI *gui)
 {
 	dialog_ucon_new (gui);
 }
 
 
 void
-on_b_ucon_del_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_ucon_del_clicked (GObject   *object, MaTestGUI *gui)
 {
 
 }
@@ -216,7 +216,7 @@ on_b_ucon_del_clicked (GtkObject *object, MaTestGUI *gui)
 
 /* Botón añadir conectiva binaria */
 void
-on_b_add_bcon_clicked (GtkObject *object, MaTestGUI *gui)
+on_b_add_bcon_clicked (GObject   *object, MaTestGUI *gui)
 {
 	dialog_bcon_new (gui);
 }
@@ -224,7 +224,7 @@ on_b_add_bcon_clicked (GtkObject *object, MaTestGUI *gui)
 
 /* Cambiar el valor de la dimensión */
 void
-on_spin_dimension_value_changed (GtkObject *object, MaTestGUI *gui)
+on_spin_dimension_value_changed (GObject   *object, MaTestGUI *gui)
 {
 	GtkWidget    *b_con;
 	GList        *iter;
@@ -281,7 +281,7 @@ on_spin_dimension_value_changed (GtkObject *object, MaTestGUI *gui)
 
 /* Cambiar el valor del mínimo valor designado */
 void
-on_spin_mdv_value_changed (GtkObject *object, MaTestGUI *gui)
+on_spin_mdv_value_changed (GObject   *object, MaTestGUI *gui)
 {
 	gui->work->logic->mdv = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON (gui->spin_mdv));
 	/* Limpiamos la salida de texto */
@@ -291,7 +291,7 @@ on_spin_mdv_value_changed (GtkObject *object, MaTestGUI *gui)
 
 /* Menú > Archivo > Abrir : abre un archivo de matrices */
 void
-on_m_file_open_activate (GtkObject *object, MaTestGUI *gui)
+on_m_file_open_activate (GObject   *object, MaTestGUI *gui)
 {
 	GtkWidget   *chooser,
 	            *b_con;
@@ -369,7 +369,7 @@ on_m_file_open_activate (GtkObject *object, MaTestGUI *gui)
 
 /* Menú > Archivo > Guardar : guarda las matrices en un archivo */
 void
-on_m_file_save_activate (GtkObject *object, MaTestGUI *gui)
+on_m_file_save_activate (GObject   *object, MaTestGUI *gui)
 {
 	write_matrices_gui (gui);
 }
@@ -377,7 +377,7 @@ on_m_file_save_activate (GtkObject *object, MaTestGUI *gui)
 
 /* Menú > Ver > Todos los valores : muestra todos los valores en la evaluación */
 void
-on_m_view_all_toggled (GtkObject *object, MaTestGUI *gui)
+on_m_view_all_toggled (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *buffer;
 
@@ -394,7 +394,7 @@ on_m_view_all_toggled (GtkObject *object, MaTestGUI *gui)
 
 /* Menú > Ver > Valores designados : muestra los valores designados en la evaluación */
 void
-on_m_view_desig_toggled (GtkObject *object, MaTestGUI *gui)
+on_m_view_desig_toggled (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *buffer;
 
@@ -411,7 +411,7 @@ on_m_view_desig_toggled (GtkObject *object, MaTestGUI *gui)
 
 /* Menú > Ver > Valores no designados : muestra los valores no designados en la evaluación */
 void
-on_m_view_notdesig_toggled (GtkObject *object, MaTestGUI *gui)
+on_m_view_notdesig_toggled (GObject   *object, MaTestGUI *gui)
 {
 	gchar    *buffer;
 
@@ -430,7 +430,7 @@ on_m_view_notdesig_toggled (GtkObject *object, MaTestGUI *gui)
  * Menú > Ayuda > Acerca de : muestra el diálogo con los créditos.
  */
 void
-on_m_help_about_activate (GtkObject *object, gpointer data)
+on_m_help_about_activate (GObject   *object, gpointer data)
 {
 	dialog_about ();
 }

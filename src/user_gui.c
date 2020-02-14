@@ -318,7 +318,6 @@ dialog_ucon_new (MaTestGUI *gui)
 	                                                  GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
 	                                                  GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 	                                                  NULL));
-	gtk_dialog_set_has_separator (dialog, FALSE);
 
 	content = gtk_dialog_get_content_area (dialog);
 	table = gtk_table_new (2, gui->work->DIM + 1, FALSE);
@@ -393,7 +392,6 @@ dialog_ucon_edit (MaTestGUI *gui, const gchar *symbol)
 	                                                  GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 	                                                  NULL));
 	g_free (label);
-	gtk_dialog_set_has_separator (dialog, FALSE);
 
 	content = gtk_dialog_get_content_area (dialog);
 	table = gtk_table_new (2, gui->work->DIM + 1, TRUE);
@@ -480,7 +478,6 @@ dialog_bcon_new (MaTestGUI *gui)
 	                                                  GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
 	                                                  GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 	                                                  NULL));
-	gtk_dialog_set_has_separator (dialog, FALSE);
 
 	content = gtk_dialog_get_content_area (dialog);
 	table = gtk_table_new (gui->work->DIM + 1, gui->work->DIM + 1, FALSE);
@@ -565,7 +562,6 @@ dialog_bcon_edit (MaTestGUI *gui, const gchar *symbol)
 	                                                  GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
 	                                                  NULL));
 	g_free (label);
-	gtk_dialog_set_has_separator (dialog, FALSE);
 
 	content = gtk_dialog_get_content_area (dialog);
 	table = gtk_table_new (gui->work->DIM + 1, gui->work->DIM + 1, TRUE);
